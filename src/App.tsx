@@ -16,7 +16,7 @@ import GrammarDrill from "./pages/GrammarDrill";
 import CourseOverview from "./pages/CourseOverview";
 import LessonPage from "./pages/LessonPage";
 import Practice from "./pages/Practice";
-import Tools from "./pages/Tools";
+
 import Auth from "./pages/Auth";
 import Alphabet from "./pages/Alphabet";
 import Settings from "./pages/Settings";
@@ -46,7 +46,7 @@ const App = () => (
                 <Route path="/course" element={<ProtectedRoute><CourseOverview /></ProtectedRoute>} />
                 <Route path="/lesson/:lessonId" element={<ProtectedRoute><LessonPage /></ProtectedRoute>} />
                 <Route path="/practice" element={<ProtectedRoute><Practice /></ProtectedRoute>} />
-                <Route path="/tools" element={<ProtectedRoute><Tools /></ProtectedRoute>} />
+                
                 <Route path="/alphabet" element={<ProtectedRoute><Alphabet /></ProtectedRoute>} />
                 <Route path="/flashcards/:categoryId" element={<ProtectedRoute><Flashcards /></ProtectedRoute>} />
                 <Route path="/quiz/:categoryId" element={<ProtectedRoute><Quiz /></ProtectedRoute>} />

@@ -40,12 +40,15 @@ const LessonPage = () => {
     return STEPS.filter(s => isStepCompleted(id, s.step)).length;
   }, [id, isStepCompleted]);
 
-  const getStepStatus = (stepNum: number): 'done' | 'current' | 'locked' => {
+  const getStepStatus = (stepNum: number): 'done' | 'current' => {
     if (isStepCompleted(id, stepNum)) return 'done';
-    if (stepNum === 1) return 'current';
-    if (isStepCompleted(id, stepNum - 1)) return 'current';
-    return 'locked';
+    // "current" = first incomplete step (recommended next)
+    const firstIncomplete = STEPS.find(s => !isStepCompleted(id, s.step))?.step;
+    if (stepNum === firstIncomplete) return 'current';
+    return 'current'; // all steps are accessible
   };
+
+  const recommendedStep = STEPS.find(s => !isStepCompleted(id, s.step))?.step ?? null;
 
   const handleStepComplete = (stepNum: number) => {
     completeStep(id, stepNum);
@@ -154,59 +157,53 @@ const LessonPage = () => {
 
         {/* Step cards */}
         <div className="space-y-3">
-          {STEPS.map((step) => {
-            const status = getStepStatus(step.step);
-            const isLocked = status === 'locked' && !isCompleted;
+        {STEPS.map((step) => {
+            const isDone = isStepCompleted(id, step.step);
+            const isRecommended = step.step === recommendedStep;
 
             return (
               <button
                 key={step.step}
-                onClick={() => !isLocked && setActiveStep(step.step)}
-                disabled={isLocked}
+                onClick={() => setActiveStep(step.step)}
                 className={cn(
                   'w-full flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all duration-200',
-                  status === 'done'
+                  isDone
                     ? 'bg-success/5 border-success/30 hover:border-success/50'
-                    : status === 'current'
+                    : isRecommended
                     ? 'bg-card border-primary/40 hover:border-primary shadow-sm hover:shadow-md'
-                    : 'bg-muted/30 border-border/50 opacity-60 cursor-not-allowed'
+                    : 'bg-card border-border hover:border-primary/30 hover:shadow-sm'
                 )}
               >
-                {/* Step number / status icon */}
                 <div className={cn(
                   'w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold',
-                  status === 'done'
+                  isDone
                     ? 'bg-success text-success-foreground'
-                    : status === 'current'
+                    : isRecommended
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-muted text-muted-foreground'
                 )}>
-                  {status === 'done' ? <Check className="w-5 h-5" /> :
-                   status === 'current' ? <CircleDot className="w-5 h-5" /> :
-                   <Lock className="w-4 h-4" />}
+                  {isDone ? <Check className="w-5 h-5" /> :
+                   isRecommended ? <CircleDot className="w-5 h-5" /> :
+                   step.step}
                 </div>
 
-                {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{step.emoji}</span>
-                    <h3 className={cn(
-                      'font-display font-bold text-sm',
-                      status === 'locked' && !isCompleted ? 'text-muted-foreground' : 'text-foreground'
-                    )}>
+                    <h3 className="font-display font-bold text-sm text-foreground">
                       {step.title}
                     </h3>
+                    {isRecommended && !isDone && (
+                      <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">Next</span>
+                    )}
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">{step.subtitle}</p>
                 </div>
 
-                {/* Arrow */}
-                {!isLocked && (
-                  <ChevronRight className={cn(
-                    'w-5 h-5 flex-shrink-0',
-                    status === 'done' ? 'text-success/60' : 'text-primary/60'
-                  )} />
-                )}
+                <ChevronRight className={cn(
+                  'w-5 h-5 flex-shrink-0',
+                  isDone ? 'text-success/60' : 'text-muted-foreground/40'
+                )} />
               </button>
             );
           })}

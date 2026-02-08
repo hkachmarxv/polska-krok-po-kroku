@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, BookOpen, Loader2 } from 'lucide-react';
+import { ArrowLeft, Send, BookOpen, Loader2, PenLine } from 'lucide-react';
+import { BottomNav } from '@/components/BottomNav';
 import ReactMarkdown from 'react-markdown';
 
 type Message = { role: 'user' | 'assistant'; content: string };
@@ -115,18 +116,20 @@ const GrammarAssistant = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col pb-16">
       <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="container max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-            <span className="text-sm font-medium">Back</span>
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">🤖</span>
+            <h1 className="font-display text-base font-bold text-foreground">AI Tutor</h1>
+          </div>
+          <button
+            onClick={() => navigate('/grammar-drill')}
+            className="flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors bg-primary/10 px-2.5 py-1.5 rounded-full"
+          >
+            <PenLine className="w-3.5 h-3.5" />
+            Grammar Drills
           </button>
-          <h1 className="font-display text-base font-bold flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-primary" />
-            Grammar Assistant
-          </h1>
-          <div />
         </div>
       </header>
 
@@ -209,6 +212,7 @@ const GrammarAssistant = () => {
           </div>
         </div>
       </main>
+      <BottomNav />
     </div>
   );
 };
