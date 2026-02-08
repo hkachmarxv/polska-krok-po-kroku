@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Lock, CheckCircle2, ChevronRight, BookOpen, Crown } from 'lucide-react';
+import { Lock, CheckCircle2, ChevronRight, BookOpen, Crown, Languages } from 'lucide-react';
 import { lessons } from '@/data/a1Course';
 import { useProgress } from '@/hooks/useProgress';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -68,6 +68,24 @@ const CourseOverview = () => {
             <ChevronRight className="w-5 h-5 text-primary" />
           </button>
         )}
+
+        {/* Alphabet Card — "Lesson 0" */}
+        <button
+          onClick={() => navigate('/alphabet')}
+          className="w-full bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 border-2 border-primary/25 rounded-2xl p-4 flex items-center gap-4 hover:border-primary/50 transition-all card-hover shadow-sm"
+        >
+          <div className="w-11 h-11 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
+            <Languages className="w-5 h-5 text-primary" />
+          </div>
+          <div className="text-left flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">🔤</span>
+              <h3 className="font-display font-bold text-foreground text-sm">Polish Alphabet & Sounds</h3>
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">Master the building blocks first — interactive & audio-rich</p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-primary flex-shrink-0" />
+        </button>
 
         {/* Lesson List */}
         <div className="space-y-3">
