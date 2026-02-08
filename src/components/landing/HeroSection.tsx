@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 const stats = [
   { icon: Users, value: '500+', label: 'Active Learners' },
   { icon: Star, value: '4.9', label: 'User Rating' },
-  { icon: BookOpen, value: '20', label: 'Lessons' },
+  { icon: BookOpen, value: '20', label: 'A1 Lessons' },
 ];
 
 const HeroSection = () => {
@@ -53,7 +53,7 @@ const HeroSection = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
           >
-            Forget boring textbooks. LearnPolski combines structured lessons, AI-powered grammar coaching, and interactive drills to get you conversational — fast.
+            Forget boring textbooks. LearnPolski combines structured lessons, AI-powered grammar coaching, and interactive drills to get you conversational — fast. Start with A1, and grow with us as new levels launch.
           </motion.p>
 
           <motion.div

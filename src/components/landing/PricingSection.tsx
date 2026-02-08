@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 
 const features = [
-  'All 20 structured Polish lessons',
+  'All 20 A1 lessons (+ future levels)',
   'Interactive flashcards & quizzes',
   'Sentence builder exercises',
   'Match game & grammar drills',
@@ -31,7 +31,7 @@ const PricingSection = () => {
             Simple, transparent pricing
           </h2>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-            Lesson 1 is always free. Upgrade when you're ready to unlock everything.
+            Lesson 1 is always free. Upgrade when you're ready to unlock everything — including all future levels as they launch.
           </p>
         </motion.div>
 
@@ -129,7 +129,7 @@ const PricingSection = () => {
               ))}
               <li className="flex items-center gap-2 text-sm text-foreground font-bold">
                 <Crown className="w-4 h-4 text-accent flex-shrink-0" />
-                Pay once, learn forever
+                All future levels included
               </li>
             </ul>
             <Button variant="outline" className="w-full font-bold border-accent text-accent hover:bg-accent/10" onClick={() => navigate('/auth')}>
