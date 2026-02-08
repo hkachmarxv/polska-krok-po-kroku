@@ -49,11 +49,19 @@ const Dashboard = () => {
         </div>
       </header>
 
-      <main className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
+      <main className="container max-w-2xl mx-auto px-4 py-6 space-y-5">
+        {/* Greeting */}
+        <div>
+          <h2 className="font-display text-lg font-bold text-foreground">
+            {user?.user_metadata?.display_name ? `Hey, ${user.user_metadata.display_name} 👋` : 'Welcome back 👋'}
+          </h2>
+          <p className="text-xs text-muted-foreground mt-0.5">Keep up your Polish learning streak!</p>
+        </div>
+
         {/* Continue Learning CTA */}
         <button
           onClick={() => navigate(completedLessons.length === lessons.length ? '/course' : `/lesson/${currentLesson}`)}
-          className="w-full bg-primary/10 border-2 border-primary/30 rounded-2xl p-5 text-left card-hover group"
+          className="w-full bg-primary/10 border-2 border-primary/30 rounded-2xl p-5 text-left card-hover group shadow-sm"
         >
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
@@ -99,7 +107,7 @@ const Dashboard = () => {
               <TrendingUp className="w-5 h-5 text-primary" />
               Recent Scores
             </h2>
-            <div className="bg-card rounded-lg border border-border p-4">
+            <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
               <div className="flex items-end gap-1 h-24">
                 {progress.quizResults.slice(-15).map((r, i) => {
                   const pct = r.total > 0 ? (r.score / r.total) * 100 : 0;

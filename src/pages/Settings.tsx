@@ -140,7 +140,7 @@ const Settings = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-10">
+      <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
         <div className="container max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button onClick={() => navigate(-1)} className="p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">

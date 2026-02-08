@@ -7,9 +7,9 @@ interface StatCardProps {
 }
 
 export const StatCard = ({ icon, value, label }: StatCardProps) => (
-  <div className="bg-card rounded-lg border border-border p-3 text-center animate-scale-in">
-    <div className="flex justify-center mb-1">{icon}</div>
-    <p className="font-display text-xl font-bold text-foreground">{value}</p>
-    <p className="text-xs text-muted-foreground">{label}</p>
+  <div className="bg-card rounded-2xl border border-border p-4 text-center animate-scale-in shadow-sm hover:shadow-md transition-shadow">
+    <div className="flex justify-center mb-2">{icon}</div>
+    <p className="font-display text-2xl font-bold text-foreground">{value}</p>
+    <p className="text-[11px] text-muted-foreground font-medium mt-0.5">{label}</p>
   </div>
 );
