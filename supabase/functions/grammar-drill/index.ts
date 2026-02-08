@@ -39,12 +39,13 @@ serve(async (req) => {
   }
 
   try {
-    const { topic, difficulty, previousWords } = await req.json();
+    const { topic, difficulty, previousWords, lessonContext } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     let userPrompt = "Generate a Polish grammar drill exercise.";
-    if (topic) userPrompt += ` Focus on: ${topic}.`;
+    if (lessonContext) userPrompt += ` Context: ${lessonContext}. Use vocabulary and grammar from this lesson context.`;
+    else if (topic) userPrompt += ` Focus on: ${topic}.`;
     if (difficulty) userPrompt += ` Difficulty: ${difficulty}.`;
     if (previousWords && previousWords.length > 0) {
       userPrompt += ` Avoid using these base words: ${previousWords.join(", ")}. Use a different word/verb.`;
