@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { RotateCcw, Check, X, ChevronRight } from 'lucide-react';
 import { Lesson } from '@/data/courseTypes';
 import { useProgress } from '@/hooks/useProgress';
+import { SpeakButton } from '@/components/SpeakButton';
 
 interface Props {
   lesson: Lesson;
@@ -85,7 +86,7 @@ export const LessonFlashcards = ({ lesson }: Props) => {
               {reversed ? 'English' : 'Polish'}
             </p>
             <h2 className="font-display text-2xl font-bold text-foreground text-center">{backText}</h2>
-            {showPhonetic && <p className="text-sm text-muted-foreground mt-2">{word.phonetic}</p>}
+            <SpeakButton text={word.polish} size="md" className="mt-2" />
             {word.gender && (
               <span className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full mt-2">
                 {word.gender}

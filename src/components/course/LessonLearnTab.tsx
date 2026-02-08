@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Volume2 } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Lesson, Dialogue } from '@/data/courseTypes';
 import ReactMarkdown from 'react-markdown';
+import { SpeakButton } from '@/components/SpeakButton';
 
 interface Props {
   lesson: Lesson;
@@ -23,6 +24,7 @@ export const LessonLearnTab = ({ lesson }: Props) => {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
+                    <SpeakButton text={word.polish} />
                     <span className="font-display font-bold text-foreground">{word.polish}</span>
                     {word.gender && (
                       <span className="text-[10px] bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded-full">
@@ -106,7 +108,10 @@ export const LessonLearnTab = ({ lesson }: Props) => {
                         <span className="text-[10px] font-bold text-muted-foreground uppercase">
                           {line.speaker}
                         </span>
-                        <p className="font-medium text-foreground">{line.polish}</p>
+                        <p className="font-medium text-foreground flex items-center gap-1">
+                          <SpeakButton text={line.polish} size="sm" />
+                          {line.polish}
+                        </p>
                         <p className="text-xs text-muted-foreground">{line.english}</p>
                       </div>
                     ))}
