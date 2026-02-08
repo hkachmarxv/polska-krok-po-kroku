@@ -43,7 +43,12 @@ const LessonPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-4">
+      {isCompleted && (
+        <div className="bg-success/10 border-b border-success/20 px-4 py-2 text-center">
+          <p className="text-xs font-medium text-success">✅ Lesson completed</p>
+        </div>
+      )}
       <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="container max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
           <button onClick={() => navigate('/course')} className="text-muted-foreground hover:text-foreground transition-colors">

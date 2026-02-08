@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, XCircle, RotateCcw, Trophy, ChevronRight } from 'lucide-react';
 import { Lesson, CourseWord } from '@/data/courseTypes';
-import { getAllCourseWords } from '@/data/a1Course';
+import { getAllCourseWords, lessons } from '@/data/a1Course';
 import { useProgress } from '@/hooks/useProgress';
 
 interface Props {
@@ -9,11 +10,14 @@ interface Props {
 }
 
 export const LessonQuiz = ({ lesson }: Props) => {
-  const { recordCardResult, recordQuizResult, completeLesson } = useProgress();
+  const navigate = useNavigate();
+  const { recordCardResult, recordQuizResult, completeLesson, progress } = useProgress();
   const allCourseWords = useMemo(() => getAllCourseWords(), []);
+  const isAlreadyCompleted = (progress.lessonsCompleted || []).includes(lesson.id);
 
   const [mode, setMode] = useState<'choice' | 'typing' | null>(null);
   const [questionIndex, setQuestionIndex] = useState(0);
+  const scoreRef = useRef(0);
   const [score, setScore] = useState(0);
   const [answered, setAnswered] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState('');
@@ -38,14 +42,21 @@ export const LessonQuiz = ({ lesson }: Props) => {
     return [...others, currentWord].sort(() => Math.random() - 0.5);
   }, [currentWord, questionIndex, allCourseWords]);
 
+  const addScore = (correct: boolean) => {
+    if (correct) {
+      scoreRef.current += 1;
+      setScore(scoreRef.current);
+    }
+  };
+
   const handleChoiceSelect = (polish: string) => {
     if (answered) return;
     setAnswered(true);
     setSelectedAnswer(polish);
     const correct = polish === currentWord.polish;
     setIsCorrect(correct);
-    if (correct) setScore(s => s + 1);
-    else setWrongAnswers(prev => [...prev, { word: currentWord, given: polish }]);
+    addScore(correct);
+    if (!correct) setWrongAnswers(prev => [...prev, { word: currentWord, given: polish }]);
     recordCardResult(currentWord.id, correct);
   };
 
@@ -54,18 +65,17 @@ export const LessonQuiz = ({ lesson }: Props) => {
     setAnswered(true);
     const correct = typedAnswer.trim().toLowerCase() === currentWord.polish.toLowerCase();
     setIsCorrect(correct);
-    if (correct) setScore(s => s + 1);
-    else setWrongAnswers(prev => [...prev, { word: currentWord, given: typedAnswer }]);
+    addScore(correct);
+    if (!correct) setWrongAnswers(prev => [...prev, { word: currentWord, given: typedAnswer }]);
     recordCardResult(currentWord.id, correct);
   };
 
   const nextQuestion = () => {
     if (questionIndex + 1 >= quizWords.length) {
-      const finalScore = score + (isCorrect && !finished ? 0 : 0); // score already updated
       setFinished(true);
-      recordQuizResult({ category: `lesson-${lesson.id}`, score, total: quizWords.length, mode: mode! });
-      // Complete lesson if 70%+
-      if (score / quizWords.length >= 0.7) {
+      const finalScore = scoreRef.current;
+      recordQuizResult({ category: `lesson-${lesson.id}`, score: finalScore, total: quizWords.length, mode: mode! });
+      if (finalScore / quizWords.length >= 0.7) {
         completeLesson(lesson.id);
       }
       return;
@@ -80,6 +90,7 @@ export const LessonQuiz = ({ lesson }: Props) => {
   const retry = () => {
     setMode(null);
     setQuestionIndex(0);
+    scoreRef.current = 0;
     setScore(0);
     setAnswered(false);
     setWrongAnswers([]);
@@ -88,12 +99,16 @@ export const LessonQuiz = ({ lesson }: Props) => {
     setTypedAnswer('');
   };
 
+  const hasNextLesson = lesson.id < lessons.length;
+
   // Mode selection
   if (!mode) {
     return (
       <div className="py-6 space-y-4">
         <h2 className="font-display text-xl font-bold text-center text-foreground mb-4">Choose Quiz Mode</h2>
-        <p className="text-xs text-center text-muted-foreground mb-4">Score 70%+ to complete this lesson</p>
+        <p className="text-xs text-center text-muted-foreground mb-4">
+          {isAlreadyCompleted ? '✅ Lesson already completed — practice anytime!' : 'Score 70%+ to complete this lesson'}
+        </p>
         <button
           onClick={() => setMode('choice')}
           className="w-full bg-card border-2 border-border hover:border-primary rounded-xl p-5 text-left card-hover transition-colors"
@@ -146,9 +161,19 @@ export const LessonQuiz = ({ lesson }: Props) => {
           </div>
         )}
 
-        <button onClick={retry} className="w-full bg-primary text-primary-foreground rounded-xl py-3 font-bold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
-          <RotateCcw className="w-4 h-4" /> Try Again
-        </button>
+        <div className="space-y-2">
+          {passed && hasNextLesson && (
+            <button
+              onClick={() => navigate(`/lesson/${lesson.id + 1}`)}
+              className="w-full bg-success text-success-foreground rounded-xl py-3 font-bold hover:bg-success/90 transition-colors flex items-center justify-center gap-2"
+            >
+              Next Lesson <ChevronRight className="w-4 h-4" />
+            </button>
+          )}
+          <button onClick={retry} className="w-full bg-primary text-primary-foreground rounded-xl py-3 font-bold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
+            <RotateCcw className="w-4 h-4" /> Try Again
+          </button>
+        </div>
       </div>
     );
   }
