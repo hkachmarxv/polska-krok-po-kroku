@@ -4,7 +4,7 @@ import { Lesson } from '@/data/courseTypes';
 import { useProgress } from '@/hooks/useProgress';
 import { SpeakButton } from '@/components/SpeakButton';
 import { useVoicePreference } from '@/hooks/useVoicePreference';
-import { CharacterReaction } from '@/components/characters/CharacterReaction';
+import { CharacterReaction, getRandomCharacter } from '@/components/characters/CharacterReaction';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import type { CharacterMood } from '@/components/characters/Kazik';
 
@@ -22,48 +22,29 @@ export const LessonSentenceBuilder = ({ lesson }: Props) => {
   const { voice } = useVoicePreference();
   const { recordCardResult } = useProgress();
   const sfx = useSoundEffects();
+  const [companion] = useState(() => getRandomCharacter());
   const [charMood, setCharMood] = useState<CharacterMood>('thinking');
 
-  // Collect sentences from vocabulary and dialogues
   const sentences = useMemo(() => {
     const result: Sentence[] = [];
-
-    // From vocabulary example sentences
     lesson.vocabulary.forEach(word => {
       if (word.exampleSentence && word.exampleTranslation) {
-        // Only use sentences with 3+ words
         const words = word.exampleSentence.split(/\s+/);
         if (words.length >= 3 && words.length <= 10) {
-          result.push({
-            polish: word.exampleSentence,
-            english: word.exampleTranslation,
-            wordId: word.id,
-          });
+          result.push({ polish: word.exampleSentence, english: word.exampleTranslation, wordId: word.id });
         }
       }
     });
-
-    // From dialogue lines
     lesson.dialogues.forEach(d => {
       d.lines.forEach(line => {
         const words = line.polish.split(/\s+/);
         if (words.length >= 3 && words.length <= 10) {
-          result.push({
-            polish: line.polish,
-            english: line.english,
-            wordId: `dialogue_${line.polish.slice(0, 10)}`,
-          });
+          result.push({ polish: line.polish, english: line.english, wordId: `dialogue_${line.polish.slice(0, 10)}` });
         }
       });
     });
-
-    // Deduplicate by polish text
     const seen = new Set<string>();
-    return result.filter(s => {
-      if (seen.has(s.polish)) return false;
-      seen.add(s.polish);
-      return true;
-    });
+    return result.filter(s => { if (seen.has(s.polish)) return false; seen.add(s.polish); return true; });
   }, [lesson]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -75,37 +56,24 @@ export const LessonSentenceBuilder = ({ lesson }: Props) => {
 
   const currentSentence = sentences[currentIndex];
 
-  // Shuffle words for current sentence
   const initializeSentence = useCallback((index: number) => {
-    if (index >= sentences.length) {
-      setIsComplete(true);
-      return;
-    }
-    const words = sentences[index].polish
-      .replace(/[.!?,;:]/g, '') // Remove punctuation for easier matching
-      .split(/\s+/);
-
-    // Shuffle
+    if (index >= sentences.length) { setIsComplete(true); return; }
+    const words = sentences[index].polish.replace(/[.!?,;:]/g, '').split(/\s+/);
     const shuffled = [...words];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-
-    // Make sure shuffled order differs from original
     if (shuffled.join(' ') === words.join(' ') && words.length > 2) {
       [shuffled[0], shuffled[shuffled.length - 1]] = [shuffled[shuffled.length - 1], shuffled[0]];
     }
-
     setAvailableWords(shuffled);
     setSelectedWords([]);
     setResult(null);
+    setCharMood('thinking');
   }, [sentences]);
 
-  // Initialize first sentence
-  useMemo(() => {
-    if (sentences.length > 0) initializeSentence(0);
-  }, [sentences.length]);
+  useMemo(() => { if (sentences.length > 0) initializeSentence(0); }, [sentences.length]);
 
   const handleWordTap = (word: string, index: number) => {
     if (result) return;
@@ -130,13 +98,7 @@ export const LessonSentenceBuilder = ({ lesson }: Props) => {
     setResult(isCorrect ? 'correct' : 'incorrect');
     if (isCorrect) { sfx.playCorrect(); setCharMood('celebrating'); }
     else { sfx.playWrong(); setCharMood('sad'); }
-    setScore(prev => ({
-      correct: prev.correct + (isCorrect ? 1 : 0),
-      total: prev.total + 1,
-    }));
-    setTimeout(() => setCharMood('thinking'), 1200);
-
-    // Record for vocab-based sentences
+    setScore(prev => ({ correct: prev.correct + (isCorrect ? 1 : 0), total: prev.total + 1 }));
     if (currentSentence.wordId && !currentSentence.wordId.startsWith('dialogue_')) {
       recordCardResult(currentSentence.wordId, isCorrect);
     }
@@ -168,17 +130,16 @@ export const LessonSentenceBuilder = ({ lesson }: Props) => {
     const pct = score.total > 0 ? Math.round((score.correct / score.total) * 100) : 0;
     return (
       <div className="py-8 text-center space-y-4">
-        <div className="text-5xl">{pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '💪'}</div>
-        <h3 className="font-display text-xl font-bold text-foreground">
-          {pct >= 80 ? 'Excellent!' : pct >= 50 ? 'Good job!' : 'Keep practicing!'}
-        </h3>
+        <CharacterReaction
+          character={companion}
+          mood={pct >= 80 ? 'celebrating' : 'encouraging'}
+          variant="large"
+          message={pct >= 80 ? 'Excellent work!' : 'Keep practicing!'}
+        />
         <p className="text-muted-foreground">
           {score.correct} / {score.total} correct ({pct}%)
         </p>
-        <button
-          onClick={handleRestart}
-          className="bg-primary text-primary-foreground px-6 py-2.5 rounded-xl font-medium flex items-center gap-2 mx-auto"
-        >
+        <button onClick={handleRestart} className="bg-primary text-primary-foreground px-6 py-2.5 rounded-xl font-medium flex items-center gap-2 mx-auto">
           <RotateCcw className="w-4 h-4" /> Try Again
         </button>
       </div>
@@ -189,24 +150,18 @@ export const LessonSentenceBuilder = ({ lesson }: Props) => {
 
   return (
     <div className="py-4 space-y-5">
-      {/* Progress */}
       <div className="flex items-center justify-between">
-        <p className="text-xs text-muted-foreground font-medium">
-          {currentIndex + 1} / {Math.min(sentences.length, 10)}
-        </p>
-        <p className="text-xs text-muted-foreground">
-          ✅ {score.correct} correct
-        </p>
+        <p className="text-xs text-muted-foreground font-medium">{currentIndex + 1} / {Math.min(sentences.length, 10)}</p>
+        <p className="text-xs text-muted-foreground">✅ {score.correct} correct</p>
       </div>
 
-      {/* English prompt */}
+      {/* Prompt with character */}
       <div className="bg-card border border-border rounded-xl p-4 text-center">
-        <CharacterReaction character="basia" mood={charMood} size={36} className="justify-center mb-2" />
+        <CharacterReaction character={companion} mood={charMood} variant={result ? 'large' : 'inline'} className="justify-center mb-2" />
         <p className="text-xs text-muted-foreground mb-1">Translate this sentence:</p>
         <p className="font-display font-bold text-foreground">{currentSentence.english}</p>
       </div>
 
-      {/* Selected words (answer area) */}
       <div className="min-h-[60px] bg-muted/30 border-2 border-dashed border-border rounded-xl p-3 flex flex-wrap gap-2">
         {selectedWords.length === 0 && (
           <p className="text-xs text-muted-foreground m-auto">Tap words below to build the sentence</p>
@@ -216,10 +171,8 @@ export const LessonSentenceBuilder = ({ lesson }: Props) => {
             key={`selected-${i}`}
             onClick={() => handleSelectedTap(word, i)}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-              result === 'correct'
-                ? 'bg-success/20 text-success border border-success/30'
-                : result === 'incorrect'
-                ? 'bg-destructive/20 text-destructive border border-destructive/30'
+              result === 'correct' ? 'bg-success/20 text-success border border-success/30'
+                : result === 'incorrect' ? 'bg-destructive/20 text-destructive border border-destructive/30'
                 : 'bg-primary/10 text-primary border border-primary/30 hover:bg-primary/20'
             }`}
             disabled={result !== null}
@@ -229,7 +182,6 @@ export const LessonSentenceBuilder = ({ lesson }: Props) => {
         ))}
       </div>
 
-      {/* Available words */}
       <div className="flex flex-wrap gap-2 justify-center">
         {availableWords.map((word, i) => (
           <button
@@ -243,16 +195,11 @@ export const LessonSentenceBuilder = ({ lesson }: Props) => {
         ))}
       </div>
 
-      {/* Feedback */}
       {result && (
         <div className={`rounded-xl p-4 flex items-start gap-3 animate-fade-in ${
           result === 'correct' ? 'bg-success/10 border border-success/20' : 'bg-destructive/10 border border-destructive/20'
         }`}>
-          {result === 'correct' ? (
-            <CheckCircle className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
-          ) : (
-            <XCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
-          )}
+          {result === 'correct' ? <CheckCircle className="w-5 h-5 text-success flex-shrink-0 mt-0.5" /> : <XCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />}
           <div className="flex-1">
             <p className={`text-sm font-bold ${result === 'correct' ? 'text-success' : 'text-destructive'}`}>
               {result === 'correct' ? 'Correct!' : 'Not quite right'}
@@ -269,19 +216,14 @@ export const LessonSentenceBuilder = ({ lesson }: Props) => {
         </div>
       )}
 
-      {/* Actions */}
       <div className="flex gap-3">
         {!result ? (
-          <button
-            onClick={checkAnswer}
-            disabled={selectedWords.length === 0}
-            className="flex-1 bg-primary text-primary-foreground py-3 rounded-xl font-bold disabled:opacity-40 transition-opacity"
-          >
+          <button onClick={checkAnswer} disabled={selectedWords.length === 0} className="flex-1 bg-primary text-primary-foreground py-3 rounded-xl font-bold disabled:opacity-40 transition-opacity">
             Check
           </button>
         ) : (
           <button
-            onClick={currentIndex + 1 >= Math.min(sentences.length, 10) ? () => { setScore(s => s); setIsComplete(true); } : handleNext}
+            onClick={currentIndex + 1 >= Math.min(sentences.length, 10) ? () => setIsComplete(true) : handleNext}
             className="flex-1 bg-primary text-primary-foreground py-3 rounded-xl font-bold flex items-center justify-center gap-2"
           >
             {currentIndex + 1 >= Math.min(sentences.length, 10) ? 'See Results' : 'Next'}

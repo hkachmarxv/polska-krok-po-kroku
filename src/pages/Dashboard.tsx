@@ -63,7 +63,7 @@ const Dashboard = () => {
       <main className="container max-w-2xl mx-auto px-4 py-6 space-y-5">
         {/* Character Greeting */}
         <div className="flex items-center gap-3">
-          <CharacterReaction character="kazik" mood={kazikMood} message={kazikMessage} size={48} />
+          <CharacterReaction character="kazik" mood={kazikMood} message={kazikMessage} variant="inline" />
           <div>
             <h2 className="font-display text-lg font-bold text-foreground">
               {user?.user_metadata?.display_name ? `Hey, ${user.user_metadata.display_name} 👋` : 'Welcome back 👋'}
