@@ -7,7 +7,7 @@ const corsHeaders = {
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
@@ -18,8 +18,10 @@ serve(async (req) => {
       throw new Error("ELEVENLABS_API_KEY is not configured");
     }
 
+    console.log(`TTS request: "${text}" with voice ${voiceId || "default"}`);
+
     const response = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId || "onwK4e9ZLuTAKqWW03F9"}?output_format=mp3_22050_32`,
+      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId || "4vbMkg7ssABMdO4dMh9i"}/stream?output_format=mp3_22050_32`,
       {
         method: "POST",
         headers: {
@@ -30,9 +32,9 @@ serve(async (req) => {
           text,
           model_id: "eleven_turbo_v2_5",
           voice_settings: {
-            stability: 0.6,
+            stability: 0.5,
             similarity_boost: 0.75,
-            speed: 0.85,
+            speed: 1.0,
           },
         }),
       }
@@ -40,15 +42,15 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error(`ElevenLabs error [${response.status}]:`, errorText);
       throw new Error(`ElevenLabs API error [${response.status}]: ${errorText}`);
     }
 
-    const audioBuffer = await response.arrayBuffer();
-
-    return new Response(audioBuffer, {
+    return new Response(response.body, {
       headers: {
         ...corsHeaders,
         "Content-Type": "audio/mpeg",
+        "Transfer-Encoding": "chunked",
       },
     });
   } catch (error) {
