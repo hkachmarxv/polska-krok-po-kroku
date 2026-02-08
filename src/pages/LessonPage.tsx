@@ -9,6 +9,7 @@ import { LessonFlashcards } from '@/components/course/LessonFlashcards';
 import { LessonQuiz } from '@/components/course/LessonQuiz';
 import { LessonGrammarDrill } from '@/components/course/LessonGrammarDrill';
 import { LessonSentenceBuilder } from '@/components/course/LessonSentenceBuilder';
+import { LessonMatchGame } from '@/components/course/LessonMatchGame';
 
 const LessonPage = () => {
   const { lessonId } = useParams<{ lessonId: string }>();
@@ -75,10 +76,11 @@ const LessonPage = () => {
 
       <main className="container max-w-2xl mx-auto px-4 py-4">
         <Tabs defaultValue="learn" className="w-full">
-          <TabsList className="w-full grid grid-cols-5">
+          <TabsList className="w-full grid grid-cols-6">
             <TabsTrigger value="learn" className="text-xs">📖 Learn</TabsTrigger>
             <TabsTrigger value="flashcards" className="text-xs">🃏 Cards</TabsTrigger>
             <TabsTrigger value="build" className="text-xs">🔨 Build</TabsTrigger>
+            <TabsTrigger value="match" className="text-xs">🎯 Match</TabsTrigger>
             <TabsTrigger value="drill" className="text-xs">📐 Drill</TabsTrigger>
             <TabsTrigger value="quiz" className="text-xs">📝 Quiz</TabsTrigger>
           </TabsList>
@@ -93,6 +95,10 @@ const LessonPage = () => {
 
           <TabsContent value="build">
             <LessonSentenceBuilder lesson={lesson} />
+          </TabsContent>
+
+          <TabsContent value="match">
+            <LessonMatchGame lesson={lesson} />
           </TabsContent>
 
           <TabsContent value="drill">
