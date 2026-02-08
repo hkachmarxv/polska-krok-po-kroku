@@ -2,10 +2,10 @@ import { Lesson } from '../courseTypes';
 
 const lesson3: Lesson = {
   id: 3,
-  title: 'Kim Pan/Pani jest?',
-  titleEnglish: 'What do you do?',
-  description: 'Talk about nationalities, professions, and learn basic verb conjugation.',
-  emoji: '💼',
+  title: 'Spotkanie w kawiarni',
+  titleEnglish: 'A Coffee Shop Chat',
+  description: 'Small talk about jobs and nationalities — the kind of conversation you\'d have over coffee.',
+  emoji: '☕',
   grammarTopics: ['verb conjugation -m/-sz', 'nationalities', 'instrumental case with "być"'],
   grammarSummary: `## Verb Conjugation & Professions
 

@@ -2,10 +2,10 @@ import { Lesson } from '../courseTypes';
 
 const lesson17: Lesson = {
   id: 17,
-  title: 'Sport to zdrowie?',
-  titleEnglish: 'Sport is health?',
-  description: 'Talk about sports, make comparisons, and learn the conditional mood.',
-  emoji: '⚽',
+  title: 'Na boisku i na siłowni',
+  titleEnglish: 'On the Field & at the Gym',
+  description: 'Talk about sports, compare things, and say what you\'d do if you could.',
+  emoji: '🏋️',
   grammarTopics: ['conditional mood', 'comparisons', 'sports vocabulary'],
   grammarSummary: `## Conditional Mood & Comparisons
 

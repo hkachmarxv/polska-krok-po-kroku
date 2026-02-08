@@ -2,10 +2,10 @@ import { Lesson } from '../courseTypes';
 
 const lesson16: Lesson = {
   id: 16,
-  title: 'Urodziłem się w Polsce',
-  titleEnglish: 'I was born in Poland',
-  description: 'Talk about your biography, learn perfective vs imperfective past tense.',
-  emoji: '📖',
+  title: 'Moja historia',
+  titleEnglish: 'My Life Story',
+  description: 'Share your biography — where you grew up, what you studied, and key life events.',
+  emoji: '🎬',
   grammarTopics: ['perfective vs imperfective aspect', 'biography', 'life events'],
   grammarSummary: `## Aspect: Perfective vs Imperfective
 

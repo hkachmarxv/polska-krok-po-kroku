@@ -2,10 +2,10 @@ import { Lesson } from '../courseTypes';
 
 const lesson6: Lesson = {
   id: 6,
-  title: 'Mniam, mniam!',
-  titleEnglish: 'Yum, yum!',
-  description: 'Order food, talk about meals, and learn nominative plural and instrumental case.',
-  emoji: '🍽️',
+  title: 'Poproszę pierogi!',
+  titleEnglish: 'I\'ll Have the Pierogi!',
+  description: 'Order food like a local, navigate a Polish menu, and talk about what you eat.',
+  emoji: '🥟',
   grammarTopics: ['nominative plural', 'instrumental case', 'ordering food'],
   grammarSummary: `## Food, Ordering & Cases
 

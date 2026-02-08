@@ -2,10 +2,10 @@ import { Lesson } from '../courseTypes';
 
 const lesson14: Lesson = {
   id: 14,
-  title: 'Szukam mieszkania',
-  titleEnglish: "I'm looking for an apartment",
-  description: 'Talk about home, furniture, rooms, and describe locations.',
-  emoji: '🏠',
+  title: 'Jak w domu',
+  titleEnglish: 'Make Yourself at Home',
+  description: 'Describe your flat, talk about rooms and furniture, and feel at home in Polish.',
+  emoji: '🛋️',
   grammarTopics: ['locative descriptions', 'rooms and furniture', 'jest/są + location'],
   grammarSummary: `## Home & Locative Descriptions
 

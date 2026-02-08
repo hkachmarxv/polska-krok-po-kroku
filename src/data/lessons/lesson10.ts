@@ -2,10 +2,10 @@ import { Lesson } from '../courseTypes';
 
 const lesson10: Lesson = {
   id: 10,
-  title: 'Co robiłeś wczoraj?',
-  titleEnglish: 'What did you do yesterday?',
-  description: 'Talk about the past using imperfective past tense and learn months.',
-  emoji: '📅',
+  title: 'Opowiem Ci historię',
+  titleEnglish: 'Let Me Tell You a Story',
+  description: 'Talk about what happened yesterday, last week, or years ago — your first past tense.',
+  emoji: '📖',
   grammarTopics: ['past tense (imperfective)', 'months', 'time expressions'],
   grammarSummary: `## Past Tense (Imperfective)
 

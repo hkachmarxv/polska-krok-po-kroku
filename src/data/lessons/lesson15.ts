@@ -2,10 +2,10 @@ import { Lesson } from '../courseTypes';
 
 const lesson15: Lesson = {
   id: 15,
-  title: 'Jest zimno i wszystko mnie boli!',
-  titleEnglish: "It's cold and everything hurts!",
-  description: 'Talk about weather, health, body parts, and visiting the doctor.',
-  emoji: '🤒',
+  title: 'Wizyta u lekarza',
+  titleEnglish: 'At the Doctor\'s Office',
+  description: 'Describe symptoms, talk about the weather, and survive a trip to the Polish clinic.',
+  emoji: '🩺',
   grammarTopics: ['impersonal constructions', 'body parts', 'boleć (to hurt)', 'weather expressions'],
   grammarSummary: `## Weather, Health & Body
 

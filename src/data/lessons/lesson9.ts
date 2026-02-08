@@ -2,9 +2,9 @@ import { Lesson } from '../courseTypes';
 
 const lesson9: Lesson = {
   id: 9,
-  title: 'Na zakupach',
-  titleEnglish: 'Shopping',
-  description: 'Go shopping, learn colors and clothes, genitive plural, and dative pronouns.',
+  title: 'Pasuje idealnie!',
+  titleEnglish: 'It Fits Perfectly!',
+  description: 'Hit the shops — try on clothes, ask about sizes, and learn colors.',
   emoji: '🛍️',
   grammarTopics: ['genitive plural', 'dative pronouns', 'colors', 'clothing'],
   grammarSummary: `## Shopping, Colors & Genitive Plural
