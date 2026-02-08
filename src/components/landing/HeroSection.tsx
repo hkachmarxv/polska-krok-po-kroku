@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 const stats = [
   { icon: Users, value: '500+', label: 'Active Learners' },
-  { icon: Star, value: '4.9', label: 'User Rating' },
+  { icon: Star, value: '4.9', label: 'Avg. Rating' },
   { icon: BookOpen, value: '20', label: 'A1 Lessons' },
 ];
 
@@ -65,7 +65,7 @@ const HeroSection = () => {
             <Button size="lg" onClick={() => navigate('/auth')} className="gap-2 text-base px-10 py-6 font-bold text-lg shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-shadow">
               Start Learning Free <ArrowRight className="w-5 h-5" />
             </Button>
-            <p className="text-sm text-muted-foreground">No signup required to explore</p>
+            <p className="text-sm text-muted-foreground">Lesson 1 is free — no credit card needed</p>
           </motion.div>
 
           {/* Social proof stats */}

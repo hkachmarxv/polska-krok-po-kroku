@@ -317,7 +317,10 @@ const Auth = () => {
         )}
 
         <p className="text-xs text-muted-foreground text-center">
-          By continuing, you agree to our terms of service.
+          By continuing, you agree to our{' '}
+          <a href="/terms" className="text-primary hover:underline">Terms of Service</a>
+          {' '}and{' '}
+          <a href="/privacy" className="text-primary hover:underline">Privacy Policy</a>.
         </p>
       </div>
     </div>

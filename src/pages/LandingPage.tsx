@@ -5,7 +5,6 @@ import MethodSection from '@/components/landing/MethodSection';
 import VocabPreviewSection from '@/components/landing/VocabPreviewSection';
 import RoadmapSection from '@/components/landing/RoadmapSection';
 import PricingSection from '@/components/landing/PricingSection';
-import PolandSection from '@/components/landing/PolandSection';
 import TestimonialsSection from '@/components/landing/TestimonialsSection';
 import FinalCTA from '@/components/landing/FinalCTA';
 import ContactSection from '@/components/landing/ContactSection';
@@ -21,7 +20,6 @@ const LandingPage = () => {
       <VocabPreviewSection />
       <RoadmapSection />
       <PricingSection />
-      <PolandSection />
       <TestimonialsSection />
       <FinalCTA />
       <ContactSection />

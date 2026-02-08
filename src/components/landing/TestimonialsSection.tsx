@@ -1,24 +1,33 @@
 import { motion } from 'framer-motion';
-import { Star } from 'lucide-react';
+import { Star, BadgeCheck } from 'lucide-react';
 
 const testimonials = [
   {
     name: 'Sarah M.',
     location: 'London, UK',
+    duration: 'Learning for 3 months',
     text: 'I tried Duolingo for Polish and gave up after a week. LearnPolski actually explains WHY words change form — game changer for understanding cases.',
     rating: 5,
+    initials: 'SM',
+    color: 'bg-primary/15 text-primary',
   },
   {
     name: 'James K.',
     location: 'Chicago, USA',
+    duration: 'Learning for 2 months',
     text: 'My girlfriend is Polish and I wanted to surprise her family. After 2 months with LearnPolski I could hold a basic conversation. They were so impressed!',
     rating: 5,
+    initials: 'JK',
+    color: 'bg-accent/15 text-accent',
   },
   {
     name: 'Anna T.',
     location: 'Berlin, Germany',
+    duration: 'Learning for 4 months',
     text: 'The AI grammar assistant is like having a private tutor. I can ask "why is it kotEM not kotA" and actually get a clear answer. Love it.',
     rating: 5,
+    initials: 'AT',
+    color: 'bg-success/15 text-success',
   },
 ];
 
@@ -36,7 +45,7 @@ const TestimonialsSection = () => {
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
             Loved by learners worldwide
           </h2>
-          <p className="text-muted-foreground text-lg">Real stories from people learning Polish with us.</p>
+          <p className="text-muted-foreground text-lg">What our community says about learning Polish with us.</p>
         </motion.div>
 
         <div className="grid md:grid-cols-3 gap-6">
@@ -55,9 +64,17 @@ const TestimonialsSection = () => {
                 ))}
               </div>
               <p className="text-sm text-foreground leading-relaxed italic">"{t.text}"</p>
-              <div>
-                <p className="font-display font-bold text-foreground text-sm">{t.name}</p>
-                <p className="text-xs text-muted-foreground">{t.location}</p>
+              <div className="flex items-center gap-3">
+                <div className={`w-9 h-9 rounded-full ${t.color} flex items-center justify-center text-xs font-bold`}>
+                  {t.initials}
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <p className="font-display font-bold text-foreground text-sm">{t.name}</p>
+                    <BadgeCheck className="w-3.5 h-3.5 text-primary" />
+                  </div>
+                  <p className="text-xs text-muted-foreground">{t.location} · {t.duration}</p>
+                </div>
               </div>
             </motion.div>
           ))}
