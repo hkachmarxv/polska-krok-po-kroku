@@ -2,10 +2,10 @@ import { Lesson } from '../courseTypes';
 
 const lesson12: Lesson = {
   id: 12,
-  title: 'Gdzie jesteś?',
-  titleEnglish: 'Where are you?',
-  description: 'Give and understand directions, learn the locative case, and navigate the city.',
-  emoji: '🗺️',
+  title: 'Zgubiłem się!',
+  titleEnglish: 'I\'m Lost!',
+  description: 'Ask for directions, navigate a Polish city, and understand where things are.',
+  emoji: '🧭',
   grammarTopics: ['locative case', 'directions', 'prepositions of place'],
   grammarSummary: `## Locative Case & Directions
 

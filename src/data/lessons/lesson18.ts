@@ -2,10 +2,10 @@ import { Lesson } from '../courseTypes';
 
 const lesson18: Lesson = {
   id: 18,
-  title: 'Czy lubisz uczyć się języka polskiego?',
-  titleEnglish: 'Do you like learning Polish?',
-  description: 'Talk about education, express opinions, and discuss learning strategies.',
-  emoji: '📚',
+  title: 'Dlaczego polski?',
+  titleEnglish: 'Why Polish?',
+  description: 'Talk about learning, express opinions, and discuss what motivates you.',
+  emoji: '🧠',
   grammarTopics: ['expressing opinions', 'że/żeby clauses', 'education vocabulary'],
   grammarSummary: `## Opinions & Education
 

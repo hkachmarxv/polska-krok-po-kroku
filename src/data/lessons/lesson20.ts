@@ -2,10 +2,10 @@ import { Lesson } from '../courseTypes';
 
 const lesson20: Lesson = {
   id: 20,
-  title: 'To jest moja wizytówka',
-  titleEnglish: 'This is my business card',
-  description: 'Learn business Polish, formal speech, office vocabulary, and self-presentation.',
-  emoji: '💼',
+  title: 'Gotowy na rozmowę',
+  titleEnglish: 'Ready for the Interview',
+  description: 'Business Polish — introduce yourself professionally, email etiquette, and formal speech.',
+  emoji: '👔',
   grammarTopics: ['formal register', 'business vocabulary', 'self-presentation'],
   grammarSummary: `## Business Polish & Formal Speech
 

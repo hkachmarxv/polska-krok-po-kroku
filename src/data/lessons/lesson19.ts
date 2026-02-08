@@ -2,10 +2,10 @@ import { Lesson } from '../courseTypes';
 
 const lesson19: Lesson = {
   id: 19,
-  title: 'Wszystkiego najlepszego!',
-  titleEnglish: 'All the best!',
-  description: 'Learn about Polish holidays, traditions, and how to express wishes and greetings.',
-  emoji: '🎄',
+  title: 'Sto lat!',
+  titleEnglish: 'Celebrations & Traditions',
+  description: 'Join in on Polish holidays, birthdays, and traditions — from Wigilia to namedays.',
+  emoji: '🎊',
   grammarTopics: ['wishes and greetings', 'genitive in wishes', 'holiday vocabulary'],
   grammarSummary: `## Wishes & Celebrations
 

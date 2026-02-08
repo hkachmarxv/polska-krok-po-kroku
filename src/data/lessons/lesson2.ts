@@ -2,10 +2,10 @@ import { Lesson } from '../courseTypes';
 
 const lesson2: Lesson = {
   id: 2,
-  title: 'Kto to jest?',
-  titleEnglish: 'Who is this?',
-  description: 'Describe people, use adjectives, and learn the nominative case.',
-  emoji: '🧑‍🤝‍🧑',
+  title: 'Opowiedz mi o sobie',
+  titleEnglish: 'Tell Me About Yourself',
+  description: 'Describe people around you, use adjectives, and start forming sentences.',
+  emoji: '🪞',
   grammarTopics: ['nominative case', 'adjective agreement', 'to jest / to są'],
   grammarSummary: `## Nominative Case & Describing People
 

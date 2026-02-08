@@ -2,10 +2,10 @@ import { Lesson } from '../courseTypes';
 
 const lesson7: Lesson = {
   id: 7,
-  title: 'Mój dzień',
-  titleEnglish: 'My Day',
-  description: 'Describe your daily routine, tell time, and learn days of the week.',
-  emoji: '⏰',
+  title: 'Poranek w Krakowie',
+  titleEnglish: 'Morning in Kraków',
+  description: 'Walk through a typical day — wake up, commute, work, relax. Tell time like a Pole.',
+  emoji: '🌅',
   grammarTopics: ['telling time', 'days of the week', 'reflexive verbs', 'daily routine verbs'],
   grammarSummary: `## Daily Routine & Telling Time
 

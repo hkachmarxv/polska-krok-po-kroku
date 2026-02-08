@@ -6,84 +6,95 @@
 
 @layer base {
   :root {
-    --background: 40 33% 97%;
-    --foreground: 220 20% 15%;
+    --background: 210 20% 98%;
+    --foreground: 215 25% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 20% 15%;
+    --card-foreground: 215 25% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 15%;
+    --popover-foreground: 215 25% 12%;
 
-    --primary: 145 55% 42%;
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 40 60% 94%;
-    --secondary-foreground: 220 20% 15%;
+    --secondary: 215 20% 93%;
+    --secondary-foreground: 215 25% 12%;
 
-    --muted: 40 20% 93%;
-    --muted-foreground: 220 10% 46%;
+    --muted: 215 15% 92%;
+    --muted-foreground: 215 12% 50%;
 
-    --accent: 38 92% 55%;
+    --accent: 38 92% 50%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 145 55% 42%;
+    --success: 152 60% 42%;
     --success-foreground: 0 0% 100%;
 
-    --streak: 38 92% 55%;
-    --streak-foreground: 30 60% 20%;
+    --streak: 38 92% 50%;
+    --streak-foreground: 25 60% 18%;
 
-    --border: 40 20% 88%;
-    --input: 40 20% 88%;
-    --ring: 145 55% 42%;
+    --border: 215 15% 89%;
+    --input: 215 15% 89%;
+    --ring: 217 91% 60%;
 
     --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-foreground: 215 20% 30%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 15% 95%;
+    --sidebar-accent-foreground: 215 20% 15%;
+    --sidebar-border: 215 15% 90%;
+    --sidebar-ring: 217 91% 60%;
   }
 
   .dark {
-    --background: 220 20% 10%;
-    --foreground: 40 20% 95%;
-    --card: 220 20% 13%;
-    --card-foreground: 40 20% 95%;
-    --popover: 220 20% 13%;
-    --popover-foreground: 40 20% 95%;
-    --primary: 145 55% 48%;
+    --background: 220 22% 8%;
+    --foreground: 210 15% 93%;
+
+    --card: 220 20% 11%;
+    --card-foreground: 210 15% 93%;
+
+    --popover: 220 20% 11%;
+    --popover-foreground: 210 15% 93%;
+
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 15% 18%;
-    --secondary-foreground: 40 20% 95%;
-    --muted: 220 15% 18%;
-    --muted-foreground: 220 10% 60%;
-    --accent: 38 92% 55%;
+
+    --secondary: 220 18% 16%;
+    --secondary-foreground: 210 15% 93%;
+
+    --muted: 220 15% 16%;
+    --muted-foreground: 215 10% 55%;
+
+    --accent: 38 92% 50%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 62.8% 30.6%;
+
+    --destructive: 0 62% 35%;
     --destructive-foreground: 0 0% 100%;
-    --success: 145 55% 48%;
+
+    --success: 152 60% 45%;
     --success-foreground: 0 0% 100%;
-    --streak: 38 92% 55%;
-    --streak-foreground: 30 60% 20%;
-    --border: 220 15% 20%;
-    --input: 220 15% 20%;
-    --ring: 145 55% 48%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+
+    --streak: 38 92% 50%;
+    --streak-foreground: 25 60% 18%;
+
+    --border: 220 15% 18%;
+    --input: 220 15% 18%;
+    --ring: 217 91% 60%;
+
+    --sidebar-background: 220 22% 8%;
+    --sidebar-foreground: 210 15% 90%;
+    --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 220 15% 14%;
+    --sidebar-accent-foreground: 210 15% 90%;
+    --sidebar-border: 220 15% 15%;
+    --sidebar-ring: 217 91% 60%;
   }
 }
 
@@ -142,7 +153,7 @@
 }
 
 @keyframes correctFlash {
-  0% { background-color: hsl(145 55% 42% / 0.3); }
+  0% { background-color: hsl(152 60% 42% / 0.3); }
   100% { background-color: transparent; }
 }
 

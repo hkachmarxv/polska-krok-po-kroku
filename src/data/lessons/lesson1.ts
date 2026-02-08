@@ -2,10 +2,10 @@ import { Lesson } from '../courseTypes';
 
 const lesson1: Lesson = {
   id: 1,
-  title: 'Pierwszy kontakt',
-  titleEnglish: 'First Contact',
-  description: 'Learn the Polish alphabet, pronunciation basics, and essential greetings.',
-  emoji: '👋',
+  title: 'Cześć, jestem tutaj!',
+  titleEnglish: 'Breaking the Ice',
+  description: 'Your first words in Polish — greetings, the alphabet, and how to say hello like a local.',
+  emoji: '🤝',
   grammarTopics: ['pronunciation', 'alphabet', 'formal vs informal'],
   grammarSummary: `## Polish Pronunciation & Alphabet
 

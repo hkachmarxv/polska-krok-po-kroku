@@ -2,10 +2,10 @@ import { Lesson } from '../courseTypes';
 
 const lesson5: Lesson = {
   id: 5,
-  title: 'Co lubisz robić?',
-  titleEnglish: 'What do you like doing?',
-  description: 'Talk about hobbies, use frequency adverbs, and learn modal verbs.',
-  emoji: '🎨',
+  title: 'Wolny weekend',
+  titleEnglish: 'A Free Weekend',
+  description: 'Share what you love doing in your spare time — hobbies, passions, and interests.',
+  emoji: '🎸',
   grammarTopics: ['-ować verbs', 'lubić + infinitive', 'modal verbs', 'frequency adverbs'],
   grammarSummary: `## Hobbies, Likes & Modal Verbs
 

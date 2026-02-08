@@ -2,10 +2,10 @@ import { Lesson } from '../courseTypes';
 
 const lesson11: Lesson = {
   id: 11,
-  title: 'Jakie masz plany?',
-  titleEnglish: 'What are your plans?',
-  description: 'Talk about the future, make plans, and express wishes.',
-  emoji: '🔮',
+  title: 'Kiedyś będę mówić płynnie!',
+  titleEnglish: 'One Day I\'ll Be Fluent!',
+  description: 'Dream big — talk about the future, set goals, and say what you\'re going to do.',
+  emoji: '🚀',
   grammarTopics: ['future tense', 'będę + infinitive', 'plans and intentions'],
   grammarSummary: `## Future Tense
 

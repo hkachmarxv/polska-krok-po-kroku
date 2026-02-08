@@ -2,10 +2,10 @@ import { Lesson } from '../courseTypes';
 
 const lesson8: Lesson = {
   id: 8,
-  title: 'Mam wolny czas!',
-  titleEnglish: 'I Have Free Time!',
-  description: 'Talk about free time activities, learn genitive singular, and make plans.',
-  emoji: '🎉',
+  title: 'Chodźmy gdzieś!',
+  titleEnglish: 'Let\'s Go Somewhere!',
+  description: 'Make plans with friends, suggest activities, and talk about what\'s available.',
+  emoji: '🎯',
   grammarTopics: ['genitive singular', 'nie ma + genitive', 'making plans'],
   grammarSummary: `## Genitive Case & Free Time
 

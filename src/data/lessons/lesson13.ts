@@ -2,9 +2,9 @@ import { Lesson } from '../courseTypes';
 
 const lesson13: Lesson = {
   id: 13,
-  title: 'Jadę na urlop!',
-  titleEnglish: "I'm going on vacation!",
-  description: 'Talk about travel, vacations, booking accommodation, and prepositions of place.',
+  title: 'Pakuję walizki!',
+  titleEnglish: 'Packing My Bags!',
+  description: 'Plan a trip, book a hotel, and talk about travel destinations.',
   emoji: '✈️',
   grammarTopics: ['prepositions of place', 'do/z/na/w + cases', 'booking phrases'],
   grammarSummary: `## Travel & Prepositions of Place

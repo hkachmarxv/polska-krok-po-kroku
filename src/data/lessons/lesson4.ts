@@ -2,10 +2,10 @@ import { Lesson } from '../courseTypes';
 
 const lesson4: Lesson = {
   id: 4,
-  title: 'Moja rodzina',
-  titleEnglish: 'My Family',
-  description: 'Talk about your family, use possessive pronouns, and learn the accusative case.',
-  emoji: '👨‍👩‍👧‍👦',
+  title: 'Kolacja z rodziną',
+  titleEnglish: 'Dinner with the Family',
+  description: 'Introduce your family, talk about who\'s who, and learn possessive words.',
+  emoji: '🍽️',
   grammarTopics: ['accusative case', 'possessive pronouns', 'mieć (to have)'],
   grammarSummary: `## Possessive Pronouns & Accusative Case
 
