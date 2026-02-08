@@ -1,0 +1,4 @@
+project_id = "hhldbgklylrgutxzcwxf"
+
+[functions.grammar-assistant]
+verify_jwt = false
