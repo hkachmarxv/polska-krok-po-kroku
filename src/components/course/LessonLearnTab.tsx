@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Lesson, Dialogue } from '@/data/courseTypes';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { SpeakButton } from '@/components/SpeakButton';
 
 interface Props {
@@ -57,6 +58,7 @@ export const LessonLearnTab = ({ lesson }: Props) => {
         <h2 className="font-display text-lg font-bold text-foreground mb-3">📐 Grammar</h2>
         <div className="bg-card border border-border rounded-xl p-4 prose prose-sm max-w-none dark:prose-invert">
           <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
             components={{
               table: ({ children }) => (
                 <div className="overflow-x-auto -mx-2">
