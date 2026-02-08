@@ -50,10 +50,10 @@ const RoadmapSection = () => {
           className="text-center mb-14"
         >
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Your complete Polish learning path
+            Your Polish learning roadmap
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            We're building a comprehensive curriculum from absolute beginner to fluent speaker. Start with A1 today — more levels are on the way.
+            Start with A1 today. We're working on more levels — each will be available as a separate course when ready.
           </p>
         </motion.div>
 

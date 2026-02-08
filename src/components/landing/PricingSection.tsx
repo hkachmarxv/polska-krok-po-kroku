@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 
 const features = [
-  'All 20 A1 lessons (+ future levels)',
+  'All 20 A1 Polish lessons',
   'Interactive flashcards & quizzes',
   'Sentence builder exercises',
   'Match game & grammar drills',
@@ -31,7 +31,7 @@ const PricingSection = () => {
             Simple, transparent pricing
           </h2>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-            Lesson 1 is always free. Upgrade when you're ready to unlock everything — including all future levels as they launch.
+            Lesson 1 is always free. Upgrade when you're ready to unlock all 20 A1 lessons and AI tools.
           </p>
         </motion.div>
 
@@ -84,7 +84,7 @@ const PricingSection = () => {
               <h3 className="font-display font-bold text-foreground text-lg">Monthly</h3>
             </div>
             <div className="flex items-baseline gap-1 mb-4">
-              <span className="text-3xl font-display font-bold text-foreground">$39</span>
+              <span className="text-3xl font-display font-bold text-foreground">$20</span>
               <span className="text-muted-foreground">/month</span>
             </div>
             <ul className="space-y-2 mb-6 flex-1">
@@ -100,7 +100,7 @@ const PricingSection = () => {
             </Button>
           </motion.div>
 
-          {/* Lifetime */}
+          {/* One-Time */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -113,13 +113,13 @@ const PricingSection = () => {
             </div>
             <div className="flex items-center gap-2 mb-1">
               <Shield className="w-5 h-5 text-accent" />
-              <h3 className="font-display font-bold text-foreground text-lg">Lifetime</h3>
+              <h3 className="font-display font-bold text-foreground text-lg">One-Time</h3>
             </div>
             <div className="flex items-baseline gap-1 mb-1">
-              <span className="text-3xl font-display font-bold text-foreground">$149</span>
+              <span className="text-3xl font-display font-bold text-foreground">$80</span>
               <span className="text-muted-foreground">one-time</span>
             </div>
-            <p className="text-xs text-success font-medium mb-4">Save $319 vs 12 months</p>
+            <p className="text-xs text-success font-medium mb-4">Save $160 vs 12 months</p>
             <ul className="space-y-2 mb-6 flex-1">
               {features.map((f, i) => (
                 <li key={i} className="flex items-center gap-2 text-sm text-foreground">
@@ -129,11 +129,11 @@ const PricingSection = () => {
               ))}
               <li className="flex items-center gap-2 text-sm text-foreground font-bold">
                 <Crown className="w-4 h-4 text-accent flex-shrink-0" />
-                All future levels included
+                Pay once — keep A1 access forever
               </li>
             </ul>
             <Button variant="outline" className="w-full font-bold border-accent text-accent hover:bg-accent/10" onClick={() => navigate('/auth')}>
-              Get Lifetime Access
+              Get A1 Access — $80
             </Button>
           </motion.div>
         </div>

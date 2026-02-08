@@ -5,17 +5,17 @@ import { useAuth } from '@/hooks/useAuth';
 // Stripe product/price IDs
 export const PLANS = {
   monthly: {
-    priceId: 'price_1SyasOGdKrTRUj6vLV4iYiv0',
-    productId: 'prod_TwTqyAoTGQ6UvM',
+    priceId: 'price_1SyezqGdKrTRUj6v7QsTFKeI',
+    productId: 'prod_TwY60LM6n8o2U6',
     name: 'Monthly',
-    price: '$39/mo',
+    price: '$20/mo',
     mode: 'subscription' as const,
   },
-  lifetime: {
-    priceId: 'price_1SyasZGdKrTRUj6vsexXIR48',
-    productId: 'prod_TwTqZTGcbleuAS',
-    name: 'Lifetime',
-    price: '$149',
+  onetime: {
+    priceId: 'price_1Syf04GdKrTRUj6vt8De9VBj',
+    productId: 'prod_TwY6W1izbWUNBy',
+    name: 'One-Time',
+    price: '$80',
     mode: 'payment' as const,
   },
 } as const;
@@ -30,7 +30,7 @@ interface SubscriptionState {
 
 interface SubscriptionContextType extends SubscriptionState {
   checkSubscription: () => Promise<void>;
-  startCheckout: (plan: 'monthly' | 'lifetime') => Promise<void>;
+  startCheckout: (plan: 'monthly' | 'onetime') => Promise<void>;
   openCustomerPortal: () => Promise<void>;
   isLessonAccessible: (lessonId: number) => boolean;
 }
@@ -102,7 +102,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [checkSubscription]);
 
-  const startCheckout = async (plan: 'monthly' | 'lifetime') => {
+  const startCheckout = async (plan: 'monthly' | 'onetime') => {
     if (!session?.access_token) return;
 
     const planConfig = PLANS[plan];
