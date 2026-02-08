@@ -30,7 +30,7 @@ const Dashboard = () => {
         <div className="container max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-2xl">🇵🇱</span>
-            <h1 className="font-display text-xl font-bold text-foreground">PolishPal</h1>
+            <h1 className="font-display text-xl font-bold text-foreground">LearnPolski</h1>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 bg-streak/10 text-streak-foreground px-3 py-1.5 rounded-full">
