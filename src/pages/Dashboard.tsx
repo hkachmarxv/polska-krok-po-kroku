@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Flame, BookOpen, Target, TrendingUp, ArrowRight, Sparkles, MessageCircleQuestion, PenLine } from 'lucide-react';
+import { Flame, BookOpen, Target, TrendingUp, ArrowRight, Sparkles, MessageCircleQuestion, PenLine, GraduationCap } from 'lucide-react';
 import { categories, getWordsByCategory, getWordOfTheDay } from '@/data/polishWords';
 import { useProgress } from '@/hooks/useProgress';
 import { CategoryCard } from '@/components/CategoryCard';
@@ -37,6 +37,27 @@ const Dashboard = () => {
       </header>
 
       <main className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
+        {/* A1 Course CTA */}
+        <button
+          onClick={() => navigate('/course')}
+          className="w-full bg-primary/10 border-2 border-primary/30 rounded-xl p-5 flex items-center justify-between card-hover group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+              <GraduationCap className="w-6 h-6 text-primary" />
+            </div>
+            <div className="text-left">
+              <p className="font-display font-bold text-foreground">A1 Course</p>
+              <p className="text-xs text-muted-foreground">
+                {(progress.lessonsCompleted || []).length === 0
+                  ? '20 structured lessons — start learning!'
+                  : `Lesson ${Math.min((progress.currentLesson || 1), 20)} of 20 — continue learning`}
+              </p>
+            </div>
+          </div>
+          <ArrowRight className="w-5 h-5 text-primary group-hover:translate-x-1 transition-transform" />
+        </button>
+
         {/* Word of the Day */}
         <WordOfTheDay word={wordOfDay} />
 

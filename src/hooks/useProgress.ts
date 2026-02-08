@@ -23,6 +23,8 @@ export interface UserProgress {
   totalWordsLearned: number;
   cards: Record<string, CardProgress>;
   quizResults: QuizResult[];
+  lessonsCompleted: number[];
+  currentLesson: number;
 }
 
 const STORAGE_KEY = 'polish-learner-progress';
@@ -33,6 +35,8 @@ const defaultProgress: UserProgress = {
   totalWordsLearned: 0,
   cards: {},
   quizResults: [],
+  lessonsCompleted: [],
+  currentLesson: 1,
 };
 
 export function useProgress() {
@@ -162,6 +166,18 @@ export function useProgress() {
     return weakest;
   }, [getCategoryMastery]);
 
+  const completeLesson = useCallback((lessonId: number) => {
+    setProgress(prev => {
+      if (prev.lessonsCompleted?.includes(lessonId)) return prev;
+      const newCompleted = [...(prev.lessonsCompleted || []), lessonId];
+      return {
+        ...prev,
+        lessonsCompleted: newCompleted,
+        currentLesson: Math.max(prev.currentLesson || 1, lessonId + 1),
+      };
+    });
+  }, []);
+
   return {
     progress,
     recordCardResult,
@@ -171,5 +187,6 @@ export function useProgress() {
     getDueCards,
     getWeakestCategory,
     updateStreak,
+    completeLesson,
   };
 }
