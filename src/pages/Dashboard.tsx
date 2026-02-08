@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { Flame, BookOpen, Target, TrendingUp, ArrowRight, GraduationCap } from 'lucide-react';
+import { Flame, BookOpen, Target, TrendingUp, ArrowRight, GraduationCap, LogOut } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useAuth } from '@/hooks/useAuth';
 import { getWordOfTheDay } from '@/data/polishWords';
 import { lessons } from '@/data/a1Course';
 import { useProgress } from '@/hooks/useProgress';
@@ -13,6 +14,7 @@ import { ReviewReminders } from '@/components/ReviewReminders';
 const Dashboard = () => {
   const navigate = useNavigate();
   const { progress, getOverallAccuracy } = useProgress();
+  const { signOut, user } = useAuth();
 
   const wordOfDay = getWordOfTheDay();
   const accuracy = getOverallAccuracy();
@@ -36,6 +38,13 @@ const Dashboard = () => {
               <span className="font-bold text-sm">{progress.streak}</span>
             </div>
             <ThemeToggle />
+            <button
+              onClick={() => signOut()}
+              className="p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              title="Sign out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </header>

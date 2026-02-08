@@ -1,4 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 export interface CardProgress {
   wordId: string;
@@ -6,7 +8,7 @@ export interface CardProgress {
   incorrectCount: number;
   lastSeen: number;
   nextReview: number;
-  ease: number; // spaced repetition ease factor
+  ease: number;
 }
 
 export interface QuizResult {
@@ -40,6 +42,7 @@ const defaultProgress: UserProgress = {
 };
 
 export function useProgress() {
+  const { user } = useAuth();
   const [progress, setProgress] = useState<UserProgress>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -48,10 +51,74 @@ export function useProgress() {
       return defaultProgress;
     }
   });
+  const [cloudLoaded, setCloudLoaded] = useState(false);
+  const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Load from cloud on login
+  useEffect(() => {
+    if (!user) {
+      setCloudLoaded(false);
+      return;
+    }
+
+    const loadFromCloud = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('user_progress')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (error || !data) {
+          // No cloud data yet — upload localStorage data
+          await syncToCloud(progress, user.id);
+          setCloudLoaded(true);
+          return;
+        }
+
+        const cloudProgress: UserProgress = {
+          streak: data.streak,
+          lastPracticeDate: data.last_practice_date || '',
+          totalWordsLearned: data.total_words_learned,
+          cards: (data.cards as unknown as Record<string, CardProgress>) || {},
+          quizResults: (data.quiz_results as unknown as QuizResult[]) || [],
+          lessonsCompleted: data.lessons_completed || [],
+          currentLesson: data.current_lesson,
+        };
+
+        // Merge: take whichever has more progress
+        const local = progress;
+        const merged = mergeProgress(local, cloudProgress);
+
+        setProgress(merged);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+        setCloudLoaded(true);
+      } catch {
+        setCloudLoaded(true);
+      }
+    };
+
+    loadFromCloud();
+  }, [user?.id]);
+
+  // Save to localStorage on every change
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
   }, [progress]);
+
+  // Debounced sync to cloud
+  useEffect(() => {
+    if (!user || !cloudLoaded) return;
+
+    if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+    syncTimeoutRef.current = setTimeout(() => {
+      syncToCloud(progress, user.id);
+    }, 2000);
+
+    return () => {
+      if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+    };
+  }, [progress, user?.id, cloudLoaded]);
 
   const updateStreak = useCallback(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -89,7 +156,7 @@ export function useProgress() {
         else interval = (existing.nextReview - existing.lastSeen) * newEase;
       } else {
         newEase = Math.max(1.3, existing.ease - 0.2);
-        interval = 30 * 1000; // show again in 30s
+        interval = 30 * 1000;
       }
 
       const updated: CardProgress = {
@@ -189,4 +256,59 @@ export function useProgress() {
     updateStreak,
     completeLesson,
   };
+}
+
+// Merge local + cloud progress, keeping the best of each
+function mergeProgress(local: UserProgress, cloud: UserProgress): UserProgress {
+  // Merge cards: keep the one with more correct answers for each word
+  const mergedCards: Record<string, CardProgress> = { ...cloud.cards };
+  for (const [id, localCard] of Object.entries(local.cards)) {
+    const cloudCard = mergedCards[id];
+    if (!cloudCard || localCard.correctCount + localCard.incorrectCount > cloudCard.correctCount + cloudCard.incorrectCount) {
+      mergedCards[id] = localCard;
+    }
+  }
+
+  // Merge quiz results: combine and deduplicate by date
+  const allQuizzes = [...cloud.quizResults, ...local.quizResults];
+  const seen = new Set<string>();
+  const mergedQuizzes = allQuizzes.filter(q => {
+    if (seen.has(q.date)) return false;
+    seen.add(q.date);
+    return true;
+  }).slice(-50);
+
+  // Merge completed lessons
+  const mergedLessons = [...new Set([...(cloud.lessonsCompleted || []), ...(local.lessonsCompleted || [])])].sort((a, b) => a - b);
+
+  const learnedCount = Object.values(mergedCards).filter(c => c.correctCount >= 3).length;
+
+  return {
+    streak: Math.max(local.streak, cloud.streak),
+    lastPracticeDate: local.lastPracticeDate > cloud.lastPracticeDate ? local.lastPracticeDate : cloud.lastPracticeDate,
+    totalWordsLearned: learnedCount,
+    cards: mergedCards,
+    quizResults: mergedQuizzes,
+    lessonsCompleted: mergedLessons,
+    currentLesson: Math.max(local.currentLesson || 1, cloud.currentLesson || 1),
+  };
+}
+
+async function syncToCloud(progress: UserProgress, userId: string) {
+  try {
+    await supabase
+      .from('user_progress')
+      .update({
+        streak: progress.streak,
+        last_practice_date: progress.lastPracticeDate || null,
+        total_words_learned: progress.totalWordsLearned,
+        cards: progress.cards as any,
+        quiz_results: progress.quizResults as any,
+        lessons_completed: progress.lessonsCompleted,
+        current_lesson: progress.currentLesson,
+      })
+      .eq('user_id', userId);
+  } catch {
+    // Silent fail — localStorage is the fallback
+  }
 }
