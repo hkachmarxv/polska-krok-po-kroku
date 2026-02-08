@@ -5,8 +5,8 @@ import { useAuth } from '@/hooks/useAuth';
 // Stripe product/price IDs
 export const PLANS = {
   monthly: {
-    priceId: 'price_1SyezqGdKrTRUj6v7QsTFKeI',
-    productId: 'prod_TwY60LM6n8o2U6',
+    priceId: 'price_1Syf3PGdKrTRUj6vpZ45MoLg',
+    productId: 'prod_TwY9ecAVv8hO5v',
     name: 'Monthly',
     price: '$30/mo',
     mode: 'subscription' as const,
