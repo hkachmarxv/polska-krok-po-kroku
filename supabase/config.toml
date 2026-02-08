@@ -2,3 +2,6 @@ project_id = "hhldbgklylrgutxzcwxf"
 
 [functions.grammar-assistant]
 verify_jwt = false
+
+[functions.grammar-drill]
+verify_jwt = false

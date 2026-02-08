@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import Flashcards from "./pages/Flashcards";
 import Quiz from "./pages/Quiz";
 import GrammarAssistant from "./pages/GrammarAssistant";
+import GrammarDrill from "./pages/GrammarDrill";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/flashcards/:categoryId" element={<Flashcards />} />
           <Route path="/quiz/:categoryId" element={<Quiz />} />
           <Route path="/grammar" element={<GrammarAssistant />} />
+          <Route path="/grammar-drill" element={<GrammarDrill />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
