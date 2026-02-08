@@ -16,6 +16,7 @@ import LessonPage from "./pages/LessonPage";
 import Practice from "./pages/Practice";
 import Tools from "./pages/Tools";
 import Auth from "./pages/Auth";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="/quiz/:categoryId" element={<ProtectedRoute><Quiz /></ProtectedRoute>} />
               <Route path="/grammar" element={<ProtectedRoute><GrammarAssistant /></ProtectedRoute>} />
               <Route path="/grammar-drill" element={<ProtectedRoute><GrammarDrill /></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

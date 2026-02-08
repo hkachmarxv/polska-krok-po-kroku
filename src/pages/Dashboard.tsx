@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Flame, BookOpen, Target, TrendingUp, ArrowRight, GraduationCap, LogOut } from 'lucide-react';
+import { Flame, BookOpen, Target, TrendingUp, ArrowRight, GraduationCap, Settings } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useAuth } from '@/hooks/useAuth';
 import { getWordOfTheDay } from '@/data/polishWords';
@@ -39,11 +39,11 @@ const Dashboard = () => {
             </div>
             <ThemeToggle />
             <button
-              onClick={() => signOut()}
+              onClick={() => navigate('/settings')}
               className="p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-              title="Sign out"
+              title="Account settings"
             >
-              <LogOut className="w-4 h-4" />
+              <Settings className="w-4 h-4" />
             </button>
           </div>
         </div>
