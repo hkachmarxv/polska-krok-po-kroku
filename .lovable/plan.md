@@ -1,168 +1,134 @@
 
 
-# LearnPolski Experience Overhaul: Characters, Sound Effects, Streak Freeze, and Polish
+# Simplify the Lesson Experience: A Guided Learning Journey
 
-This is a large, multi-part feature set. Here's the breakdown organized into phases that can be implemented sequentially.
+## The Problem
 
----
+Right now, when you enter a lesson, you see:
 
-## Phase 1: Animal Mascot Characters
+1. A row of **6 tiny tabs** (Learn, Cards, Build, Match, Drill, Quiz) all crammed into one line
+2. The "Learn" tab immediately dumps a huge vocabulary list on you
+3. There's no sense of **progression** — everything feels equally important and equally available
+4. It's unclear what to do first or what order to follow
 
-### Concept
-Introduce a cast of **4 Polish animal characters** that appear throughout the app as SVG/emoji-based illustrations with expressive states:
+This makes the app feel overwhelming instead of guiding you step by step.
 
-| Character | Animal | Role | Polish Connection |
-|-----------|--------|------|-------------------|
-| **Kazik** | Stork (Bocian) | Main guide / cheerleader | Poland's national bird |
-| **Basia** | Hedgehog (Jez) | Grammar helper | Common in Polish forests |
-| **Rysiek** | European Bison (Zubr) | Streak motivator | Endangered Polish icon |
-| **Lila** | Cat (Kot) | Quiz companion | Beloved in Polish culture |
+## The Solution: A Step-by-Step Lesson Flow
 
-### Character States (SVG components)
-Each character will have **5 emotional states**, rendered as simple SVG React components:
-- **Happy** — correct answer, streak maintained
-- **Celebrating** — quiz passed, lesson completed
-- **Sad** — wrong answer, streak lost
-- **Thinking** — waiting for user input
-- **Encouraging** — retry prompt, streak freeze used
+Replace the flat tab system with a **guided vertical journey** inside each lesson. Think of it like a path the user walks through, one step at a time — similar to how Duolingo presents a lesson as a sequence, not a buffet.
 
-### Where They Appear
-- **Dashboard**: Kazik greets the user with contextual messages ("Great streak, Rysiek is proud!")
-- **Flashcards**: Lila reacts to correct/incorrect flips
-- **Quiz**: Basia celebrates correct answers, looks sad on wrong ones
-- **Match Game**: Kazik cheers as matches are found
-- **Sentence Builder**: Basia helps with grammar hints
-- **Streak lost screen**: Rysiek looks sad (with freeze option)
+### New Lesson Page Layout
 
-### Technical Approach
-- Create `src/components/characters/` directory with SVG-based React components
-- Each character component accepts a `mood` prop: `happy | celebrating | sad | thinking | encouraging`
-- Characters are small (48-64px) animated illustrations using CSS transitions and framer-motion
-- Create a `CharacterReaction` wrapper component that manages mood transitions with smooth animations
+Instead of 6 equal tabs, the lesson page becomes a **scrollable list of steps** with clear numbering, icons, and status indicators:
 
----
-
-## Phase 2: Sound Effects System
-
-### Sound Effect Types
-| Event | Sound | Description |
-|-------|-------|-------------|
-| Correct answer | Bright chime | Short, satisfying "ding" |
-| Wrong answer | Soft buzz | Gentle "boop", not punishing |
-| Quiz complete (pass) | Victory fanfare | Celebratory jingle (1-2 sec) |
-| Quiz complete (fail) | Encouraging tone | Soft, motivating sound |
-| Lesson complete | Achievement unlock | Triumphant sound with sparkle |
-| Card flip | Soft click | Subtle paper flip sound |
-| Match found | Pop/sparkle | Quick reward sound |
-| Streak milestone | Level-up sound | For every 7-day milestone |
-| Streak lost | Sad trombone (gentle) | Short, not annoying |
-
-### Technical Approach
-- Create an edge function `supabase/functions/elevenlabs-sfx/` using the **ElevenLabs Sound Effects API** (key already configured) to generate sounds
-- Pre-generate all sounds and store as base64 in a `src/lib/sounds.ts` constants file (keeps them instant, no API calls during use)
-- Create a `useSoundEffects` hook with methods like `playCorrect()`, `playWrong()`, `playComplete()`, etc.
-- Add a **sound toggle** in Settings page (stored in localStorage) so users can mute SFX
-- Sounds are short (0.3-2 seconds) and non-intrusive
-
----
-
-## Phase 3: Streak Freeze Feature
+```text
++-------------------------------------------+
+|  <- Lesson 1: Cześć!                      |
+|     Hello & Introductions                  |
++-------------------------------------------+
+|                                            |
+|  STEP 1  [completed checkmark]             |
+|  +-------------------------------------+  |
+|  | 📖  Learn the Words                 |  |
+|  |  Study vocabulary & grammar          |  |
+|  +-------------------------------------+  |
+|                                            |
+|  STEP 2  [completed checkmark]             |
+|  +-------------------------------------+  |
+|  | 🃏  Flashcards                      |  |
+|  |  Practice with spaced repetition     |  |
+|  +-------------------------------------+  |
+|                                            |
+|  STEP 3  [unlocked, current]               |
+|  +-------------------------------------+  |
+|  | 🔨  Build Sentences                 |  |
+|  |  Arrange words in correct order      |  |
+|  +-------------------------------------+  |
+|                                            |
+|  STEP 4  [locked]                          |
+|  +-------------------------------------+  |
+|  | 🎯  Match Game                      |  |
+|  |  Match Polish-English pairs          |  |
+|  +-------------------------------------+  |
+|                                            |
+|  STEP 5  [locked]                          |
+|  +-------------------------------------+  |
+|  | 📐  Grammar Drill                   |  |
+|  |  AI-powered grammar practice         |  |
+|  +-------------------------------------+  |
+|                                            |
+|  STEP 6  [locked]                          |
+|  +-------------------------------------+  |
+|  | 📝  Final Quiz                      |  |
+|  |  Score 70%+ to complete the lesson   |  |
+|  +-------------------------------------+  |
+|                                            |
++-------------------------------------------+
+```
 
 ### How It Works
-- Every new user starts with **10 streak freezes**
-- When a user misses a day, the system automatically uses 1 freeze to preserve their streak
-- Dashboard shows remaining freezes next to the streak counter
-- When freezes run out and a day is missed, streak resets to 0 (with sad Rysiek animation)
-- Future monetization: users can purchase additional freezes
 
-### Technical Changes
-- Add `streak_freezes` column to `user_progress` table (default: 10)
-- Update `useProgress.ts` streak logic:
-  - When `lastPracticeDate` is more than 1 day ago but within 2 days, check freezes
-  - If freezes > 0: decrement freeze count, keep streak, show "freeze used" notification
-  - If freezes = 0: reset streak, show "streak lost" screen with sad character
-- Add freeze count display on Dashboard (snowflake icon next to streak fire)
-- Add a `StreakLostModal` component with Rysiek looking sad and an option to buy more freezes (future)
+- **Step 1 (Learn)** is always open. Once the user scrolls through vocabulary and dialogues, they mark it as "done" with a button at the bottom
+- **Steps 2-5** unlock sequentially. Completing one step unlocks the next
+- **Step 6 (Quiz)** is always the final gate — pass it (70%+) to complete the lesson
+- Each step card shows: emoji, title, subtitle, and a status badge (locked / current / done)
+- Tapping a step opens it full-screen (same components we already have), with a back arrow to return to the step list
+- Already-completed steps can be revisited anytime (they stay green)
 
----
+### Key UX Benefits
 
-## Phase 4: Dialogue Gender Detection Fix
+- **Clear direction**: Users always know what to do next
+- **Sense of progress**: Completing a step feels rewarding (character celebration + sound)
+- **No overwhelm**: Only one activity at a time, not 6 tabs competing for attention
+- **Safety**: Locked steps prevent users from jumping ahead unprepared
 
-### The Bug
-In `LessonLearnTab.tsx`, the `getSpeakerGender` function checks each dialogue line **independently** for names. So when Speaker B says "Jestem z Krakowa. A Pani?" (without repeating their name), the function defaults B to female. But B is Marek (male), who introduced himself in an earlier line.
+### Learn Tab Simplification
 
-### The Fix
-- Refactor `getSpeakerGender` to do a **two-pass approach**:
-  1. First pass: scan ALL lines in the dialogue to build a speaker-to-gender map (A=Anna=female, B=Marek=male)
-  2. Second pass: use the map when rendering each line
-- This ensures once a speaker's gender is identified from any line, it applies to all their lines in that dialogue
+The vocabulary list inside "Learn" (Step 1) will also be cleaned up:
+- **Collapsible sections**: Vocabulary, Grammar, Dialogues, and Cultural Note each become expandable cards instead of one long scroll
+- **"I've studied this" button** at the bottom to mark Step 1 as done and unlock Step 2
 
----
+## Technical Plan
 
-## Phase 5: Flashcard Visual Enhancement
+### Files to Modify
 
-### Changes
-- Add **emoji or icon** to each flashcard based on the word's `category` field (e.g., greetings = wave emoji, food = fork/knife, etc.)
-- Create a category-to-emoji mapping in a utility file
-- Display the emoji prominently on the front of the flashcard
-- For vocabulary with `exampleSentence`, show a subtle context line on the back
+1. **`src/pages/LessonPage.tsx`** — Complete rewrite of the layout:
+   - Remove the `Tabs` component entirely
+   - Add state tracking for which step is active (`viewing` vs step list)
+   - Track per-step completion in `useProgress` (new `lessonStepsCompleted` field in progress)
+   - Render step list when no step is active, render the step's component when one is selected
 
----
+2. **`src/hooks/useProgress.ts`** — Add step tracking:
+   - New field: `lessonStepsCompleted: Record<number, number[]>` (lesson ID to array of completed step numbers)
+   - New methods: `completeStep(lessonId, stepNumber)`, `isStepCompleted(lessonId, stepNumber)`
+   - Steps 1-5 are individually tracked; Step 6 (Quiz) completion triggers the existing `completeLesson`
 
-## Phase 6: Gender Labels UX Fix
+3. **`src/components/course/LessonLearnTab.tsx`** — Add collapsible sections:
+   - Wrap Vocabulary, Grammar, Dialogues, and Cultural Note in collapsible cards
+   - Add a prominent "Mark as Studied" button at the bottom
 
-### The Problem
-Users don't know what "masc" or "fem" means. The abbreviations are confusing for non-linguists.
+4. **`src/components/course/LessonFlashcards.tsx`** — Add a "Complete Step" callback:
+   - After reviewing all cards, show a "Done" button that triggers step completion
 
-### The Solution
-Replace text labels with intuitive icons across the entire app:
+5. **`src/components/course/LessonSentenceBuilder.tsx`** — Same pattern:
+   - On completion screen, trigger step completion callback
 
-| Current | New |
-|---------|-----|
-| `masc` / `masculine` | Male silhouette icon with "He" tooltip |
-| `fem` / `feminine` | Female silhouette icon with "She" tooltip |
-| `neut` / `neuter` | Circle icon with "It" tooltip |
+6. **`src/components/course/LessonMatchGame.tsx`** — Same pattern:
+   - On game complete, trigger step completion callback
 
-Specifically:
-- Create a `GenderBadge` component that renders a small icon with a tooltip
-- For masculine: blue-tinted male icon with tooltip "He form (masculine)"
-- For feminine: pink-tinted female icon with tooltip "She form (feminine)"  
-- For neuter: gray circle icon with tooltip "It form (neuter)"
-- Update `WordOfTheDay`, `LessonFlashcards`, `LessonLearnTab`, and any other place gender badges appear
+7. **`src/components/course/LessonGrammarDrill.tsx`** — Same pattern
 
----
+8. **`src/components/course/LessonQuiz.tsx`** — Already triggers `completeLesson`; will also trigger step completion
 
-## Files to Create
-- `src/components/characters/Kazik.tsx` (Stork - main guide)
-- `src/components/characters/Basia.tsx` (Hedgehog - grammar)
-- `src/components/characters/Rysiek.tsx` (Bison - streaks)
-- `src/components/characters/Lila.tsx` (Cat - quizzes)
-- `src/components/characters/CharacterReaction.tsx` (wrapper with animation)
-- `src/components/GenderBadge.tsx`
-- `src/components/StreakFreezeDisplay.tsx`
-- `src/components/StreakLostModal.tsx`
-- `src/hooks/useSoundEffects.ts`
-- `src/lib/sounds.ts` (pre-generated sound data)
-- `src/lib/categoryEmojis.ts` (category-to-emoji mapping)
+### No Database Changes Needed
 
-## Files to Modify
-- `src/hooks/useProgress.ts` — streak freeze logic
-- `src/components/course/LessonLearnTab.tsx` — fix dialogue gender detection, add characters
-- `src/components/course/LessonFlashcards.tsx` — add emojis, character reactions, sounds
-- `src/components/course/LessonQuiz.tsx` — add character reactions, sounds
-- `src/components/course/LessonMatchGame.tsx` — add sounds, character
-- `src/components/course/LessonSentenceBuilder.tsx` — add sounds, character
-- `src/components/WordOfTheDay.tsx` — replace gender text with GenderBadge
-- `src/pages/Dashboard.tsx` — add character greeting, streak freeze display
-- `src/pages/Settings.tsx` — add sound effects toggle
-- Database migration: add `streak_freezes` column to `user_progress`
+Step completion will be stored in the same `user_progress` localStorage/cloud sync structure that already exists, just adding a new field to the JSON.
 
-## Implementation Order
-1. Gender Badge component + gender detection fix (quick wins, bug fixes)
-2. Animal character SVG components (foundation for everything else)
-3. Sound effects system (hook + pre-generated sounds)
-4. Integrate characters + sounds into lesson components
-5. Streak freeze (database + logic + UI)
-6. Flashcard emoji enhancement
-7. Polish and test all interactions end-to-end
+### Implementation Order
+
+1. Update `useProgress` with step tracking logic
+2. Rewrite `LessonPage.tsx` with the step-based layout
+3. Add "Complete Step" buttons/callbacks to each exercise component
+4. Add collapsible sections to `LessonLearnTab`
+5. Test the full flow end to end
 
