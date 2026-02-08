@@ -1,218 +1,121 @@
 
 
-# PolishPal A1 -- Full Course Transformation Plan
+# PolishPal Improvement Plan
 
-## Vision
-
-Transform PolishPal from a vocabulary practice app into a **complete, structured A1 Polish course** based on the "Hurra!!! Po Polsku 1" textbook curriculum. A person who follows this app from start to finish should be able to reach A1 proficiency.
+Here are 7 high-impact improvements to make the app significantly better, organized by priority.
 
 ---
 
-## Current State (What We Keep)
+## 1. Listening Practice -- Audio Pronunciation
 
-Everything we built stays, but gets reorganized:
+**Problem**: Learning Polish without hearing the words is like learning music without sound. Polish pronunciation (sz, cz, rz, nasal vowels) is notoriously tricky and can't be learned from phonetic text alone.
 
-- **Flashcards** (with spaced repetition) -- moves into each lesson as a study tool
-- **Vocabulary Quizzes** (multiple choice + typing) -- becomes per-lesson quizzes
-- **Grammar Assistant** (AI chat) -- stays as a global tool, always accessible
-- **Grammar Drills** (fill-in-the-blank) -- becomes per-lesson drills with lesson-specific topics
-- **Progress tracking** (streak, accuracy, mastery) -- expands to track lesson-level progress
-- **Word of the Day** -- stays on the dashboard
+**Solution**: Add a speaker button next to every Polish word that uses the browser's built-in Web Speech API (free, no API key needed) to pronounce words aloud. Works in flashcards, vocabulary lists, quizzes, and dialogues.
 
----
-
-## New App Structure
-
-### Navigation
-
-```text
-Dashboard (home)
-  |
-  +-- Course (20 lessons, sequential)
-  |     |
-  |     +-- Lesson 1: "Pierwszy kontakt"
-  |     |     +-- Learn (vocabulary + grammar notes)
-  |     |     +-- Flashcards
-  |     |     +-- Grammar Drill
-  |     |     +-- Quiz
-  |     |
-  |     +-- Lesson 2: "Kto to jest?"
-  |     |     +-- (same structure)
-  |     ... (through Lesson 20)
-  |
-  +-- Practice (existing features, all lessons)
-  |     +-- Flashcards (by category/lesson)
-  |     +-- Grammar Drills (by topic)
-  |
-  +-- Tools
-  |     +-- Grammar Assistant (AI chat)
-  |     +-- Word of the Day
-  |
-  +-- Progress
-        +-- Overall stats
-        +-- Per-lesson completion
-```
-
-### Dashboard Redesign
-
-The dashboard becomes a **course overview**:
-- Current lesson progress indicator (e.g., "Lesson 4 of 20")
-- Continue button for the next incomplete lesson
-- Word of the Day (kept)
-- Quick stats (streak, words learned, accuracy)
-- Bottom tabs or sidebar for: Course, Practice, Tools
+**Technical approach**:
+- Create a reusable `SpeakButton` component using `window.speechSynthesis` with Polish (`pl-PL`) voice
+- Add it to `LessonLearnTab` (vocabulary list + dialogues), `LessonFlashcards` (card back), `LessonQuiz` (after answering), and the legacy `Flashcards` page
+- Fallback message if Polish voice is unavailable on the device
 
 ---
 
-## The 20 Lessons (from the textbook)
+## 2. Sentence Building Exercises
 
-Each lesson maps to a chapter from the book, with these components:
+**Problem**: The current exercises test recognition (pick the right answer) but not production (construct something yourself). Sentence building is a critical step between passive recognition and active speaking.
 
-| # | Lesson Title | Key Topics |
-|---|---|---|
-| 1 | Pierwszy kontakt | Pronunciation, alphabet, greetings (cześć, dzień dobry, do widzenia) |
-| 2 | Kto to jest? | Describing people, adjectives, nominative case, numbers 11-23 |
-| 3 | Kim Pan/Pani jest? | Nationalities, professions, conjugation -m/-sz |
-| 4 | Moja rodzina | Family, possessive pronouns, accusative case, numbers 20-100 |
-| 5 | Co lubisz robić? | Hobbies, frequency adverbs, -ować verbs, modal verbs |
-| 6 | Mniam, mniam! | Food, ordering, prices, nominative plural, instrumental case |
-| 7 | Mój dzień | Daily routine, times, days of week, verbs of motion |
-| 8 | Mam wolny czas! | Free time, genitive singular, making plans, PKP |
-| 9 | Na zakupach | Shopping, clothes, colors, genitive plural, dative pronouns |
-| 10 | Co robiłeś wczoraj? | Past tense (imperfective), months, time expressions |
-| 11 | Jakie masz plany? | Future tense, plans, wishes, New Year resolutions |
-| 12 | Gdzie jesteś? | Directions, locative case, city navigation, landmarks |
-| 13 | Jadę na urlop! | Travel, vacation, booking, prepositions of place |
-| 14 | Szukam mieszkania | Home, furniture, rooms, locative descriptions |
-| 15 | Jest zimno i wszystko mnie boli! | Weather, health, body parts, doctor visit, giving advice |
-| 16 | Urodziłem się w Polsce | Biography, past tense (perfective vs imperfective aspect) |
-| 17 | Sport to zdrowie? | Sports, conditional mood (chciałbym), comparisons |
-| 18 | Czy lubisz uczyć się języka polskiego? | Education, opinions, learning strategies |
-| 19 | Wszystkiego najlepszego! | Holidays, traditions, wishes and greetings |
-| 20 | To jest moja wizytówka | Business, office, formal speech, presentations |
+**Solution**: Add a "Build" exercise type where users arrange scrambled Polish words into the correct sentence order. This teaches word order, case endings, and sentence structure.
+
+**Technical approach**:
+- New `LessonSentenceBuilder` component using drag-and-drop or tap-to-order
+- Pull example sentences from lesson vocabulary (`exampleSentence` field)
+- Split sentences into words, shuffle them, and let users tap words in order
+- Add as a 5th tab in `LessonPage`
 
 ---
 
-## What Each Lesson Contains
+## 3. Dark Mode Toggle
 
-### 1. Learn Tab
-- **Vocabulary list**: 15-25 key words/phrases with Polish, English, phonetic, gender, and grammar tips
-- **Grammar summary**: Clear, concise explanation of the lesson's grammar point (e.g., "Accusative Case" with tables and examples)
-- **Cultural note**: Brief context about Polish culture relevant to the lesson
-- **Example dialogues**: 2-3 short dialogues showing vocabulary in context
+**Problem**: The app already has full dark mode CSS variables defined but no way for users to switch to it. Many learners study in the evening.
 
-### 2. Flashcards Tab
-- Uses existing flashcard component, scoped to this lesson's vocabulary
-- Spaced repetition still works across the whole app
+**Solution**: Add a theme toggle button in the app header that switches between light and dark mode, persisted in localStorage.
 
-### 3. Grammar Drill Tab
-- Uses existing AI-powered grammar drill, but pre-configured with the lesson's grammar topic
-- E.g., Lesson 4 drills focus on accusative case
-
-### 4. Quiz Tab
-- Uses existing quiz component, scoped to this lesson's words
-- Must score 70%+ to "complete" the lesson
+**Technical approach**:
+- The `next-themes` package is already installed -- just wire it up
+- Add `ThemeProvider` in `App.tsx`
+- Add a sun/moon toggle button to the Dashboard header and other page headers
+- The dark theme CSS is already complete in `index.css`
 
 ---
 
-## Technical Implementation
+## 4. Lesson Review / Spaced Repetition Reminders
 
-### Data Layer
+**Problem**: Users complete a lesson and never revisit it. Without review, retention drops sharply after 24 hours (the forgetting curve).
 
-**New file: `src/data/a1Course.ts`**
-- Contains all 20 lessons with structured data:
-  - Vocabulary (extending the existing `Word` interface)
-  - Grammar summaries (markdown strings)
-  - Dialogues
-  - Cultural notes
-- The existing `polishWords.ts` categories map into lessons
+**Solution**: Add a "Review" section on the Dashboard that highlights lessons with vocabulary due for review based on the existing spaced repetition data.
 
-**Expanded Word interface:**
-```text
-Word + {
-  lesson: number        (1-20)
-  exampleSentence?      (Polish sentence using the word)
-  exampleTranslation?   (English translation of the sentence)
-}
-```
-
-### New Pages
-
-| Page | Route | Purpose |
-|---|---|---|
-| CourseOverview | `/course` | List of 20 lessons with progress |
-| LessonPage | `/lesson/:lessonId` | Tabbed view: Learn, Flashcards, Drill, Quiz |
-
-### Modified Pages
-
-| Page | Change |
-|---|---|
-| Dashboard | Redesigned with course progress, "Continue Learning" button, bottom nav |
-| Flashcards | Accept `lessonId` param in addition to `categoryId` |
-| Quiz | Accept `lessonId` param in addition to `categoryId` |
-| GrammarDrill | Accept optional `topic` + `lessonId` query params |
-
-### Progress System Update
-
-Extend `useProgress` to track:
-- `lessonsCompleted: number[]` -- array of completed lesson IDs
-- `currentLesson: number` -- which lesson the user is on
-- Lesson completion requires: viewed vocab + 70% quiz score
-
-### Routing Update
-
-```text
-/                        Dashboard
-/course                  Course overview (20 lessons)
-/lesson/:id              Lesson detail (tabs: Learn, Cards, Drill, Quiz)
-/lesson/:id/flashcards   Lesson flashcards
-/lesson/:id/quiz         Lesson quiz
-/lesson/:id/drill        Lesson grammar drill
-/grammar                 Grammar Assistant (unchanged)
-/flashcards/:categoryId  Legacy category flashcards (still works)
-/quiz/:categoryId        Legacy category quizzes (still works)
-```
+**Technical approach**:
+- Use the existing `getDueCards` function to find words needing review across all completed lessons
+- Group due words by lesson and show a "Review Lesson X" card on the Dashboard
+- Tapping it opens that lesson's flashcards, pre-filtered to due cards only
+- Add a "due for review" badge count on the Course tab in the bottom nav
 
 ---
 
-## Implementation Phases
+## 5. Matching Game Exercise
 
-### Phase 1 -- Data Foundation
-- Create `src/data/a1Course.ts` with all 20 lessons
-- Extract vocabulary, grammar notes, dialogues, and cultural context from the parsed PDFs
-- Map existing `polishWords.ts` words into lessons where they fit
-- Add ~200 new words to cover the full A1 curriculum
+**Problem**: Multiple choice and typing can feel repetitive after 20 lessons. Variety keeps learners engaged.
 
-### Phase 2 -- Course UI
-- Build `CourseOverview` page (lesson list with lock/unlock/complete states)
-- Build `LessonPage` with tabs (Learn, Flashcards, Drill, Quiz)
-- Build the "Learn" tab component (vocabulary table, grammar notes, dialogues)
+**Solution**: Add a timed matching game where users connect Polish words to their English translations by tapping pairs. Fast, fun, and tests recall without the pressure of typing.
 
-### Phase 3 -- Dashboard Redesign
-- Add course progress bar and "Continue Learning" CTA
-- Add bottom navigation (Home, Course, Practice, Tools)
-- Keep existing stats and Word of the Day
-
-### Phase 4 -- Progress Integration
-- Update `useProgress` hook for lesson tracking
-- Add lesson completion logic (quiz score threshold)
-- Add sequential unlock (lesson N+1 unlocks when N is completed)
-
-### Phase 5 -- Polish and Refine
-- Ensure all existing features (Grammar Assistant, Grammar Drills) still work
-- Add lesson-specific grammar drill topics
-- Test end-to-end flow from Lesson 1 through 20
+**Technical approach**:
+- New `LessonMatchGame` component
+- Display 6 Polish words and 6 English translations in a grid
+- Users tap one from each column to match them
+- Correct matches fade out with a success animation
+- Track time and show a score at the end
+- Could be added to Practice page or as an optional exercise in lessons
 
 ---
 
-## Content Scope
+## 6. Progress Persistence to Cloud
 
-Based on the parsed textbook, the app will include approximately:
-- **400+ vocabulary items** across 20 lessons
-- **20 grammar topics** with clear explanations and tables
-- **40+ example dialogues** for real-world context
-- **20 cultural notes** about Polish life
-- All with phonetic guides, gender markers, and grammar tips
+**Problem**: All progress is stored in localStorage, meaning it's lost if users clear their browser data, switch devices, or use incognito mode.
 
-This creates a self-contained A1 Polish course that someone can genuinely learn from, start to finish.
+**Solution**: Save progress to the database so it persists across devices and sessions. This requires authentication so each user's progress is tied to their account.
+
+**Technical approach**:
+- Create a `user_progress` table with RLS policies
+- Add simple email/password authentication (login/signup pages)
+- Sync the existing `useProgress` hook to read/write from the database
+- Keep localStorage as a fallback cache for offline use
+- Auto-sync on app load and after each progress update
+
+---
+
+## 7. Lesson Notes / Personal Vocabulary
+
+**Problem**: Learners often want to jot down personal notes, mnemonics, or mark certain words as "tricky." There's no way to do this currently.
+
+**Solution**: Let users add personal notes to any lesson and star/flag individual vocabulary words for extra review.
+
+**Technical approach**:
+- Add a "Notes" section at the bottom of the Learn tab with a textarea (saved to localStorage or database)
+- Add a star/bookmark icon on each vocabulary card
+- Create a "Starred Words" section on the Practice page that aggregates all starred words into a custom flashcard deck
+
+---
+
+## Recommended Implementation Order
+
+| Priority | Feature | Effort | Impact |
+|----------|---------|--------|--------|
+| 1 | Dark Mode Toggle | Small | High (already 90% done) |
+| 2 | Audio Pronunciation | Small | Very High |
+| 3 | Review Reminders on Dashboard | Medium | High |
+| 4 | Sentence Building Exercises | Medium | High |
+| 5 | Matching Game | Medium | Medium |
+| 6 | Progress Persistence (Cloud) | Large | Very High |
+| 7 | Personal Notes / Starred Words | Medium | Medium |
+
+I'd suggest starting with **Dark Mode** (quick win) and **Audio Pronunciation** (biggest learning impact), then moving to the review system and new exercise types.
 
