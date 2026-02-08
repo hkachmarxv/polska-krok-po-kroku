@@ -5,6 +5,7 @@ import MethodSection from '@/components/landing/MethodSection';
 import VocabPreviewSection from '@/components/landing/VocabPreviewSection';
 import PolandSection from '@/components/landing/PolandSection';
 import TestimonialsSection from '@/components/landing/TestimonialsSection';
+import PricingSection from '@/components/landing/PricingSection';
 import FinalCTA from '@/components/landing/FinalCTA';
 import LandingFooter from '@/components/landing/LandingFooter';
 
@@ -16,6 +17,7 @@ const LandingPage = () => {
       <WhyUsSection />
       <MethodSection />
       <VocabPreviewSection />
+      <PricingSection />
       <PolandSection />
       <TestimonialsSection />
       <FinalCTA />

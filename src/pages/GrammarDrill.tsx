@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Loader2, ChevronRight, Lightbulb, CheckCircle2, XCircle, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Loader2, ChevronRight, Lightbulb, CheckCircle2, XCircle, RotateCcw, AlertTriangle } from 'lucide-react';
+import { useAiUsage } from '@/hooks/useAiUsage';
 
 interface Drill {
   sentence: string;
@@ -33,6 +34,7 @@ const GrammarDrill = () => {
   const [searchParams] = useSearchParams();
   const lessonTopic = searchParams.get('topic');
   const lessonId = searchParams.get('lesson');
+  const { canUse, remaining, recordUsage, limit } = useAiUsage('grammar-drill');
 
   const [topic, setTopic] = useState(lessonTopic || 'mixed');
   const [difficulty, setDifficulty] = useState('medium');
@@ -44,9 +46,11 @@ const GrammarDrill = () => {
   const [error, setError] = useState<string | null>(null);
 
   const fetchDrill = async () => {
+    if (!canUse) return;
     setLoading(true);
     setSelectedIndex(null);
     setError(null);
+    recordUsage();
 
     try {
       const resp = await fetch(
@@ -112,7 +116,7 @@ const GrammarDrill = () => {
               {score.correct}/{score.total}
             </span>
           )}
-          {score.total === 0 && <div className="w-12" />}
+          {score.total === 0 && <span className="text-xs font-medium text-muted-foreground">{remaining}/{limit}</span>}
         </div>
       </header>
 
@@ -156,9 +160,17 @@ const GrammarDrill = () => {
               </div>
             </div>
 
+            {!canUse && (
+              <div className="flex items-center gap-2 bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2">
+                <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0" />
+                <p className="text-xs text-destructive">Daily limit reached ({limit} uses). Resets at midnight.</p>
+              </div>
+            )}
+
             <button
               onClick={fetchDrill}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl py-4 font-bold transition-colors text-lg"
+              disabled={!canUse}
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl py-4 font-bold transition-colors text-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Start Drill
             </button>
