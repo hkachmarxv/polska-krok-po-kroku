@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, BookOpen, Loader2, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Send, BookOpen, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { useAiUsage } from '@/hooks/useAiUsage';
 
 type Message = { role: 'user' | 'assistant'; content: string };
 
@@ -21,7 +20,7 @@ const GrammarAssistant = () => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const { canUse, remaining, recordUsage, limit } = useAiUsage('grammar-assistant');
+  
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -29,14 +28,12 @@ const GrammarAssistant = () => {
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || isLoading) return;
-    if (!canUse) return;
 
     const userMsg: Message = { role: 'user', content: text.trim() };
     const allMessages = [...messages, userMsg];
     setMessages(allMessages);
     setInput('');
     setIsLoading(true);
-    recordUsage();
 
     let assistantSoFar = '';
 
@@ -129,7 +126,7 @@ const GrammarAssistant = () => {
             <BookOpen className="w-5 h-5 text-primary" />
             Grammar Assistant
           </h1>
-          <span className="text-xs font-medium text-muted-foreground">{remaining}/{limit}</span>
+          <div />
         </div>
       </header>
 
@@ -192,26 +189,19 @@ const GrammarAssistant = () => {
 
         {/* Input */}
         <div className="border-t border-border pt-3 mt-auto">
-          {!canUse && (
-            <div className="flex items-center gap-2 bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2 mb-3">
-              <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0" />
-              <p className="text-xs text-destructive">Daily limit reached ({limit} uses). Resets at midnight.</p>
-            </div>
-          )}
           <div className="flex gap-2 items-end">
             <textarea
               ref={inputRef}
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={canUse ? 'Ask about Polish grammar... e.g. "Why is it kota not kot?"' : 'Daily limit reached — come back tomorrow!'}
+              placeholder='Ask about Polish grammar... e.g. "Why is it kota not kot?"'
               rows={1}
-              disabled={!canUse}
               className="flex-1 resize-none bg-card border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 disabled:opacity-50"
             />
             <button
               onClick={() => sendMessage(input)}
-              disabled={!input.trim() || isLoading || !canUse}
+              disabled={!input.trim() || isLoading}
               className="bg-primary text-primary-foreground rounded-xl p-3 hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Send className="w-5 h-5" />

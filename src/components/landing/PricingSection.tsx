@@ -8,8 +8,8 @@ const features = [
   'Interactive flashcards & quizzes',
   'Sentence builder exercises',
   'Match game & grammar drills',
-  'AI Grammar Assistant (5 uses/day)',
-  'AI Grammar Drill (5 uses/day)',
+  'AI Grammar Assistant (unlimited)',
+  'AI Grammar Drill (unlimited)',
   'Progress tracking & streaks',
   'Text-to-speech pronunciation',
 ];
