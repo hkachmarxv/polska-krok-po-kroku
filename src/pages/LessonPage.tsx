@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronRight, Lock } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Lock, Crown } from 'lucide-react';
 import { getLessonById, lessons } from '@/data/a1Course';
 import { useProgress } from '@/hooks/useProgress';
+import { useSubscription } from '@/hooks/useSubscription';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { LessonLearnTab } from '@/components/course/LessonLearnTab';
 import { LessonFlashcards } from '@/components/course/LessonFlashcards';
@@ -15,6 +16,7 @@ const LessonPage = () => {
   const { lessonId } = useParams<{ lessonId: string }>();
   const navigate = useNavigate();
   const { progress } = useProgress();
+  const { isLessonAccessible } = useSubscription();
   const id = parseInt(lessonId || '1', 10);
   const lesson = getLessonById(id);
 
@@ -26,6 +28,28 @@ const LessonPage = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="text-muted-foreground">Lesson not found</p>
+      </div>
+    );
+  }
+
+  if (!isLessonAccessible(id)) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 px-4">
+        <Crown className="w-12 h-12 text-primary" />
+        <h2 className="font-display text-xl font-bold text-foreground">Premium Lesson</h2>
+        <p className="text-muted-foreground text-center">Upgrade to unlock Lessons 2-20 and all AI tools.</p>
+        <button
+          onClick={() => navigate('/pricing')}
+          className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-medium"
+        >
+          View Plans
+        </button>
+        <button
+          onClick={() => navigate('/course')}
+          className="text-sm text-muted-foreground hover:underline"
+        >
+          Back to Course
+        </button>
       </div>
     );
   }

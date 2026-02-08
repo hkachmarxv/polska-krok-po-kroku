@@ -1,22 +1,27 @@
 import { useNavigate } from 'react-router-dom';
-import { Lock, CheckCircle2, ChevronRight, BookOpen } from 'lucide-react';
+import { Lock, CheckCircle2, ChevronRight, BookOpen, Crown } from 'lucide-react';
 import { lessons } from '@/data/a1Course';
 import { useProgress } from '@/hooks/useProgress';
+import { useSubscription } from '@/hooks/useSubscription';
 import { Progress } from '@/components/ui/progress';
 import { BottomNav } from '@/components/BottomNav';
 
 const CourseOverview = () => {
   const navigate = useNavigate();
   const { progress, getCategoryMastery } = useProgress();
+  const { isLessonAccessible, subscribed } = useSubscription();
 
   const completedLessons = progress.lessonsCompleted || [];
   const totalCompleted = completedLessons.length;
   const overallPct = Math.round((totalCompleted / lessons.length) * 100);
 
   const isUnlocked = (lessonId: number) => {
+    if (!isLessonAccessible(lessonId)) return false;
     if (lessonId === 1) return true;
     return completedLessons.includes(lessonId - 1);
   };
+
+  const isPaidLocked = (lessonId: number) => !isLessonAccessible(lessonId);
 
   const isCompleted = (lessonId: number) => completedLessons.includes(lessonId);
 
@@ -49,35 +54,60 @@ const CourseOverview = () => {
           </p>
         </div>
 
+        {/* Upgrade Banner */}
+        {!subscribed && (
+          <button
+            onClick={() => navigate('/pricing')}
+            className="w-full bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 rounded-2xl p-4 flex items-center gap-3 hover:border-primary/40 transition-colors"
+          >
+            <Crown className="w-8 h-8 text-primary" />
+            <div className="text-left flex-1">
+              <p className="font-display font-bold text-foreground text-sm">Unlock All 20 Lessons</p>
+              <p className="text-xs text-muted-foreground">Lesson 1 is free • Upgrade to access everything</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-primary" />
+          </button>
+        )}
+
         {/* Lesson List */}
         <div className="space-y-3">
           {lessons.map((lesson) => {
             const unlocked = isUnlocked(lesson.id);
             const completed = isCompleted(lesson.id);
+            const paidLocked = isPaidLocked(lesson.id);
 
             return (
               <button
                 key={lesson.id}
-                onClick={() => unlocked && navigate(`/lesson/${lesson.id}`)}
-                disabled={!unlocked}
+                onClick={() => {
+                  if (paidLocked) navigate('/pricing');
+                  else if (unlocked) navigate(`/lesson/${lesson.id}`);
+                }}
+                disabled={!unlocked && !paidLocked}
                 className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all shadow-sm ${
                   completed
                     ? 'bg-success/5 border-success/30 hover:border-success/50'
-                    : unlocked
-                      ? 'bg-card border-border hover:border-primary/40 card-hover'
-                      : 'bg-muted/50 border-border/50 opacity-60 cursor-not-allowed'
+                    : paidLocked
+                      ? 'bg-card border-primary/20 hover:border-primary/40 cursor-pointer'
+                      : unlocked
+                        ? 'bg-card border-border hover:border-primary/40 card-hover'
+                        : 'bg-muted/50 border-border/50 opacity-60 cursor-not-allowed'
                 }`}
               >
                 {/* Lesson Number / Status Icon */}
                 <div className={`w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 ${
                   completed
                     ? 'bg-success/15'
-                    : unlocked
+                    : paidLocked
                       ? 'bg-primary/10'
-                      : 'bg-muted'
+                      : unlocked
+                        ? 'bg-primary/10'
+                        : 'bg-muted'
                 }`}>
                   {completed ? (
                     <CheckCircle2 className="w-5 h-5 text-success" />
+                  ) : paidLocked ? (
+                    <Crown className="w-5 h-5 text-primary" />
                   ) : unlocked ? (
                     <span className="font-display font-bold text-primary text-sm">{lesson.id}</span>
                   ) : (
