@@ -1,5 +1,5 @@
-import { useState, useCallback, useRef } from 'react';
-import { Volume2, Loader2 } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { Volume2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SpeakButtonProps {
@@ -9,68 +9,26 @@ interface SpeakButtonProps {
 }
 
 export const SpeakButton = ({ text, size = 'sm', className }: SpeakButtonProps) => {
-  const [loading, setLoading] = useState(false);
   const [playing, setPlaying] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const speak = useCallback(async (e: React.MouseEvent) => {
+  const speak = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!window.speechSynthesis) return;
 
-    // If already playing, stop
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-      setPlaying(false);
-      return;
-    }
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'pl-PL';
+    utterance.rate = 0.85;
 
-    setLoading(true);
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/tts`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ text }),
-        }
-      );
+    const voices = window.speechSynthesis.getVoices();
+    const polishVoice = voices.find(v => v.lang.startsWith('pl'));
+    if (polishVoice) utterance.voice = polishVoice;
 
-      if (!response.ok) throw new Error('TTS failed');
+    utterance.onstart = () => setPlaying(true);
+    utterance.onend = () => setPlaying(false);
+    utterance.onerror = () => setPlaying(false);
 
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
-      audioRef.current = audio;
-
-      audio.onended = () => {
-        setPlaying(false);
-        audioRef.current = null;
-        URL.revokeObjectURL(audioUrl);
-      };
-
-      setPlaying(true);
-      await audio.play();
-    } catch {
-      // Fallback to Web Speech API
-      if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'pl-PL';
-        utterance.rate = 0.85;
-        const voices = window.speechSynthesis.getVoices();
-        const polishVoice = voices.find(v => v.lang.startsWith('pl'));
-        if (polishVoice) utterance.voice = polishVoice;
-        utterance.onstart = () => setPlaying(true);
-        utterance.onend = () => setPlaying(false);
-        window.speechSynthesis.speak(utterance);
-      }
-    } finally {
-      setLoading(false);
-    }
+    window.speechSynthesis.speak(utterance);
   }, [text]);
 
   const iconSize = size === 'sm' ? 'w-3.5 h-3.5' : 'w-4 h-4';
@@ -87,13 +45,8 @@ export const SpeakButton = ({ text, size = 'sm', className }: SpeakButtonProps) 
       )}
       title="Listen"
       type="button"
-      disabled={loading}
     >
-      {loading ? (
-        <Loader2 className={cn(iconSize, 'animate-spin')} />
-      ) : (
-        <Volume2 className={iconSize} />
-      )}
+      <Volume2 className={iconSize} />
     </button>
   );
 };
