@@ -69,6 +69,31 @@ serve(async (req: Request) => {
 
     console.log("Contact email sent successfully:", emailResponse);
 
+    // Send auto-reply confirmation to the visitor
+    const autoReply = await resend.emails.send({
+      from: "LearnPolski <noreply@learnpolski.academy>",
+      to: [email.trim()],
+      subject: "We received your message! 🇵🇱",
+      html: `
+        <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto;">
+          <h2 style="color: #1a1a2e;">Thanks for reaching out, ${sanitizedName}! 👋</h2>
+          <p style="color: #444; line-height: 1.6;">
+            We've received your message and will get back to you within 24 hours.
+          </p>
+          <p style="color: #444; line-height: 1.6;">Here's a copy of what you sent:</p>
+          <blockquote style="border-left: 3px solid #6366f1; padding-left: 12px; color: #555; margin: 16px 0;">
+            ${sanitizedMessage.replace(/\n/g, "<br />")}
+          </blockquote>
+          <p style="color: #444; line-height: 1.6;">
+            Dziękujemy! 🙏<br/>
+            <strong>The LearnPolski Team</strong>
+          </p>
+        </div>
+      `,
+    });
+
+    console.log("Auto-reply sent successfully:", autoReply);
+
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
