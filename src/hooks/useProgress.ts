@@ -27,6 +27,7 @@ export interface UserProgress {
   quizResults: QuizResult[];
   lessonsCompleted: number[];
   currentLesson: number;
+  streakFreezes: number;
 }
 
 const STORAGE_KEY = 'polish-learner-progress';
@@ -39,6 +40,7 @@ const defaultProgress: UserProgress = {
   quizResults: [],
   lessonsCompleted: [],
   currentLesson: 1,
+  streakFreezes: 10,
 };
 
 export function useProgress() {
@@ -84,6 +86,7 @@ export function useProgress() {
           quizResults: (data.quiz_results as unknown as QuizResult[]) || [],
           lessonsCompleted: data.lessons_completed || [],
           currentLesson: data.current_lesson,
+          streakFreezes: (data as any).streak_freezes ?? 10,
         };
 
         // Merge: take whichever has more progress
@@ -127,8 +130,28 @@ export function useProgress() {
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
       const yesterdayStr = yesterday.toISOString().split('T')[0];
-      const newStreak = prev.lastPracticeDate === yesterdayStr ? prev.streak + 1 : 1;
-      return { ...prev, streak: newStreak, lastPracticeDate: today };
+      
+      if (prev.lastPracticeDate === yesterdayStr) {
+        // Practiced yesterday — extend streak
+        return { ...prev, streak: prev.streak + 1, lastPracticeDate: today };
+      }
+      
+      if (prev.lastPracticeDate && prev.lastPracticeDate < yesterdayStr) {
+        // Missed a day — try to use a freeze
+        if (prev.streakFreezes > 0) {
+          return {
+            ...prev,
+            streakFreezes: prev.streakFreezes - 1,
+            lastPracticeDate: today,
+            // Keep streak but don't increment
+          };
+        }
+        // No freezes left — reset streak
+        return { ...prev, streak: 1, lastPracticeDate: today };
+      }
+      
+      // First time practicing
+      return { ...prev, streak: 1, lastPracticeDate: today };
     });
   }, []);
 
@@ -291,6 +314,7 @@ function mergeProgress(local: UserProgress, cloud: UserProgress): UserProgress {
     quizResults: mergedQuizzes,
     lessonsCompleted: mergedLessons,
     currentLesson: Math.max(local.currentLesson || 1, cloud.currentLesson || 1),
+    streakFreezes: Math.min(local.streakFreezes ?? 10, cloud.streakFreezes ?? 10),
   };
 }
 
@@ -306,7 +330,8 @@ async function syncToCloud(progress: UserProgress, userId: string) {
         quiz_results: progress.quizResults as any,
         lessons_completed: progress.lessonsCompleted,
         current_lesson: progress.currentLesson,
-      })
+        streak_freezes: progress.streakFreezes,
+      } as any)
       .eq('user_id', userId);
   } catch {
     // Silent fail — localStorage is the fallback
