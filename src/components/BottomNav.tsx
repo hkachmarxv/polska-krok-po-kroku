@@ -3,7 +3,7 @@ import { Home, GraduationCap, Dumbbell, Wrench } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const tabs = [
-  { id: 'home', label: 'Home', icon: Home, path: '/' },
+  { id: 'home', label: 'Home', icon: Home, path: '/dashboard' },
   { id: 'course', label: 'Course', icon: GraduationCap, path: '/course' },
   { id: 'practice', label: 'Practice', icon: Dumbbell, path: '/practice' },
   { id: 'tools', label: 'Tools', icon: Wrench, path: '/tools' },
@@ -14,7 +14,7 @@ export const BottomNav = () => {
   const navigate = useNavigate();
 
   const activeTab = tabs.find(t => {
-    if (t.path === '/') return location.pathname === '/';
+    if (t.path === '/dashboard') return location.pathname === '/dashboard';
     return location.pathname.startsWith(t.path);
   })?.id || 'home';
 

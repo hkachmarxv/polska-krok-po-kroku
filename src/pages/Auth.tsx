@@ -22,7 +22,7 @@ const Auth = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (!authLoading && user) {
-      navigate('/', { replace: true });
+      navigate('/dashboard', { replace: true });
     }
   }, [user, authLoading, navigate]);
 
@@ -30,7 +30,7 @@ const Auth = () => {
     setGoogleLoading(true);
     try {
       const { error } = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: `${window.location.origin}/dashboard`,
       });
       if (error) {
         toast({ title: 'Google sign-in failed', description: error.message, variant: 'destructive' });
@@ -97,7 +97,7 @@ const Auth = () => {
             toast({ title: 'Login failed', description: error.message, variant: 'destructive' });
           }
         } else {
-          navigate('/');
+          navigate('/dashboard');
         }
       } else {
         if (!isEmail(identifier)) {
@@ -167,7 +167,7 @@ const Auth = () => {
         {/* Logo */}
         <div className="text-center space-y-2">
           <span className="text-4xl">🇵🇱</span>
-          <h1 className="font-display text-2xl font-bold text-foreground">PolishPal</h1>
+          <h1 className="font-display text-2xl font-bold text-foreground">LearnPolski</h1>
           <p className="text-sm text-muted-foreground">
             {mode === 'login' && 'Welcome back! Sign in to continue.'}
             {mode === 'signup' && 'Create your account to start learning.'}
