@@ -17,7 +17,7 @@ const Tools = () => {
       <main className="container max-w-2xl mx-auto px-4 py-6 space-y-3">
         <button
           onClick={() => navigate('/grammar')}
-          className="w-full bg-card border border-border rounded-xl p-4 flex items-center justify-between card-hover group"
+          className="w-full bg-card border border-border rounded-2xl p-4 flex items-center justify-between card-hover group shadow-sm"
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
@@ -32,7 +32,7 @@ const Tools = () => {
 
         <button
           onClick={() => navigate('/grammar-drill')}
-          className="w-full bg-card border border-border rounded-xl p-4 flex items-center justify-between card-hover group"
+          className="w-full bg-card border border-border rounded-2xl p-4 flex items-center justify-between card-hover group shadow-sm"
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">

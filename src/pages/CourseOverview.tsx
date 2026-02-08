@@ -31,7 +31,7 @@ const CourseOverview = () => {
 
       <main className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
         {/* Progress Summary */}
-        <div className="bg-card border border-border rounded-2xl p-5">
+        <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-primary" />
@@ -60,7 +60,7 @@ const CourseOverview = () => {
                 key={lesson.id}
                 onClick={() => unlocked && navigate(`/lesson/${lesson.id}`)}
                 disabled={!unlocked}
-                className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all ${
+                className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all shadow-sm ${
                   completed
                     ? 'bg-success/5 border-success/30 hover:border-success/50'
                     : unlocked

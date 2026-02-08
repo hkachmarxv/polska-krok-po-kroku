@@ -1,5 +1,5 @@
 import { Category } from '@/data/polishWords';
-import { BookOpen, Brain, ArrowRight } from 'lucide-react';
+import { BookOpen, Brain } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 
 interface CategoryCardProps {
@@ -14,12 +14,14 @@ interface CategoryCardProps {
 export const CategoryCard = ({ category, mastery, wordCount, onFlashcards, onQuiz, delay = 0 }: CategoryCardProps) => {
   return (
     <div
-      className="bg-card rounded-xl border border-border p-4 card-hover animate-slide-up"
+      className="bg-card rounded-2xl border border-border p-4 card-hover animate-slide-up shadow-sm"
       style={{ animationDelay: `${delay}ms`, animationFillMode: 'both' }}
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
-          <span className="text-2xl">{category.emoji}</span>
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+            <span className="text-xl">{category.emoji}</span>
+          </div>
           <div>
             <h3 className="font-display font-bold text-foreground text-sm">{category.name}</h3>
             <p className="text-xs text-muted-foreground">{wordCount} words · {mastery}% mastered</p>
@@ -32,14 +34,14 @@ export const CategoryCard = ({ category, mastery, wordCount, onFlashcards, onQui
       <div className="flex gap-2">
         <button
           onClick={onFlashcards}
-          className="flex-1 flex items-center justify-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg py-2 text-sm font-semibold transition-colors"
+          className="flex-1 flex items-center justify-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl py-2.5 text-sm font-semibold transition-colors"
         >
           <BookOpen className="w-3.5 h-3.5" />
           Flashcards
         </button>
         <button
           onClick={onQuiz}
-          className="flex-1 flex items-center justify-center gap-1.5 bg-accent/10 hover:bg-accent/20 text-accent-foreground rounded-lg py-2 text-sm font-semibold transition-colors"
+          className="flex-1 flex items-center justify-center gap-1.5 bg-accent/10 hover:bg-accent/20 text-accent-foreground rounded-xl py-2.5 text-sm font-semibold transition-colors"
         >
           <Brain className="w-3.5 h-3.5" />
           Quiz
