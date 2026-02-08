@@ -6,7 +6,7 @@ import { SpeakButton } from '@/components/SpeakButton';
 import { useVoicePreference } from '@/hooks/useVoicePreference';
 import { GenderBadge } from '@/components/GenderBadge';
 import { getCategoryEmoji } from '@/lib/categoryEmojis';
-import { CharacterReaction } from '@/components/characters/CharacterReaction';
+import { CharacterReaction, getRandomCharacter } from '@/components/characters/CharacterReaction';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import type { CharacterMood } from '@/components/characters/Kazik';
 
@@ -24,6 +24,7 @@ export const LessonFlashcards = ({ lesson }: Props) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
   const [answered, setAnswered] = useState(false);
+  const [companion] = useState(() => getRandomCharacter());
   const [charMood, setCharMood] = useState<CharacterMood>('thinking');
   const sfx = useSoundEffects();
 
@@ -42,7 +43,6 @@ export const LessonFlashcards = ({ lesson }: Props) => {
 
   const frontText = reversed ? word.polish : word.english;
   const backText = reversed ? word.english : word.polish;
-  const showPhonetic = !reversed;
 
   const handleAnswer = (correct: boolean) => {
     setFeedback(correct ? 'correct' : 'incorrect');
@@ -50,13 +50,13 @@ export const LessonFlashcards = ({ lesson }: Props) => {
     if (correct) sfx.playCorrect(); else sfx.playWrong();
     recordCardResult(word.id, correct);
     setAnswered(true);
-    setTimeout(() => { setFeedback(null); setCharMood('thinking'); }, 1200);
   };
 
   const handleNext = () => {
     setFlipped(false);
     setAnswered(false);
     setCharMood('thinking');
+    setFeedback(null);
     setCurrentIndex(prev => (prev + 1) % orderedWords.length);
   };
 
@@ -69,11 +69,9 @@ export const LessonFlashcards = ({ lesson }: Props) => {
 
   return (
     <div className="py-4 space-y-4">
+      {/* Character + progress row */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <CharacterReaction character="lila" mood={charMood} size={36} />
-          <p className="text-sm text-muted-foreground">Card {currentIndex + 1} of {orderedWords.length}</p>
-        </div>
+        <p className="text-sm text-muted-foreground">Card {currentIndex + 1} of {orderedWords.length}</p>
         <button
           onClick={() => setReversed(!reversed)}
           className="text-xs bg-secondary text-secondary-foreground px-2.5 py-1 rounded-full font-medium hover:bg-secondary/80 transition-colors"
@@ -86,6 +84,11 @@ export const LessonFlashcards = ({ lesson }: Props) => {
       <div className="w-full bg-muted rounded-full h-1.5">
         <div className="bg-primary h-1.5 rounded-full transition-all duration-300" style={{ width: `${progressPct}%` }} />
       </div>
+
+      {/* Large character reaction — shows when answered */}
+      {answered && (
+        <CharacterReaction character={companion} mood={charMood} variant="large" className="animate-fade-in" />
+      )}
 
       {/* Card */}
       <div

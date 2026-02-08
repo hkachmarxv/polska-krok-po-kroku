@@ -4,7 +4,7 @@ import { CheckCircle2, XCircle, RotateCcw, Trophy, ChevronRight } from 'lucide-r
 import { Lesson, CourseWord } from '@/data/courseTypes';
 import { getAllCourseWords, lessons } from '@/data/a1Course';
 import { useProgress } from '@/hooks/useProgress';
-import { CharacterReaction } from '@/components/characters/CharacterReaction';
+import { CharacterReaction, getRandomCharacter } from '@/components/characters/CharacterReaction';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import type { CharacterMood } from '@/components/characters/Kazik';
 
@@ -19,6 +19,7 @@ export const LessonQuiz = ({ lesson }: Props) => {
   const isAlreadyCompleted = (progress.lessonsCompleted || []).includes(lesson.id);
 
   const [mode, setMode] = useState<'choice' | 'typing' | null>(null);
+  const [companion] = useState(() => getRandomCharacter());
   const [charMood, setCharMood] = useState<CharacterMood>('thinking');
   const sfx = useSoundEffects();
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -64,7 +65,6 @@ export const LessonQuiz = ({ lesson }: Props) => {
     if (correct) { sfx.playCorrect(); setCharMood('celebrating'); }
     else { sfx.playWrong(); setCharMood('sad'); setWrongAnswers(prev => [...prev, { word: currentWord, given: polish }]); }
     recordCardResult(currentWord.id, correct);
-    setTimeout(() => setCharMood('thinking'), 1200);
   };
 
   const handleTypingSubmit = () => {
@@ -76,7 +76,6 @@ export const LessonQuiz = ({ lesson }: Props) => {
     if (correct) { sfx.playCorrect(); setCharMood('celebrating'); }
     else { sfx.playWrong(); setCharMood('sad'); setWrongAnswers(prev => [...prev, { word: currentWord, given: typedAnswer }]); }
     recordCardResult(currentWord.id, correct);
-    setTimeout(() => setCharMood('thinking'), 1200);
   };
 
   const nextQuestion = () => {
@@ -99,6 +98,7 @@ export const LessonQuiz = ({ lesson }: Props) => {
     setSelectedAnswer('');
     setTypedAnswer('');
     setIsCorrect(false);
+    setCharMood('thinking');
   };
 
   const retry = () => {
@@ -111,6 +111,7 @@ export const LessonQuiz = ({ lesson }: Props) => {
     setFinished(false);
     setSelectedAnswer('');
     setTypedAnswer('');
+    setCharMood('thinking');
   };
 
   const hasNextLesson = lesson.id < lessons.length;
@@ -119,7 +120,7 @@ export const LessonQuiz = ({ lesson }: Props) => {
   if (!mode) {
     return (
       <div className="py-6 space-y-4">
-        <h2 className="font-display text-xl font-bold text-center text-foreground mb-4">Choose Quiz Mode</h2>
+        <CharacterReaction character={companion} mood="happy" variant="large" className="mb-4" message="Let's test what you learned!" />
         <p className="text-xs text-center text-muted-foreground mb-4">
           {isAlreadyCompleted ? '✅ Lesson already completed — practice anytime!' : 'Score 70%+ to complete this lesson'}
         </p>
@@ -148,7 +149,13 @@ export const LessonQuiz = ({ lesson }: Props) => {
     return (
       <div className="py-6 space-y-6">
         <div className="text-center animate-bounce-in">
-          <CharacterReaction character="basia" mood={charMood} size={48} className="justify-center mb-3" />
+          <CharacterReaction
+            character={companion}
+            mood={charMood}
+            variant="large"
+            className="mb-4"
+            message={passed ? 'You passed! Brawo!' : 'Keep practicing, you\'ll get there!'}
+          />
           <Trophy className={`w-14 h-14 mx-auto mb-3 ${pct >= 80 ? 'text-streak' : pct >= 50 ? 'text-accent' : 'text-destructive'}`} />
           <h2 className="font-display text-3xl font-bold text-foreground">{score}/{quizWords.length}</h2>
           <p className="text-muted-foreground">{pct}% correct</p>
@@ -201,8 +208,8 @@ export const LessonQuiz = ({ lesson }: Props) => {
       </div>
 
       <div className="text-center" key={questionIndex}>
-        <p className="text-xs text-muted-foreground mb-1">{questionIndex + 1} / {quizWords.length}</p>
-        <CharacterReaction character="basia" mood={charMood} size={40} className="justify-center mb-2" />
+        <p className="text-xs text-muted-foreground mb-2">{questionIndex + 1} / {quizWords.length}</p>
+        <CharacterReaction character={companion} mood={charMood} variant="large" className="mb-3" />
         <p className="text-sm text-muted-foreground mb-2">Translate to Polish:</p>
         <h2 className="font-display text-2xl font-bold text-foreground">{currentWord.english}</h2>
       </div>
