@@ -14,12 +14,17 @@ import lesson12 from './lessons/lesson12';
 import lesson13 from './lessons/lesson13';
 import lesson14 from './lessons/lesson14';
 import lesson15 from './lessons/lesson15';
+import lesson16 from './lessons/lesson16';
+import lesson17 from './lessons/lesson17';
+import lesson18 from './lessons/lesson18';
+import lesson19 from './lessons/lesson19';
+import lesson20 from './lessons/lesson20';
 
-// Lessons 16-20 will be added next
 export const lessons: Lesson[] = [
   lesson1, lesson2, lesson3, lesson4, lesson5,
   lesson6, lesson7, lesson8, lesson9, lesson10,
   lesson11, lesson12, lesson13, lesson14, lesson15,
+  lesson16, lesson17, lesson18, lesson19, lesson20,
 ];
 
 export const getLessonById = (id: number): Lesson | undefined =>
