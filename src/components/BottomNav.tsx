@@ -1,12 +1,12 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, GraduationCap, Dumbbell, Wrench } from 'lucide-react';
+import { Home, GraduationCap, Dumbbell, MessageCircleQuestion } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const tabs = [
   { id: 'home', label: 'Home', icon: Home, path: '/dashboard' },
   { id: 'course', label: 'Course', icon: GraduationCap, path: '/course' },
   { id: 'practice', label: 'Practice', icon: Dumbbell, path: '/practice' },
-  { id: 'tools', label: 'Tools', icon: Wrench, path: '/tools' },
+  { id: 'ai-tutor', label: 'AI Tutor', icon: MessageCircleQuestion, path: '/grammar' },
 ];
 
 export const BottomNav = () => {
