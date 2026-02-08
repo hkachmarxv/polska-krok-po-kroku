@@ -114,32 +114,46 @@ const Dashboard = () => {
           <StatCard icon={<Target className="w-5 h-5 text-destructive" />} value={`${accuracy}%`} label="Accuracy" />
         </div>
 
-        {/* Quiz Results Chart */}
+        {/* Quiz Results */}
         {progress.quizResults.length > 0 && (
           <div>
             <h2 className="font-display text-lg font-bold text-foreground mb-3 flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-primary" />
               Recent Scores
             </h2>
-            <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
-              <div className="flex items-end gap-1 h-24">
-                {progress.quizResults.slice(-15).map((r, i) => {
-                  const pct = r.total > 0 ? (r.score / r.total) * 100 : 0;
-                  return (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                      <div
-                        className="w-full rounded-t transition-all"
-                        style={{
-                          height: `${pct}%`,
-                          backgroundColor: pct >= 80 ? 'hsl(var(--success))' : pct >= 50 ? 'hsl(var(--accent))' : 'hsl(var(--destructive))',
-                          minHeight: '4px',
-                        }}
-                      />
+            <div className="space-y-2">
+              {progress.quizResults.slice(-5).reverse().map((r, i) => {
+                const pct = r.total > 0 ? Math.round((r.score / r.total) * 100) : 0;
+                const color = pct >= 80 ? 'text-success' : pct >= 50 ? 'text-accent-foreground' : 'text-destructive';
+                const bgColor = pct >= 80 ? 'bg-success' : pct >= 50 ? 'bg-accent' : 'bg-destructive';
+                const dayLabel = (() => {
+                  if (!r.date) return '';
+                  const d = new Date(r.date);
+                  const now = new Date();
+                  const diffMs = now.getTime() - d.getTime();
+                  const diffDays = Math.floor(diffMs / 86400000);
+                  if (diffDays === 0) return 'Today';
+                  if (diffDays === 1) return 'Yesterday';
+                  return `${diffDays}d ago`;
+                })();
+                return (
+                  <div key={i} className="bg-card rounded-xl border border-border p-3 flex items-center gap-3 shadow-sm">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${bgColor}/15`}>
+                      <span className={`text-sm font-bold ${color}`}>{pct}%</span>
                     </div>
-                  );
-                })}
-              </div>
-              <p className="text-xs text-muted-foreground mt-2 text-center">Last {Math.min(15, progress.quizResults.length)} quizzes</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate capitalize">{r.category?.replace(/-/g, ' ') || 'Quiz'}</p>
+                      <p className="text-xs text-muted-foreground">{r.score}/{r.total} correct · {r.mode === 'typing' ? 'Typing' : 'Multiple choice'}</p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden">
+                        <div className={`h-full rounded-full ${bgColor}`} style={{ width: `${pct}%` }} />
+                      </div>
+                      <p className="text-[10px] text-muted-foreground mt-1">{dayLabel}</p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
