@@ -4,6 +4,9 @@ import { CheckCircle2, XCircle, RotateCcw, Trophy, ChevronRight } from 'lucide-r
 import { Lesson, CourseWord } from '@/data/courseTypes';
 import { getAllCourseWords, lessons } from '@/data/a1Course';
 import { useProgress } from '@/hooks/useProgress';
+import { CharacterReaction } from '@/components/characters/CharacterReaction';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
+import type { CharacterMood } from '@/components/characters/Kazik';
 
 interface Props {
   lesson: Lesson;
@@ -16,6 +19,8 @@ export const LessonQuiz = ({ lesson }: Props) => {
   const isAlreadyCompleted = (progress.lessonsCompleted || []).includes(lesson.id);
 
   const [mode, setMode] = useState<'choice' | 'typing' | null>(null);
+  const [charMood, setCharMood] = useState<CharacterMood>('thinking');
+  const sfx = useSoundEffects();
   const [questionIndex, setQuestionIndex] = useState(0);
   const scoreRef = useRef(0);
   const [score, setScore] = useState(0);
@@ -56,8 +61,10 @@ export const LessonQuiz = ({ lesson }: Props) => {
     const correct = polish === currentWord.polish;
     setIsCorrect(correct);
     addScore(correct);
-    if (!correct) setWrongAnswers(prev => [...prev, { word: currentWord, given: polish }]);
+    if (correct) { sfx.playCorrect(); setCharMood('celebrating'); }
+    else { sfx.playWrong(); setCharMood('sad'); setWrongAnswers(prev => [...prev, { word: currentWord, given: polish }]); }
     recordCardResult(currentWord.id, correct);
+    setTimeout(() => setCharMood('thinking'), 1200);
   };
 
   const handleTypingSubmit = () => {
@@ -66,8 +73,10 @@ export const LessonQuiz = ({ lesson }: Props) => {
     const correct = typedAnswer.trim().toLowerCase() === currentWord.polish.toLowerCase();
     setIsCorrect(correct);
     addScore(correct);
-    if (!correct) setWrongAnswers(prev => [...prev, { word: currentWord, given: typedAnswer }]);
+    if (correct) { sfx.playCorrect(); setCharMood('celebrating'); }
+    else { sfx.playWrong(); setCharMood('sad'); setWrongAnswers(prev => [...prev, { word: currentWord, given: typedAnswer }]); }
     recordCardResult(currentWord.id, correct);
+    setTimeout(() => setCharMood('thinking'), 1200);
   };
 
   const nextQuestion = () => {
@@ -76,7 +85,12 @@ export const LessonQuiz = ({ lesson }: Props) => {
       const finalScore = scoreRef.current;
       recordQuizResult({ category: `lesson-${lesson.id}`, score: finalScore, total: quizWords.length, mode: mode! });
       if (finalScore / quizWords.length >= 0.7) {
+        sfx.playComplete();
+        setCharMood('celebrating');
         completeLesson(lesson.id);
+      } else {
+        sfx.playFail();
+        setCharMood('encouraging');
       }
       return;
     }
@@ -134,6 +148,7 @@ export const LessonQuiz = ({ lesson }: Props) => {
     return (
       <div className="py-6 space-y-6">
         <div className="text-center animate-bounce-in">
+          <CharacterReaction character="basia" mood={charMood} size={48} className="justify-center mb-3" />
           <Trophy className={`w-14 h-14 mx-auto mb-3 ${pct >= 80 ? 'text-streak' : pct >= 50 ? 'text-accent' : 'text-destructive'}`} />
           <h2 className="font-display text-3xl font-bold text-foreground">{score}/{quizWords.length}</h2>
           <p className="text-muted-foreground">{pct}% correct</p>
@@ -187,6 +202,7 @@ export const LessonQuiz = ({ lesson }: Props) => {
 
       <div className="text-center" key={questionIndex}>
         <p className="text-xs text-muted-foreground mb-1">{questionIndex + 1} / {quizWords.length}</p>
+        <CharacterReaction character="basia" mood={charMood} size={40} className="justify-center mb-2" />
         <p className="text-sm text-muted-foreground mb-2">Translate to Polish:</p>
         <h2 className="font-display text-2xl font-bold text-foreground">{currentWord.english}</h2>
       </div>

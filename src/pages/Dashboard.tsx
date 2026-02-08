@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Flame, BookOpen, Target, TrendingUp, ArrowRight, GraduationCap, Settings } from 'lucide-react';
+import { Flame, BookOpen, Target, TrendingUp, ArrowRight, GraduationCap, Settings, Snowflake } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useAuth } from '@/hooks/useAuth';
 import { getWordOfTheDay } from '@/data/polishWords';
@@ -10,6 +10,8 @@ import { WordOfTheDay } from '@/components/WordOfTheDay';
 import { BottomNav } from '@/components/BottomNav';
 import { Progress } from '@/components/ui/progress';
 import { ReviewReminders } from '@/components/ReviewReminders';
+import { CharacterReaction } from '@/components/characters/CharacterReaction';
+import type { CharacterMood } from '@/components/characters/Kazik';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -22,6 +24,11 @@ const Dashboard = () => {
   const currentLesson = Math.min(progress.currentLesson || 1, lessons.length);
   const currentLessonData = lessons.find(l => l.id === currentLesson);
   const coursePct = Math.round((completedLessons.length / lessons.length) * 100);
+  const streakFreezes = (progress as any).streakFreezes ?? 10;
+
+  // Determine Kazik's mood based on streak
+  const kazikMood: CharacterMood = progress.streak >= 7 ? 'celebrating' : progress.streak >= 3 ? 'happy' : progress.streak === 0 ? 'encouraging' : 'happy';
+  const kazikMessage = progress.streak >= 7 ? 'Amazing streak! 🔥' : progress.streak >= 3 ? 'Keep it up!' : progress.streak === 0 ? "Let's start learning!" : 'Good going!';
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -37,6 +44,10 @@ const Dashboard = () => {
               <Flame className="w-4 h-4 text-streak" />
               <span className="font-bold text-sm">{progress.streak}</span>
             </div>
+            <div className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1.5 rounded-full" title={`${streakFreezes} streak freezes remaining`}>
+              <Snowflake className="w-3.5 h-3.5" />
+              <span className="font-bold text-xs">{streakFreezes}</span>
+            </div>
             <ThemeToggle />
             <button
               onClick={() => navigate('/settings')}
@@ -50,12 +61,15 @@ const Dashboard = () => {
       </header>
 
       <main className="container max-w-2xl mx-auto px-4 py-6 space-y-5">
-        {/* Greeting */}
-        <div>
-          <h2 className="font-display text-lg font-bold text-foreground">
-            {user?.user_metadata?.display_name ? `Hey, ${user.user_metadata.display_name} 👋` : 'Welcome back 👋'}
-          </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">Keep up your Polish learning streak!</p>
+        {/* Character Greeting */}
+        <div className="flex items-center gap-3">
+          <CharacterReaction character="kazik" mood={kazikMood} message={kazikMessage} size={48} />
+          <div>
+            <h2 className="font-display text-lg font-bold text-foreground">
+              {user?.user_metadata?.display_name ? `Hey, ${user.user_metadata.display_name} 👋` : 'Welcome back 👋'}
+            </h2>
+            <p className="text-xs text-muted-foreground mt-0.5">Keep up your Polish learning streak!</p>
+          </div>
         </div>
 
         {/* Continue Learning CTA */}

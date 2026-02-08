@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, LogOut, User, Mail, Pencil, Check, X, Loader2, Camera, Lock, Eye, EyeOff, HelpCircle } from 'lucide-react';
+import { ArrowLeft, LogOut, User, Mail, Pencil, Check, X, Loader2, Camera, Lock, Eye, EyeOff, HelpCircle, Volume2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { BottomNav } from '@/components/BottomNav';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -25,6 +26,8 @@ const Settings = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
+  const sfx = useSoundEffects();
+  const [sfxEnabled, setSfxEnabled] = useState(sfx.enabled);
 
   const email = user?.email || '';
 
@@ -284,6 +287,28 @@ const Settings = () => {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Sound Effects Toggle */}
+        <div className="bg-card rounded-xl border border-border p-4 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <Volume2 className="w-4 h-4 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground">Sound Effects</p>
+            <p className="text-xs text-muted-foreground">Play sounds on correct/wrong answers</p>
+          </div>
+          <button
+            onClick={() => {
+              const newVal = !sfxEnabled;
+              setSfxEnabled(newVal);
+              sfx.setEnabled(newVal);
+              if (newVal) sfx.playCorrect();
+            }}
+            className={`relative w-11 h-6 rounded-full transition-colors ${sfxEnabled ? 'bg-primary' : 'bg-muted'}`}
+          >
+            <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${sfxEnabled ? 'translate-x-5' : ''}`} />
+          </button>
         </div>
 
         {/* Help & Support */}

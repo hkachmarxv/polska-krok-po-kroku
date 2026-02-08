@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Lesson, Dialogue } from '@/data/courseTypes';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { SpeakButton } from '@/components/SpeakButton';
 import { useVoicePreference } from '@/hooks/useVoicePreference';
+import { GenderBadge } from '@/components/GenderBadge';
 
 interface Props {
   lesson: Lesson;
@@ -15,29 +16,40 @@ const FEMALE_NAMES = ['Anna', 'Ania', 'Maria', 'Marta', 'Kasia', 'Katarzyna', 'E
 const FEMALE_SPEAKERS = ['Pani', 'Kobieta', 'Kelnerka', 'Lekarka', 'Sprzedawczyni', 'Recepcjonistka', 'Ekspedientka', 'Nauczycielka'];
 const MALE_NAMES = ['Marek', 'Jan', 'Piotr', 'Tomek', 'Tomasz', 'Adam', 'Michał', 'Paweł', 'Krzysztof', 'Jakub', 'Andrzej', 'Łukasz', 'Robert', 'Stanisław', 'Kamil', 'Grzegorz', 'Marcin', 'Wojciech', 'Rafał', 'Bartek'];
 
-// Detect gender from speaker label, or from dialogue line content (names mentioned)
-const getSpeakerGender = (speaker: string, polishText?: string): 'male' | 'female' => {
-  // Named speaker labels
+// Detect gender from a single line (speaker label + text)
+const detectGenderFromLine = (speaker: string, polishText: string): 'male' | 'female' | null => {
   if (FEMALE_SPEAKERS.some(f => speaker.includes(f))) return 'female';
-  // Check speaker label for names
   if (FEMALE_NAMES.some(n => speaker.includes(n))) return 'female';
   if (MALE_NAMES.some(n => speaker.includes(n))) return 'male';
-  // Check dialogue text for self-introductions like "Mam na imię Anna" or "Jestem Marek"
-  if (polishText) {
-    const introPatterns = [/mam na imi[eę] (\w+)/i, /jestem (\w+)/i, /nazywam si[eę] (\w+)/i];
-    for (const pattern of introPatterns) {
-      const match = polishText.match(pattern);
-      if (match) {
-        const name = match[1];
-        if (FEMALE_NAMES.some(n => n.toLowerCase() === name.toLowerCase())) return 'female';
-        if (MALE_NAMES.some(n => n.toLowerCase() === name.toLowerCase())) return 'male';
-        // Polish female names typically end in -a
-        if (name.endsWith('a') && !['Kuba'].includes(name)) return 'female';
-      }
+  const introPatterns = [/mam na imi[eę] (\w+)/i, /jestem (\w+)/i, /nazywam si[eę] (\w+)/i];
+  for (const pattern of introPatterns) {
+    const match = polishText.match(pattern);
+    if (match) {
+      const name = match[1];
+      if (FEMALE_NAMES.some(n => n.toLowerCase() === name.toLowerCase())) return 'female';
+      if (MALE_NAMES.some(n => n.toLowerCase() === name.toLowerCase())) return 'male';
+      if (name.endsWith('a') && !['Kuba'].includes(name)) return 'female';
+      return 'male';
     }
   }
-  // Default: A = male, B = female (generic speakers)
-  return speaker === 'B' ? 'female' : 'male';
+  return null;
+};
+
+// Two-pass: scan ALL lines to build speaker→gender map, then use it
+const buildSpeakerGenderMap = (dialogue: Dialogue): Record<string, 'male' | 'female'> => {
+  const map: Record<string, 'male' | 'female'> = {};
+  // First pass: detect from each line
+  for (const line of dialogue.lines) {
+    if (map[line.speaker]) continue;
+    const detected = detectGenderFromLine(line.speaker, line.polish);
+    if (detected) map[line.speaker] = detected;
+  }
+  // Fill remaining speakers with defaults (A=male, B=female, etc.)
+  const speakers = [...new Set(dialogue.lines.map(l => l.speaker))];
+  speakers.forEach((s, i) => {
+    if (!map[s]) map[s] = i % 2 === 0 ? 'male' : 'female';
+  });
+  return map;
 };
 
 export const LessonLearnTab = ({ lesson }: Props) => {
@@ -83,9 +95,7 @@ export const LessonLearnTab = ({ lesson }: Props) => {
                     <SpeakButton text={word.polish} voicePreference={voice} />
                     <span className="font-display font-bold text-foreground">{word.polish}</span>
                     {word.gender && (
-                      <span className="text-[10px] bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded-full">
-                        {word.gender}
-                      </span>
+                      <GenderBadge gender={word.gender} />
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground">{word.english}</p>
@@ -154,28 +164,31 @@ export const LessonLearnTab = ({ lesson }: Props) => {
                 </button>
                 {expandedDialogue === i && (
                   <div className="px-3 pb-3 space-y-2 animate-fade-in">
-                    {dialogue.lines.map((line, j) => {
-                      const gender = getSpeakerGender(line.speaker, line.polish);
-                      return (
-                        <div
-                          key={j}
-                          className={`rounded-lg p-2.5 text-sm ${
-                            gender === 'male'
-                              ? 'bg-primary/5 border-l-2 border-primary/30'
-                              : 'bg-accent/5 border-l-2 border-accent/30'
-                          }`}
-                        >
-                          <span className="text-[10px] font-bold text-muted-foreground uppercase">
-                            {line.speaker} {gender === 'male' ? '👨' : '👩'}
-                          </span>
-                          <p className="font-medium text-foreground flex items-center gap-1">
-                            <SpeakButton text={line.polish} size="sm" speakerGender={gender} />
-                            {line.polish}
-                          </p>
-                          <p className="text-xs text-muted-foreground">{line.english}</p>
-                        </div>
-                      );
-                    })}
+                    {(() => {
+                      const genderMap = buildSpeakerGenderMap(dialogue);
+                      return dialogue.lines.map((line, j) => {
+                        const gender = genderMap[line.speaker] || 'male';
+                        return (
+                          <div
+                            key={j}
+                            className={`rounded-lg p-2.5 text-sm ${
+                              gender === 'male'
+                                ? 'bg-primary/5 border-l-2 border-primary/30'
+                                : 'bg-accent/5 border-l-2 border-accent/30'
+                            }`}
+                          >
+                            <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                              {line.speaker} {gender === 'male' ? '👨' : '👩'}
+                            </span>
+                            <p className="font-medium text-foreground flex items-center gap-1">
+                              <SpeakButton text={line.polish} size="sm" speakerGender={gender} />
+                              {line.polish}
+                            </p>
+                            <p className="text-xs text-muted-foreground">{line.english}</p>
+                          </div>
+                        );
+                      });
+                    })()}
                   </div>
                 )}
               </div>
