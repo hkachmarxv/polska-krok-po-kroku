@@ -3,6 +3,9 @@ import { Volume2, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { VOICES, type VoicePreference } from '@/hooks/useVoicePreference';
 
+// Client-side audio cache to avoid duplicate API calls
+const audioCache = new Map<string, string>();
+
 interface SpeakButtonProps {
   text: string;
   size?: 'sm' | 'md';
@@ -30,6 +33,22 @@ export const SpeakButton = ({ text, size = 'sm', className, speakerGender, voice
       return;
     }
 
+    const cacheKey = `${text}:${voiceId}`;
+
+    // Check cache first
+    const cachedUrl = audioCache.get(cacheKey);
+    if (cachedUrl) {
+      const audio = new Audio(cachedUrl);
+      audioRef.current = audio;
+      audio.onended = () => {
+        setPlaying(false);
+        audioRef.current = null;
+      };
+      setPlaying(true);
+      await audio.play();
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await fetch(
@@ -45,17 +64,23 @@ export const SpeakButton = ({ text, size = 'sm', className, speakerGender, voice
         }
       );
 
+      if (response.status === 429) {
+        throw new Error('Rate limited');
+      }
       if (!response.ok) throw new Error('TTS failed');
 
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
+
+      // Cache the audio URL for this session
+      audioCache.set(cacheKey, audioUrl);
+
       const audio = new Audio(audioUrl);
       audioRef.current = audio;
 
       audio.onended = () => {
         setPlaying(false);
         audioRef.current = null;
-        URL.revokeObjectURL(audioUrl);
       };
 
       setPlaying(true);
