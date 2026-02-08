@@ -4,16 +4,48 @@ import { Lesson, Dialogue } from '@/data/courseTypes';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { SpeakButton } from '@/components/SpeakButton';
+import { useVoicePreference } from '@/hooks/useVoicePreference';
 
 interface Props {
   lesson: Lesson;
 }
 
+// Map dialogue speakers to genders. Speaker A = male, others = female by default.
+// Some dialogues use named speakers (e.g., "Kelner", "Lekarz") — treat those contextually.
+const getSpeakerGender = (speaker: string): 'male' | 'female' => {
+  const femaleSpeakers = ['B', 'Pani', 'Kobieta', 'Kelnerka', 'Lekarka', 'Sprzedawczyni'];
+  return femaleSpeakers.some(f => speaker.includes(f)) ? 'female' : 'male';
+};
+
 export const LessonLearnTab = ({ lesson }: Props) => {
   const [expandedDialogue, setExpandedDialogue] = useState<number | null>(0);
+  const { voice, setVoice } = useVoicePreference();
 
   return (
     <div className="space-y-6 py-4">
+      {/* Voice Preference */}
+      <div className="flex items-center justify-between bg-card border border-border rounded-xl px-4 py-3">
+        <span className="text-sm font-medium text-foreground">🔊 Voice</span>
+        <div className="flex gap-1 bg-muted rounded-lg p-0.5">
+          <button
+            onClick={() => setVoice('male')}
+            className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${
+              voice === 'male' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            👨 Male
+          </button>
+          <button
+            onClick={() => setVoice('female')}
+            className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${
+              voice === 'female' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            👩 Female
+          </button>
+        </div>
+      </div>
+
       {/* Vocabulary */}
       <section>
         <h2 className="font-display text-lg font-bold text-foreground mb-3">
@@ -25,7 +57,7 @@ export const LessonLearnTab = ({ lesson }: Props) => {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <SpeakButton text={word.polish} />
+                    <SpeakButton text={word.polish} voicePreference={voice} />
                     <span className="font-display font-bold text-foreground">{word.polish}</span>
                     {word.gender && (
                       <span className="text-[10px] bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded-full">
@@ -82,6 +114,7 @@ export const LessonLearnTab = ({ lesson }: Props) => {
       {lesson.dialogues.length > 0 && (
         <section>
           <h2 className="font-display text-lg font-bold text-foreground mb-3">💬 Dialogues</h2>
+          <p className="text-xs text-muted-foreground mb-2">🎭 Different voices for each speaker</p>
           <div className="space-y-3">
             {lesson.dialogues.map((dialogue, i) => (
               <div key={i} className="bg-card border border-border rounded-xl overflow-hidden">
@@ -98,25 +131,28 @@ export const LessonLearnTab = ({ lesson }: Props) => {
                 </button>
                 {expandedDialogue === i && (
                   <div className="px-3 pb-3 space-y-2 animate-fade-in">
-                    {dialogue.lines.map((line, j) => (
-                      <div
-                        key={j}
-                        className={`rounded-lg p-2.5 text-sm ${
-                          line.speaker === 'A'
-                            ? 'bg-primary/5 border-l-2 border-primary/30'
-                            : 'bg-accent/5 border-l-2 border-accent/30'
-                        }`}
-                      >
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase">
-                          {line.speaker}
-                        </span>
-                        <p className="font-medium text-foreground flex items-center gap-1">
-                          <SpeakButton text={line.polish} size="sm" />
-                          {line.polish}
-                        </p>
-                        <p className="text-xs text-muted-foreground">{line.english}</p>
-                      </div>
-                    ))}
+                    {dialogue.lines.map((line, j) => {
+                      const gender = getSpeakerGender(line.speaker);
+                      return (
+                        <div
+                          key={j}
+                          className={`rounded-lg p-2.5 text-sm ${
+                            gender === 'male'
+                              ? 'bg-primary/5 border-l-2 border-primary/30'
+                              : 'bg-accent/5 border-l-2 border-accent/30'
+                          }`}
+                        >
+                          <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                            {line.speaker} {gender === 'male' ? '👨' : '👩'}
+                          </span>
+                          <p className="font-medium text-foreground flex items-center gap-1">
+                            <SpeakButton text={line.polish} size="sm" speakerGender={gender} />
+                            {line.polish}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{line.english}</p>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

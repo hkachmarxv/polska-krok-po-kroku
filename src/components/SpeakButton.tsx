@@ -1,17 +1,24 @@
 import { useState, useCallback, useRef } from 'react';
 import { Volume2, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { VOICES, type VoicePreference } from '@/hooks/useVoicePreference';
 
 interface SpeakButtonProps {
   text: string;
   size?: 'sm' | 'md';
   className?: string;
+  /** Force a specific voice gender (used in dialogues) */
+  speakerGender?: 'male' | 'female';
+  /** User's preferred voice (from useVoicePreference). Falls back to 'male' */
+  voicePreference?: VoicePreference;
 }
 
-export const SpeakButton = ({ text, size = 'sm', className }: SpeakButtonProps) => {
+export const SpeakButton = ({ text, size = 'sm', className, speakerGender, voicePreference = 'male' }: SpeakButtonProps) => {
   const [loading, setLoading] = useState(false);
   const [playing, setPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const voiceId = speakerGender ? VOICES[speakerGender] : VOICES[voicePreference];
 
   const speak = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -34,7 +41,7 @@ export const SpeakButton = ({ text, size = 'sm', className }: SpeakButtonProps) 
             apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ text }),
+          body: JSON.stringify({ text, voiceId }),
         }
       );
 
@@ -70,7 +77,7 @@ export const SpeakButton = ({ text, size = 'sm', className }: SpeakButtonProps) 
     } finally {
       setLoading(false);
     }
-  }, [text]);
+  }, [text, voiceId]);
 
   const iconSize = size === 'sm' ? 'w-3.5 h-3.5' : 'w-4 h-4';
   const btnSize = size === 'sm' ? 'p-1.5' : 'p-2';
