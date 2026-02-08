@@ -73,20 +73,24 @@ serve(async (req: Request) => {
     const autoReply = await resend.emails.send({
       from: "LearnPolski <noreply@learnpolski.academy>",
       to: [email.trim()],
-      subject: "We received your message! 🇵🇱",
+      subject: "We've got your message 🇵🇱",
       html: `
-        <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto;">
-          <h2 style="color: #1a1a2e;">Thanks for reaching out, ${sanitizedName}! 👋</h2>
-          <p style="color: #444; line-height: 1.6;">
-            We've received your message and will get back to you within 24 hours.
+        <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; color: #333;">
+          <p style="font-size: 16px; line-height: 1.6;">Hi ${sanitizedName} 👋</p>
+          <p style="line-height: 1.6;">
+            Thanks for reaching out to LearnPolski — we've received your message.
           </p>
-          <p style="color: #444; line-height: 1.6;">Here's a copy of what you sent:</p>
-          <blockquote style="border-left: 3px solid #6366f1; padding-left: 12px; color: #555; margin: 16px 0;">
-            ${sanitizedMessage.replace(/\n/g, "<br />")}
-          </blockquote>
-          <p style="color: #444; line-height: 1.6;">
-            Dziękujemy! 🙏<br/>
-            <strong>The LearnPolski Team</strong>
+          <p style="line-height: 1.6;">
+            Our small team reviews every message personally, and we usually reply within 24 hours (often sooner).
+          </p>
+          <p style="line-height: 1.6;">
+            If your question is about access, billing, or a technical issue, feel free to reply with any extra details — it helps us help you faster.
+          </p>
+          <p style="line-height: 1.6; margin-top: 24px;">
+            Talk soon,<br/>
+            <strong>The LearnPolski Team</strong><br/>
+            <span style="color: #888; font-size: 14px;">AI-powered Polish language learning</span><br/>
+            <a href="https://learnpolski.academy" style="color: #6366f1; font-size: 14px;">https://learnpolski.academy</a>
           </p>
         </div>
       `,
