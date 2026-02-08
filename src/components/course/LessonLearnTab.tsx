@@ -10,11 +10,34 @@ interface Props {
   lesson: Lesson;
 }
 
-// Map dialogue speakers to genders. Speaker A = male, others = female by default.
-// Some dialogues use named speakers (e.g., "Kelner", "Lekarz") — treat those contextually.
-const getSpeakerGender = (speaker: string): 'male' | 'female' => {
-  const femaleSpeakers = ['B', 'Pani', 'Kobieta', 'Kelnerka', 'Lekarka', 'Sprzedawczyni'];
-  return femaleSpeakers.some(f => speaker.includes(f)) ? 'female' : 'male';
+// Common Polish female names to detect gender from dialogue content
+const FEMALE_NAMES = ['Anna', 'Ania', 'Maria', 'Marta', 'Kasia', 'Katarzyna', 'Ewa', 'Agnieszka', 'Zofia', 'Magdalena', 'Alicja', 'Joanna', 'Barbara', 'Monika', 'Natalia', 'Justyna', 'Karolina', 'Patrycja', 'Aleksandra', 'Beata', 'Dorota', 'Iwona', 'Sylwia', 'Małgorzata', 'Basia', 'Ola'];
+const FEMALE_SPEAKERS = ['Pani', 'Kobieta', 'Kelnerka', 'Lekarka', 'Sprzedawczyni', 'Recepcjonistka', 'Ekspedientka', 'Nauczycielka'];
+const MALE_NAMES = ['Marek', 'Jan', 'Piotr', 'Tomek', 'Tomasz', 'Adam', 'Michał', 'Paweł', 'Krzysztof', 'Jakub', 'Andrzej', 'Łukasz', 'Robert', 'Stanisław', 'Kamil', 'Grzegorz', 'Marcin', 'Wojciech', 'Rafał', 'Bartek'];
+
+// Detect gender from speaker label, or from dialogue line content (names mentioned)
+const getSpeakerGender = (speaker: string, polishText?: string): 'male' | 'female' => {
+  // Named speaker labels
+  if (FEMALE_SPEAKERS.some(f => speaker.includes(f))) return 'female';
+  // Check speaker label for names
+  if (FEMALE_NAMES.some(n => speaker.includes(n))) return 'female';
+  if (MALE_NAMES.some(n => speaker.includes(n))) return 'male';
+  // Check dialogue text for self-introductions like "Mam na imię Anna" or "Jestem Marek"
+  if (polishText) {
+    const introPatterns = [/mam na imi[eę] (\w+)/i, /jestem (\w+)/i, /nazywam si[eę] (\w+)/i];
+    for (const pattern of introPatterns) {
+      const match = polishText.match(pattern);
+      if (match) {
+        const name = match[1];
+        if (FEMALE_NAMES.some(n => n.toLowerCase() === name.toLowerCase())) return 'female';
+        if (MALE_NAMES.some(n => n.toLowerCase() === name.toLowerCase())) return 'male';
+        // Polish female names typically end in -a
+        if (name.endsWith('a') && !['Kuba'].includes(name)) return 'female';
+      }
+    }
+  }
+  // Default: A = male, B = female (generic speakers)
+  return speaker === 'B' ? 'female' : 'male';
 };
 
 export const LessonLearnTab = ({ lesson }: Props) => {
@@ -132,7 +155,7 @@ export const LessonLearnTab = ({ lesson }: Props) => {
                 {expandedDialogue === i && (
                   <div className="px-3 pb-3 space-y-2 animate-fade-in">
                     {dialogue.lines.map((line, j) => {
-                      const gender = getSpeakerGender(line.speaker);
+                      const gender = getSpeakerGender(line.speaker, line.polish);
                       return (
                         <div
                           key={j}
