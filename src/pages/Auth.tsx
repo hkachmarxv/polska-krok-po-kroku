@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { lovable } from '@/integrations/lovable/index';
@@ -6,6 +6,7 @@ import { Mail, Lock, User, Eye, EyeOff, ArrowRight, Loader2, ArrowLeft } from 'l
 import { useToast } from '@/hooks/use-toast';
 
 const Auth = () => {
+  const { user, loading: authLoading, signIn, signUp, signInWithUsername, resetPassword } = useAuth();
   const [mode, setMode] = useState<'login' | 'signup' | 'forgot'>('login');
   const [identifier, setIdentifier] = useState(''); // email or username
   const [password, setPassword] = useState('');
@@ -15,9 +16,15 @@ const Auth = () => {
   const [confirmationSent, setConfirmationSent] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const { signIn, signUp, signInWithUsername, resetPassword } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate('/', { replace: true });
+    }
+  }, [user, authLoading, navigate]);
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
