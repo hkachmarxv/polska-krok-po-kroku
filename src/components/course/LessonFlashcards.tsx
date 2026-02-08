@@ -3,6 +3,7 @@ import { RotateCcw, Check, X, ChevronRight } from 'lucide-react';
 import { Lesson } from '@/data/courseTypes';
 import { useProgress } from '@/hooks/useProgress';
 import { SpeakButton } from '@/components/SpeakButton';
+import { useVoicePreference } from '@/hooks/useVoicePreference';
 
 interface Props {
   lesson: Lesson;
@@ -10,6 +11,7 @@ interface Props {
 
 export const LessonFlashcards = ({ lesson }: Props) => {
   const { progress, recordCardResult, getDueCards } = useProgress();
+  const { voice } = useVoicePreference();
   const allWords = lesson.vocabulary;
 
   const [reversed, setReversed] = useState(false);
@@ -86,7 +88,7 @@ export const LessonFlashcards = ({ lesson }: Props) => {
               {reversed ? 'English' : 'Polish'}
             </p>
             <h2 className="font-display text-2xl font-bold text-foreground text-center">{backText}</h2>
-            <SpeakButton text={word.polish} size="md" className="mt-2" />
+            <SpeakButton text={word.polish} size="md" className="mt-2" voicePreference={voice} />
             {word.gender && (
               <span className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full mt-2">
                 {word.gender}
