@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -19,19 +19,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const welcomeEmailSent = useRef(false);
+
+  const sendWelcomeEmail = async (userSession: Session) => {
+    if (welcomeEmailSent.current) return;
+    welcomeEmailSent.current = true;
+    try {
+      await supabase.functions.invoke('send-welcome-email', {
+        headers: { Authorization: `Bearer ${userSession.access_token}` },
+      });
+    } catch (e) {
+      console.error('Welcome email error:', e);
+      welcomeEmailSent.current = false;
+    }
+  };
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+      (event, currentSession) => {
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
         setLoading(false);
+
+        if (event === 'SIGNED_IN' && currentSession) {
+          setTimeout(() => sendWelcomeEmail(currentSession), 0);
+        }
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
       setLoading(false);
     });
 
