@@ -6,9 +6,8 @@ const comparisons = [
   { feature: 'AI grammar explanations', us: true, others: false },
   { feature: 'Cases & declension drills', us: true, others: false },
   { feature: 'Sentence building exercises', us: true, others: false },
-  { feature: 'Phonetic pronunciation guides', us: true, others: false },
-  { feature: 'Real-world conversation scenarios', us: true, others: false },
-  { feature: 'Affordable pricing', us: true, others: false },
+  { feature: 'Gamification & badges', us: false, others: true },
+  { feature: 'Affordable pricing (from $30/mo)', us: true, others: false },
 ];
 
 const WhyUsSection = () => {

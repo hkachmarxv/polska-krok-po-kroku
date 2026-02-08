@@ -60,7 +60,7 @@ const VocabPreviewSection = () => {
         </motion.div>
 
         {/* Tabs */}
-        <div className="flex justify-center gap-2 mb-8">
+        <div className="flex justify-center gap-2 mb-8 flex-wrap">
           {categories.map((cat, i) => (
             <button
               key={cat.name}
