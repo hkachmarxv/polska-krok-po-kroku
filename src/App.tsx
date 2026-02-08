@@ -10,6 +10,8 @@ import GrammarAssistant from "./pages/GrammarAssistant";
 import GrammarDrill from "./pages/GrammarDrill";
 import CourseOverview from "./pages/CourseOverview";
 import LessonPage from "./pages/LessonPage";
+import Practice from "./pages/Practice";
+import Tools from "./pages/Tools";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +26,8 @@ const App = () => (
           <Route path="/" element={<Dashboard />} />
           <Route path="/course" element={<CourseOverview />} />
           <Route path="/lesson/:lessonId" element={<LessonPage />} />
+          <Route path="/practice" element={<Practice />} />
+          <Route path="/tools" element={<Tools />} />
           <Route path="/flashcards/:categoryId" element={<Flashcards />} />
           <Route path="/quiz/:categoryId" element={<Quiz />} />
           <Route path="/grammar" element={<GrammarAssistant />} />
