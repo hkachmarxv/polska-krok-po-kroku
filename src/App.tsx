@@ -8,6 +8,8 @@ import Flashcards from "./pages/Flashcards";
 import Quiz from "./pages/Quiz";
 import GrammarAssistant from "./pages/GrammarAssistant";
 import GrammarDrill from "./pages/GrammarDrill";
+import CourseOverview from "./pages/CourseOverview";
+import LessonPage from "./pages/LessonPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,6 +22,8 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/course" element={<CourseOverview />} />
+          <Route path="/lesson/:lessonId" element={<LessonPage />} />
           <Route path="/flashcards/:categoryId" element={<Flashcards />} />
           <Route path="/quiz/:categoryId" element={<Quiz />} />
           <Route path="/grammar" element={<GrammarAssistant />} />
