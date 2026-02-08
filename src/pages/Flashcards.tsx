@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, RotateCcw, Check, X, ChevronRight } from 'lucide-react';
 import { categories, getWordsByCategory, Word } from '@/data/polishWords';
 import { useProgress } from '@/hooks/useProgress';
+import { SpeakButton } from '@/components/SpeakButton';
 
 const Flashcards = () => {
   const { categoryId } = useParams<{ categoryId: string }>();
@@ -107,7 +108,7 @@ const Flashcards = () => {
                 {reversed ? 'English' : 'Polish'}
               </p>
               <h2 className="font-display text-3xl font-bold text-foreground text-center">{backText}</h2>
-              {showPhonetic && <p className="text-base text-muted-foreground mt-2">{word.phonetic}</p>}
+              <SpeakButton text={word.polish} size="md" className="mt-2" />
               {word.gender && (
                 <span className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full mt-2">
                   {word.gender}

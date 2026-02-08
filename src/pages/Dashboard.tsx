@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Flame, BookOpen, Target, TrendingUp, ArrowRight, GraduationCap } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { getWordOfTheDay } from '@/data/polishWords';
 import { lessons } from '@/data/a1Course';
 import { useProgress } from '@/hooks/useProgress';
@@ -28,9 +29,12 @@ const Dashboard = () => {
             <span className="text-2xl">🇵🇱</span>
             <h1 className="font-display text-xl font-bold text-foreground">PolishPal</h1>
           </div>
-          <div className="flex items-center gap-1.5 bg-streak/10 text-streak-foreground px-3 py-1.5 rounded-full">
-            <Flame className="w-4 h-4 text-streak" />
-            <span className="font-bold text-sm">{progress.streak}</span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 bg-streak/10 text-streak-foreground px-3 py-1.5 rounded-full">
+              <Flame className="w-4 h-4 text-streak" />
+              <span className="font-bold text-sm">{progress.streak}</span>
+            </div>
+            <ThemeToggle />
           </div>
         </div>
       </header>
