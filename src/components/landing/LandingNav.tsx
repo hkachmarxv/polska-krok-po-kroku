@@ -28,6 +28,7 @@ const LandingNav = () => {
           <button onClick={() => scrollTo('preview')} className="hover:text-foreground transition-colors">Preview</button>
           <button onClick={() => scrollTo('pricing')} className="hover:text-foreground transition-colors">Pricing</button>
           <button onClick={() => scrollTo('poland')} className="hover:text-foreground transition-colors">Why Polish</button>
+          <button onClick={() => scrollTo('contact')} className="hover:text-foreground transition-colors">Contact</button>
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
@@ -53,6 +54,7 @@ const LandingNav = () => {
           <button onClick={() => scrollTo('preview')} className="block w-full text-left text-sm font-medium text-muted-foreground hover:text-foreground">Preview</button>
           <button onClick={() => scrollTo('pricing')} className="block w-full text-left text-sm font-medium text-muted-foreground hover:text-foreground">Pricing</button>
           <button onClick={() => scrollTo('poland')} className="block w-full text-left text-sm font-medium text-muted-foreground hover:text-foreground">Why Polish</button>
+          <button onClick={() => scrollTo('contact')} className="block w-full text-left text-sm font-medium text-muted-foreground hover:text-foreground">Contact</button>
           <div className="flex gap-2 pt-2">
             <Button variant="outline" size="sm" className="flex-1" onClick={() => navigate('/auth')}>Sign In</Button>
             <Button size="sm" className="flex-1 font-bold" onClick={() => navigate('/auth')}>Start Free</Button>

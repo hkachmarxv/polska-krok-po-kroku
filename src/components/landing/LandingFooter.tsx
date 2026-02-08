@@ -8,7 +8,7 @@ const LandingFooter = () => {
             <span className="font-display font-bold text-foreground">LearnPolski</span>
           </div>
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <a href="mailto:support@learnpolski.academy" className="hover:text-foreground transition-colors">Contact</a>
+            <a href="#contact" className="hover:text-foreground transition-colors">Contact</a>
             <span>·</span>
             <span>Made with ❤️ for Polish learners</span>
           </div>
