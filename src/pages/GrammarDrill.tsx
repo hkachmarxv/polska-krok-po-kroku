@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Loader2, ChevronRight, Lightbulb, CheckCircle2, XCircle, RotateCcw } from 'lucide-react';
 
 interface Drill {
@@ -17,6 +17,8 @@ const TOPICS = [
   { id: 'verbs', label: 'Verb conjugation', emoji: '🔄' },
   { id: 'gender', label: 'Gender agreement', emoji: '⚤' },
   { id: 'prepositions', label: 'Prepositions', emoji: '📍' },
+  { id: 'past-tense', label: 'Past tense', emoji: '⏪' },
+  { id: 'future-tense', label: 'Future tense', emoji: '⏩' },
   { id: 'mixed', label: 'Mixed', emoji: '🎲' },
 ];
 
@@ -28,7 +30,11 @@ const DIFFICULTIES = [
 
 const GrammarDrill = () => {
   const navigate = useNavigate();
-  const [topic, setTopic] = useState('mixed');
+  const [searchParams] = useSearchParams();
+  const lessonTopic = searchParams.get('topic');
+  const lessonId = searchParams.get('lesson');
+
+  const [topic, setTopic] = useState(lessonTopic || 'mixed');
   const [difficulty, setDifficulty] = useState('medium');
   const [drill, setDrill] = useState<Drill | null>(null);
   const [loading, setLoading] = useState(false);
@@ -94,11 +100,13 @@ const GrammarDrill = () => {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="container max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-          <button onClick={() => navigate('/')} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="w-5 h-5" />
             <span className="text-sm font-medium">Back</span>
           </button>
-          <h1 className="font-display text-base font-bold">📝 Grammar Drills</h1>
+          <h1 className="font-display text-base font-bold">
+            📝 {lessonId ? `Lesson ${lessonId} Drill` : 'Grammar Drills'}
+          </h1>
           {score.total > 0 && (
             <span className="text-sm font-bold text-primary">
               {score.correct}/{score.total}
