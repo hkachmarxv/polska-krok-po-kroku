@@ -12,9 +12,10 @@ import type { CharacterMood } from '@/components/characters/Kazik';
 
 interface Props {
   lesson: Lesson;
+  onComplete?: () => void;
 }
 
-export const LessonFlashcards = ({ lesson }: Props) => {
+export const LessonFlashcards = ({ lesson, onComplete }: Props) => {
   const { progress, recordCardResult, getDueCards } = useProgress();
   const { voice } = useVoicePreference();
   const allWords = lesson.vocabulary;
@@ -142,12 +143,22 @@ export const LessonFlashcards = ({ lesson }: Props) => {
       )}
 
       {answered && (
-        <button
-          onClick={handleNext}
-          className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl py-3 font-bold transition-colors animate-fade-in"
-        >
-          Next Card <ChevronRight className="w-5 h-5" />
-        </button>
+        <div className="space-y-2 animate-fade-in">
+          <button
+            onClick={handleNext}
+            className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl py-3 font-bold transition-colors"
+          >
+            Next Card <ChevronRight className="w-5 h-5" />
+          </button>
+          {onComplete && currentIndex >= Math.min(orderedWords.length - 1, 4) && (
+            <button
+              onClick={onComplete}
+              className="w-full flex items-center justify-center gap-2 bg-success hover:bg-success/90 text-success-foreground rounded-xl py-3 font-bold transition-colors"
+            >
+              <Check className="w-5 h-5" /> Complete Step
+            </button>
+          )}
+        </div>
       )}
     </div>
   );

@@ -10,9 +10,10 @@ import type { CharacterMood } from '@/components/characters/Kazik';
 
 interface Props {
   lesson: Lesson;
+  onComplete?: () => void;
 }
 
-export const LessonQuiz = ({ lesson }: Props) => {
+export const LessonQuiz = ({ lesson, onComplete }: Props) => {
   const navigate = useNavigate();
   const { recordCardResult, recordQuizResult, completeLesson, progress } = useProgress();
   const allCourseWords = useMemo(() => getAllCourseWords(), []);
@@ -87,6 +88,7 @@ export const LessonQuiz = ({ lesson }: Props) => {
         sfx.playComplete();
         setCharMood('celebrating');
         completeLesson(lesson.id);
+        if (onComplete) onComplete();
       } else {
         sfx.playFail();
         setCharMood('encouraging');
