@@ -4,6 +4,11 @@ import { Lesson } from '@/data/courseTypes';
 import { useProgress } from '@/hooks/useProgress';
 import { SpeakButton } from '@/components/SpeakButton';
 import { useVoicePreference } from '@/hooks/useVoicePreference';
+import { GenderBadge } from '@/components/GenderBadge';
+import { getCategoryEmoji } from '@/lib/categoryEmojis';
+import { CharacterReaction } from '@/components/characters/CharacterReaction';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
+import type { CharacterMood } from '@/components/characters/Kazik';
 
 interface Props {
   lesson: Lesson;
@@ -19,6 +24,8 @@ export const LessonFlashcards = ({ lesson }: Props) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
   const [answered, setAnswered] = useState(false);
+  const [charMood, setCharMood] = useState<CharacterMood>('thinking');
+  const sfx = useSoundEffects();
 
   const dueWordIds = getDueCards(allWords.map(w => w.id));
   const orderedWords = useMemo(() => {
@@ -39,15 +46,23 @@ export const LessonFlashcards = ({ lesson }: Props) => {
 
   const handleAnswer = (correct: boolean) => {
     setFeedback(correct ? 'correct' : 'incorrect');
+    setCharMood(correct ? 'celebrating' : 'sad');
+    if (correct) sfx.playCorrect(); else sfx.playWrong();
     recordCardResult(word.id, correct);
     setAnswered(true);
-    setTimeout(() => setFeedback(null), 600);
+    setTimeout(() => { setFeedback(null); setCharMood('thinking'); }, 1200);
   };
 
   const handleNext = () => {
     setFlipped(false);
     setAnswered(false);
+    setCharMood('thinking');
     setCurrentIndex(prev => (prev + 1) % orderedWords.length);
+  };
+
+  const handleFlip = () => {
+    if (!flipped) sfx.playFlip();
+    setFlipped(!flipped);
   };
 
   const progressPct = orderedWords.length > 0 ? Math.round((currentIndex / orderedWords.length) * 100) : 0;
@@ -55,7 +70,10 @@ export const LessonFlashcards = ({ lesson }: Props) => {
   return (
     <div className="py-4 space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">Card {currentIndex + 1} of {orderedWords.length}</p>
+        <div className="flex items-center gap-2">
+          <CharacterReaction character="lila" mood={charMood} size={36} />
+          <p className="text-sm text-muted-foreground">Card {currentIndex + 1} of {orderedWords.length}</p>
+        </div>
         <button
           onClick={() => setReversed(!reversed)}
           className="text-xs bg-secondary text-secondary-foreground px-2.5 py-1 rounded-full font-medium hover:bg-secondary/80 transition-colors"
@@ -72,10 +90,11 @@ export const LessonFlashcards = ({ lesson }: Props) => {
       {/* Card */}
       <div
         className={`flip-card w-full aspect-[3/2] max-h-[280px] cursor-pointer ${feedback === 'correct' ? 'correct-flash' : ''} ${feedback === 'incorrect' ? 'incorrect-shake' : ''}`}
-        onClick={() => setFlipped(!flipped)}
+        onClick={handleFlip}
       >
         <div className={`flip-card-inner w-full h-full relative ${flipped ? 'flipped' : ''}`}>
           <div className="flip-card-front absolute inset-0 bg-card border-2 border-border rounded-2xl flex flex-col items-center justify-center p-6 shadow-lg">
+            <span className="text-3xl mb-2">{getCategoryEmoji(word.category)}</span>
             <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">
               {reversed ? 'Polish' : 'English'}
             </p>
@@ -90,9 +109,7 @@ export const LessonFlashcards = ({ lesson }: Props) => {
             <h2 className="font-display text-2xl font-bold text-foreground text-center">{backText}</h2>
             <SpeakButton text={word.polish} size="md" className="mt-2" voicePreference={voice} />
             {word.gender && (
-              <span className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full mt-2">
-                {word.gender}
-              </span>
+              <GenderBadge gender={word.gender} className="mt-2" />
             )}
             {word.grammarTip && (
               <p className="text-xs text-muted-foreground mt-2 bg-muted/50 rounded-md px-3 py-1.5 max-w-xs text-center">

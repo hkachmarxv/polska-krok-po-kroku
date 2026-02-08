@@ -3,6 +3,9 @@ import { RotateCcw, Timer, Trophy, Zap } from 'lucide-react';
 import { Lesson } from '@/data/courseTypes';
 import { useProgress } from '@/hooks/useProgress';
 import { cn } from '@/lib/utils';
+import { CharacterReaction } from '@/components/characters/CharacterReaction';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
+import type { CharacterMood } from '@/components/characters/Kazik';
 
 interface Props {
   lesson: Lesson;
@@ -18,6 +21,8 @@ interface MatchCard {
 
 export const LessonMatchGame = ({ lesson }: Props) => {
   const { recordCardResult } = useProgress();
+  const sfx = useSoundEffects();
+  const [charMood, setCharMood] = useState<CharacterMood>('thinking');
   const [cards, setCards] = useState<MatchCard[]>([]);
   const [selected, setSelected] = useState<MatchCard | null>(null);
   const [matchedCount, setMatchedCount] = useState(0);
@@ -102,7 +107,9 @@ export const LessonMatchGame = ({ lesson }: Props) => {
     if (selected.wordId === card.wordId) {
       // Correct match
       setFlashCorrect(card.wordId);
-      setTimeout(() => setFlashCorrect(null), 500);
+      sfx.playMatch();
+      setCharMood('celebrating');
+      setTimeout(() => { setFlashCorrect(null); setCharMood('thinking'); }, 500);
 
       setCards(prev => prev.map(c =>
         c.wordId === card.wordId ? { ...c, matched: true } : c
@@ -114,6 +121,8 @@ export const LessonMatchGame = ({ lesson }: Props) => {
 
       if (newCount >= Math.min(pairCount, lesson.vocabulary.length)) {
         setGameState('complete');
+        sfx.playComplete();
+        setCharMood('celebrating');
       }
 
       setSelected(null);
@@ -121,6 +130,8 @@ export const LessonMatchGame = ({ lesson }: Props) => {
       // Wrong match
       setShakeId(card.id);
       setMistakes(m => m + 1);
+      sfx.playWrong();
+      setCharMood('sad');
       recordCardResult(selected.wordId, false);
 
       setTimeout(() => {
@@ -165,6 +176,7 @@ export const LessonMatchGame = ({ lesson }: Props) => {
     const stars = mistakes === 0 ? 3 : mistakes <= 2 ? 2 : 1;
     return (
       <div className="py-8 text-center space-y-4 animate-fade-in">
+        <CharacterReaction character="kazik" mood="celebrating" size={56} className="justify-center" />
         <Trophy className="w-12 h-12 text-accent mx-auto" />
         <h3 className="font-display text-xl font-bold text-foreground">All Matched!</h3>
         <div className="text-3xl">{'⭐'.repeat(stars)}{'☆'.repeat(3 - stars)}</div>
@@ -186,9 +198,12 @@ export const LessonMatchGame = ({ lesson }: Props) => {
     <div className="py-4 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Timer className="w-4 h-4" />
-          <span className="font-mono">{formatTime(elapsed)}</span>
+        <div className="flex items-center gap-2">
+          <CharacterReaction character="kazik" mood={charMood} size={32} />
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Timer className="w-4 h-4" />
+            <span className="font-mono">{formatTime(elapsed)}</span>
+          </div>
         </div>
         <p className="text-sm font-medium text-foreground">
           {matchedCount}/{Math.min(pairCount, lesson.vocabulary.length)} matched

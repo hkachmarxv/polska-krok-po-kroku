@@ -1,5 +1,6 @@
 import { Word } from '@/data/polishWords';
 import { SpeakButton } from '@/components/SpeakButton';
+import { GenderBadge } from '@/components/GenderBadge';
 
 interface WordOfTheDayProps {
   word: Word;
@@ -27,9 +28,7 @@ export const WordOfTheDay = ({ word }: WordOfTheDayProps) => {
           )}
         </div>
         {word.gender && (
-          <span className="text-xs bg-secondary text-secondary-foreground px-2.5 py-1 rounded-full font-semibold">
-            {word.gender === 'masculine' ? '♂ masc' : word.gender === 'feminine' ? '♀ fem' : '⚬ neut'}
-          </span>
+          <GenderBadge gender={word.gender} />
         )}
       </div>
     </div>

@@ -4,6 +4,9 @@ import { Lesson } from '@/data/courseTypes';
 import { useProgress } from '@/hooks/useProgress';
 import { SpeakButton } from '@/components/SpeakButton';
 import { useVoicePreference } from '@/hooks/useVoicePreference';
+import { CharacterReaction } from '@/components/characters/CharacterReaction';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
+import type { CharacterMood } from '@/components/characters/Kazik';
 
 interface Props {
   lesson: Lesson;
@@ -18,6 +21,8 @@ interface Sentence {
 export const LessonSentenceBuilder = ({ lesson }: Props) => {
   const { voice } = useVoicePreference();
   const { recordCardResult } = useProgress();
+  const sfx = useSoundEffects();
+  const [charMood, setCharMood] = useState<CharacterMood>('thinking');
 
   // Collect sentences from vocabulary and dialogues
   const sentences = useMemo(() => {
@@ -123,10 +128,13 @@ export const LessonSentenceBuilder = ({ lesson }: Props) => {
     const correctWords = currentSentence.polish.replace(/[.!?,;:]/g, '').split(/\s+/);
     const isCorrect = selectedWords.join(' ').toLowerCase() === correctWords.join(' ').toLowerCase();
     setResult(isCorrect ? 'correct' : 'incorrect');
+    if (isCorrect) { sfx.playCorrect(); setCharMood('celebrating'); }
+    else { sfx.playWrong(); setCharMood('sad'); }
     setScore(prev => ({
       correct: prev.correct + (isCorrect ? 1 : 0),
       total: prev.total + 1,
     }));
+    setTimeout(() => setCharMood('thinking'), 1200);
 
     // Record for vocab-based sentences
     if (currentSentence.wordId && !currentSentence.wordId.startsWith('dialogue_')) {
@@ -193,6 +201,7 @@ export const LessonSentenceBuilder = ({ lesson }: Props) => {
 
       {/* English prompt */}
       <div className="bg-card border border-border rounded-xl p-4 text-center">
+        <CharacterReaction character="basia" mood={charMood} size={36} className="justify-center mb-2" />
         <p className="text-xs text-muted-foreground mb-1">Translate this sentence:</p>
         <p className="font-display font-bold text-foreground">{currentSentence.english}</p>
       </div>
