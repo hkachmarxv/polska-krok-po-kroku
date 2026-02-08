@@ -14,9 +14,10 @@ interface Drill {
 
 interface Props {
   lesson: Lesson;
+  onComplete?: () => void;
 }
 
-export const LessonGrammarDrill = ({ lesson }: Props) => {
+export const LessonGrammarDrill = ({ lesson, onComplete }: Props) => {
   const [drill, setDrill] = useState<Drill | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -202,11 +203,19 @@ export const LessonGrammarDrill = ({ lesson }: Props) => {
 
       {/* Score */}
       {score.total >= 3 && !loading && (
-        <div className="bg-card border border-border rounded-lg p-3 text-center">
+        <div className="bg-card border border-border rounded-lg p-3 text-center space-y-2">
           <p className="text-xs text-muted-foreground">Session: {score.correct}/{score.total} ({Math.round((score.correct / score.total) * 100)}%)</p>
+          {onComplete && (
+            <button
+              onClick={onComplete}
+              className="w-full bg-success text-success-foreground px-6 py-3 rounded-xl font-bold"
+            >
+              ✅ Complete Step
+            </button>
+          )}
           <button
             onClick={() => { setScore({ correct: 0, total: 0 }); setDrill(null); setPreviousWords([]); }}
-            className="mt-1 text-xs text-primary font-medium hover:underline flex items-center gap-1 mx-auto"
+            className="text-xs text-primary font-medium hover:underline flex items-center gap-1 mx-auto"
           >
             <RotateCcw className="w-3 h-3" /> Reset
           </button>

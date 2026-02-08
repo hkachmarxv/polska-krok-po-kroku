@@ -10,6 +10,7 @@ import type { CharacterMood } from '@/components/characters/Kazik';
 
 interface Props {
   lesson: Lesson;
+  onComplete?: () => void;
 }
 
 interface Sentence {
@@ -18,7 +19,7 @@ interface Sentence {
   wordId: string;
 }
 
-export const LessonSentenceBuilder = ({ lesson }: Props) => {
+export const LessonSentenceBuilder = ({ lesson, onComplete }: Props) => {
   const { voice } = useVoicePreference();
   const { recordCardResult } = useProgress();
   const sfx = useSoundEffects();
@@ -139,9 +140,16 @@ export const LessonSentenceBuilder = ({ lesson }: Props) => {
         <p className="text-muted-foreground">
           {score.correct} / {score.total} correct ({pct}%)
         </p>
-        <button onClick={handleRestart} className="bg-primary text-primary-foreground px-6 py-2.5 rounded-xl font-medium flex items-center gap-2 mx-auto">
-          <RotateCcw className="w-4 h-4" /> Try Again
-        </button>
+        <div className="space-y-2">
+          {onComplete && (
+            <button onClick={onComplete} className="w-full bg-success text-success-foreground px-6 py-3 rounded-xl font-bold flex items-center gap-2 justify-center">
+              <CheckCircle className="w-5 h-5" /> Complete Step
+            </button>
+          )}
+          <button onClick={handleRestart} className="w-full bg-primary text-primary-foreground px-6 py-2.5 rounded-xl font-medium flex items-center gap-2 justify-center">
+            <RotateCcw className="w-4 h-4" /> Try Again
+          </button>
+        </div>
       </div>
     );
   }

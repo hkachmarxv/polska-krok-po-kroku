@@ -28,6 +28,7 @@ export interface UserProgress {
   lessonsCompleted: number[];
   currentLesson: number;
   streakFreezes: number;
+  lessonStepsCompleted: Record<number, number[]>;
 }
 
 const STORAGE_KEY = 'polish-learner-progress';
@@ -41,6 +42,7 @@ const defaultProgress: UserProgress = {
   lessonsCompleted: [],
   currentLesson: 1,
   streakFreezes: 10,
+  lessonStepsCompleted: {},
 };
 
 export function useProgress() {
@@ -87,6 +89,7 @@ export function useProgress() {
           lessonsCompleted: data.lessons_completed || [],
           currentLesson: data.current_lesson,
           streakFreezes: (data as any).streak_freezes ?? 10,
+          lessonStepsCompleted: ((data as any).lesson_steps_completed as Record<number, number[]>) || {},
         };
 
         // Merge: take whichever has more progress
@@ -268,6 +271,24 @@ export function useProgress() {
     });
   }, []);
 
+  const completeStep = useCallback((lessonId: number, stepNumber: number) => {
+    setProgress(prev => {
+      const existing = prev.lessonStepsCompleted?.[lessonId] || [];
+      if (existing.includes(stepNumber)) return prev;
+      return {
+        ...prev,
+        lessonStepsCompleted: {
+          ...prev.lessonStepsCompleted,
+          [lessonId]: [...existing, stepNumber].sort((a, b) => a - b),
+        },
+      };
+    });
+  }, []);
+
+  const isStepCompleted = useCallback((lessonId: number, stepNumber: number) => {
+    return (progress.lessonStepsCompleted?.[lessonId] || []).includes(stepNumber);
+  }, [progress.lessonStepsCompleted]);
+
   return {
     progress,
     recordCardResult,
@@ -278,6 +299,8 @@ export function useProgress() {
     getWeakestCategory,
     updateStreak,
     completeLesson,
+    completeStep,
+    isStepCompleted,
   };
 }
 
@@ -306,6 +329,13 @@ function mergeProgress(local: UserProgress, cloud: UserProgress): UserProgress {
 
   const learnedCount = Object.values(mergedCards).filter(c => c.correctCount >= 3).length;
 
+  // Merge step completions
+  const mergedSteps: Record<number, number[]> = { ...(cloud.lessonStepsCompleted || {}) };
+  for (const [lid, steps] of Object.entries(local.lessonStepsCompleted || {})) {
+    const key = Number(lid);
+    mergedSteps[key] = [...new Set([...(mergedSteps[key] || []), ...steps])].sort((a, b) => a - b);
+  }
+
   return {
     streak: Math.max(local.streak, cloud.streak),
     lastPracticeDate: local.lastPracticeDate > cloud.lastPracticeDate ? local.lastPracticeDate : cloud.lastPracticeDate,
@@ -315,6 +345,7 @@ function mergeProgress(local: UserProgress, cloud: UserProgress): UserProgress {
     lessonsCompleted: mergedLessons,
     currentLesson: Math.max(local.currentLesson || 1, cloud.currentLesson || 1),
     streakFreezes: Math.min(local.streakFreezes ?? 10, cloud.streakFreezes ?? 10),
+    lessonStepsCompleted: mergedSteps,
   };
 }
 

@@ -9,6 +9,7 @@ import type { CharacterMood } from '@/components/characters/Kazik';
 
 interface Props {
   lesson: Lesson;
+  onComplete?: () => void;
 }
 
 interface MatchCard {
@@ -19,7 +20,7 @@ interface MatchCard {
   matched: boolean;
 }
 
-export const LessonMatchGame = ({ lesson }: Props) => {
+export const LessonMatchGame = ({ lesson, onComplete }: Props) => {
   const { recordCardResult } = useProgress();
   const sfx = useSoundEffects();
   const [companion] = useState(() => getRandomCharacter());
@@ -150,9 +151,16 @@ export const LessonMatchGame = ({ lesson }: Props) => {
           <span className="flex items-center gap-1"><Timer className="w-4 h-4" /> {formatTime(elapsed)}</span>
           <span>{mistakes} mistake{mistakes !== 1 ? 's' : ''}</span>
         </div>
-        <button onClick={initGame} className="bg-primary text-primary-foreground px-6 py-2.5 rounded-xl font-medium flex items-center gap-2 mx-auto">
-          <RotateCcw className="w-4 h-4" /> Play Again
-        </button>
+        <div className="space-y-2">
+          {onComplete && (
+            <button onClick={onComplete} className="w-full bg-success text-success-foreground px-6 py-3 rounded-xl font-bold flex items-center gap-2 justify-center">
+              ✅ Complete Step
+            </button>
+          )}
+          <button onClick={initGame} className="w-full bg-primary text-primary-foreground px-6 py-2.5 rounded-xl font-medium flex items-center gap-2 justify-center">
+            <RotateCcw className="w-4 h-4" /> Play Again
+          </button>
+        </div>
       </div>
     );
   }
