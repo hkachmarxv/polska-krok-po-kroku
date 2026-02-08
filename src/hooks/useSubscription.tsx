@@ -8,7 +8,7 @@ export const PLANS = {
     priceId: 'price_1SyezqGdKrTRUj6v7QsTFKeI',
     productId: 'prod_TwY60LM6n8o2U6',
     name: 'Monthly',
-    price: '$20/mo',
+    price: '$30/mo',
     mode: 'subscription' as const,
   },
   onetime: {

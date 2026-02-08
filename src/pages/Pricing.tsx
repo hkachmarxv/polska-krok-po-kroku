@@ -84,7 +84,7 @@ const Pricing = () => {
                 <h3 className="font-display font-bold text-foreground text-lg">Monthly</h3>
               </div>
               <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-3xl font-display font-bold text-foreground">$20</span>
+                <span className="text-3xl font-display font-bold text-foreground">$30</span>
                 <span className="text-muted-foreground">/month</span>
               </div>
               <ul className="space-y-2 mb-6">
@@ -116,7 +116,7 @@ const Pricing = () => {
                 <span className="text-3xl font-display font-bold text-foreground">$80</span>
                 <span className="text-muted-foreground">one-time</span>
               </div>
-              <p className="text-xs text-success font-medium mb-4">Save $160 vs 12 months of Monthly</p>
+              <p className="text-xs text-success font-medium mb-4">Save $280 vs 12 months of Monthly</p>
               <ul className="space-y-2 mb-6">
                 {features.map((f, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm text-foreground">
