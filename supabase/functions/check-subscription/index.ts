@@ -74,7 +74,7 @@ serve(async (req) => {
       limit: 100,
     });
 
-    const lifetimePriceId = "price_1SyasZGdKrTRUj6vsexXIR48";
+    const lifetimePriceId = "price_1Syf04GdKrTRUj6vt8De9VBj";
     const hasLifetime = checkoutSessions.data.some(
       (session) => session.payment_status === "paid" && session.mode === "payment" &&
         session.line_items === undefined // We need to check line items

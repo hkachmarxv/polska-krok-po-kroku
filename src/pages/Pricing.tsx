@@ -8,7 +8,7 @@ const Pricing = () => {
   const { subscribed, lifetime, hasSubscription, subscriptionEnd, loading, startCheckout, openCustomerPortal } = useSubscription();
 
   const features = [
-    'All 20 structured Polish lessons',
+    'All 20 structured A1 lessons',
     'Interactive flashcards & quizzes',
     'Sentence builder exercises',
     'Match game & grammar drills',
@@ -43,7 +43,7 @@ const Pricing = () => {
           <div className="bg-success/10 border border-success/30 rounded-2xl p-5 text-center">
             <Crown className="w-8 h-8 text-success mx-auto mb-2" />
             <h2 className="font-display font-bold text-foreground text-lg">
-              {lifetime ? 'Lifetime Access Active 🎉' : 'Monthly Subscription Active'}
+              {lifetime ? 'A1 One-Time Access Active 🎉' : 'Monthly Subscription Active'}
             </h2>
             {subscriptionEnd && !lifetime && (
               <p className="text-sm text-muted-foreground mt-1">
@@ -66,7 +66,7 @@ const Pricing = () => {
               You're on the <span className="font-bold text-foreground">Free Plan</span> — Lesson 1 is free forever.
             </p>
             <p className="text-sm text-muted-foreground mt-1">
-              Upgrade to unlock all 20 lessons and AI tools!
+              Upgrade to unlock all 20 A1 lessons and AI tools!
             </p>
           </div>
         )}
@@ -84,7 +84,7 @@ const Pricing = () => {
                 <h3 className="font-display font-bold text-foreground text-lg">Monthly</h3>
               </div>
               <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-3xl font-display font-bold text-foreground">$39</span>
+                <span className="text-3xl font-display font-bold text-foreground">$20</span>
                 <span className="text-muted-foreground">/month</span>
               </div>
               <ul className="space-y-2 mb-6">
@@ -103,20 +103,20 @@ const Pricing = () => {
               </button>
             </div>
 
-            {/* Lifetime */}
+            {/* One-Time */}
             <div className="bg-card border-2 border-accent/30 rounded-2xl p-6 relative overflow-hidden">
               <div className="absolute top-0 right-0 bg-accent text-accent-foreground text-xs font-bold px-3 py-1 rounded-bl-lg">
                 BEST VALUE
               </div>
               <div className="flex items-center gap-2 mb-3">
                 <Shield className="w-5 h-5 text-accent" />
-                <h3 className="font-display font-bold text-foreground text-lg">Lifetime Access</h3>
+                <h3 className="font-display font-bold text-foreground text-lg">One-Time Access</h3>
               </div>
               <div className="flex items-baseline gap-1 mb-1">
-                <span className="text-3xl font-display font-bold text-foreground">$149</span>
+                <span className="text-3xl font-display font-bold text-foreground">$80</span>
                 <span className="text-muted-foreground">one-time</span>
               </div>
-              <p className="text-xs text-success font-medium mb-4">Save $319 vs 12 months of Monthly</p>
+              <p className="text-xs text-success font-medium mb-4">Save $160 vs 12 months of Monthly</p>
               <ul className="space-y-2 mb-6">
                 {features.map((f, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm text-foreground">
@@ -126,14 +126,14 @@ const Pricing = () => {
                 ))}
                 <li className="flex items-center gap-2 text-sm text-foreground font-bold">
                   <Crown className="w-4 h-4 text-accent flex-shrink-0" />
-                  Lifetime access — pay once, learn forever
+                  Pay once — keep A1 access forever
                 </li>
               </ul>
               <button
-                onClick={() => startCheckout('lifetime')}
+                onClick={() => startCheckout('onetime')}
                 className="w-full bg-accent hover:bg-accent/90 text-accent-foreground rounded-xl py-3.5 font-bold transition-colors"
               >
-                Get Lifetime Access
+                Get A1 Access — $80
               </button>
             </div>
           </div>
