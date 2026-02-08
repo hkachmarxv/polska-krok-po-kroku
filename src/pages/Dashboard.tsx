@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Flame, BookOpen, Target, TrendingUp, ArrowRight, Sparkles, MessageCircleQuestion } from 'lucide-react';
+import { Flame, BookOpen, Target, TrendingUp, ArrowRight, Sparkles, MessageCircleQuestion, PenLine } from 'lucide-react';
 import { categories, getWordsByCategory, getWordOfTheDay } from '@/data/polishWords';
 import { useProgress } from '@/hooks/useProgress';
 import { CategoryCard } from '@/components/CategoryCard';
@@ -62,6 +62,23 @@ const Dashboard = () => {
             </div>
           </div>
           <ArrowRight className="w-4 h-4 text-accent group-hover:translate-x-1 transition-transform" />
+        </button>
+
+        {/* Grammar Drills */}
+        <button
+          onClick={() => navigate('/grammar-drill')}
+          className="w-full bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-center justify-between card-hover group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+              <PenLine className="w-5 h-5 text-primary" />
+            </div>
+            <div className="text-left">
+              <p className="text-sm font-semibold text-foreground">Grammar Drills</p>
+              <p className="text-xs text-muted-foreground">Choose the correct word form in sentences</p>
+            </div>
+          </div>
+          <ArrowRight className="w-4 h-4 text-primary group-hover:translate-x-1 transition-transform" />
         </button>
 
         {/* Suggested Practice */}
