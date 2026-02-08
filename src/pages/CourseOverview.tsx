@@ -7,7 +7,7 @@ import { BottomNav } from '@/components/BottomNav';
 
 const CourseOverview = () => {
   const navigate = useNavigate();
-  const { progress } = useProgress();
+  const { progress, getCategoryMastery } = useProgress();
 
   const completedLessons = progress.lessonsCompleted || [];
   const totalCompleted = completedLessons.length;
@@ -92,7 +92,19 @@ const CourseOverview = () => {
                     <h3 className="font-display font-bold text-foreground text-sm truncate">{lesson.title}</h3>
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">{lesson.titleEnglish}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{lesson.description}</p>
+                  {unlocked && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="flex-1 bg-muted rounded-full h-1">
+                        <div
+                          className="bg-primary/60 h-1 rounded-full transition-all"
+                          style={{ width: `${getCategoryMastery(`lesson-${lesson.id}`, lesson.vocabulary.map(v => v.id))}%` }}
+                        />
+                      </div>
+                      <span className="text-[10px] text-muted-foreground">
+                        {getCategoryMastery(`lesson-${lesson.id}`, lesson.vocabulary.map(v => v.id))}%
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Arrow */}
