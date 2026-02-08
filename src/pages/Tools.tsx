@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, MessageCircleQuestion, PenLine, Layers } from 'lucide-react';
+import { ArrowLeft, MessageCircleQuestion, PenLine, Languages } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 
 const Tools = () => {
@@ -15,6 +15,21 @@ const Tools = () => {
       </header>
 
       <main className="container max-w-2xl mx-auto px-4 py-6 space-y-3">
+        <button
+          onClick={() => navigate('/alphabet')}
+          className="w-full bg-card border border-border rounded-2xl p-4 flex items-center justify-between card-hover group shadow-sm"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+              <Languages className="w-5 h-5 text-primary" />
+            </div>
+            <div className="text-left">
+              <p className="text-sm font-semibold text-foreground">Alphabet & Sounds</p>
+              <p className="text-xs text-muted-foreground">Interactive pronunciation guide & practice</p>
+            </div>
+          </div>
+        </button>
+
         <button
           onClick={() => navigate('/grammar')}
           className="w-full bg-card border border-border rounded-2xl p-4 flex items-center justify-between card-hover group shadow-sm"
