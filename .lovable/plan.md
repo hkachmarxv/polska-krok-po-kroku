@@ -1,57 +1,50 @@
 
+# Contact / Support System for LearnPolski
 
-# LearnPolski — Rebrand + Landing Page + Custom Domain
-
-## What we'll do
-
-### 1. Rename the app to "LearnPolski"
-Update every place the old name "PolishPal" appears:
-- `index.html` — page title and meta tags
-- `src/pages/Auth.tsx` — logo/heading on the login screen
-- `src/pages/Dashboard.tsx` — header branding
-- Any other files referencing "PolishPal"
-
-### 2. Create a public Landing Page
-A new marketing-style homepage at `/` that visitors see **before** signing up. It will include:
-- Hero section with tagline (e.g. "Learn Polish the smart way")
-- Feature highlights (lessons, flashcards, grammar drills, AI assistant)
-- Call-to-action buttons ("Get Started" / "Sign In")
-- Clean, modern design matching the existing style
-
-The current dashboard moves from `/` to `/dashboard`, and the `ProtectedRoute` logic stays on `/dashboard` and all app routes. The landing page is fully public.
-
-### 3. Custom Domain setup
-Once you have a domain (e.g. `learnpolski.com`), you'll connect it through:
-- **Project Settings -> Domains -> Connect Domain**
-- Add DNS records at your domain registrar:
-  - A record for `@` pointing to `185.158.133.1`
-  - A record for `www` pointing to `185.158.133.1`
-  - TXT record as provided by Lovable for verification
-- SSL is provisioned automatically
-
-This does not require any code changes — it's done through the Lovable project settings UI.
+Congrats on setting up the official email! Here's the plan to add contact capabilities in two places: the public landing page and inside the app.
 
 ---
 
-## Technical details
+## 1. Landing Page — Contact Section
 
-**Routing changes in `App.tsx`:**
-- `/` — new public `LandingPage` component (no auth required)
-- `/dashboard` — existing `Dashboard` (protected)
-- `/auth` — stays the same
-- All other routes stay the same
+Add a new **"Get in Touch"** section on the landing page (above the footer) with a simple contact form:
+- **Fields**: Name, Email, Message
+- **Validation**: Using zod (already installed) for proper input validation
+- **Submission**: Sends the message via a backend function that forwards it to `support@learnpolski.academy` using Resend
+- **UX**: Success toast confirmation after sending
 
-**New file:**
-- `src/pages/LandingPage.tsx` — hero, features grid, CTA buttons linking to `/auth`
+The footer's existing "Contact" mailto link will also be updated to scroll to this section instead.
 
-**Files to edit for rebrand:**
-- `index.html` (title, og:title, description)
-- `src/pages/Auth.tsx` (heading text)
-- `src/pages/Dashboard.tsx` (header text)
-- `src/App.tsx` (route restructure)
-- `src/components/BottomNav.tsx` (if it references the name)
+## 2. In-App — Help & Support
 
-**Navigation updates:**
-- After login, redirect to `/dashboard` instead of `/`
-- Landing page "Sign In" / "Get Started" buttons navigate to `/auth`
+Add a **"Help & Support"** card to the **Settings page** (since that's where logged-in users manage their account):
+- A card with a mail icon, showing `support@learnpolski.academy`
+- Tapping it opens the device's email client (mailto link) pre-filled with the user's email as the sender
+- Simple and effective — no extra page needed
 
+## 3. Backend — Contact Form Edge Function
+
+Create a new edge function `send-contact-email` that:
+- Receives name, email, and message from the contact form
+- Validates inputs server-side
+- Sends the email to `support@learnpolski.academy` using Resend
+- Returns success/error response
+
+**Requirement**: You'll need to provide a **Resend API key** and verify your domain (`learnpolski.academy`) on [resend.com](https://resend.com) so emails are sent from your domain (e.g., `noreply@learnpolski.academy`).
+
+---
+
+## Technical Details
+
+### New files:
+- `src/components/landing/ContactSection.tsx` — Contact form component with name/email/message fields, zod validation, and submission logic
+- `supabase/functions/send-contact-email/index.ts` — Edge function using Resend to forward contact form submissions
+
+### Modified files:
+- `src/pages/LandingPage.tsx` — Add `<ContactSection />` before the footer
+- `src/components/landing/LandingFooter.tsx` — Change "Contact" link to scroll to `#contact` section
+- `src/components/landing/LandingNav.tsx` — Add "Contact" nav link pointing to `#contact`
+- `src/pages/Settings.tsx` — Add a "Help & Support" card with mailto link to `support@learnpolski.academy`
+
+### Secret required:
+- `RESEND_API_KEY` — You'll need to sign up at [resend.com](https://resend.com), verify your domain, and create an API key
