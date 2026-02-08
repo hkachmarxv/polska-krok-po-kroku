@@ -8,6 +8,7 @@ import { StatCard } from '@/components/StatCard';
 import { WordOfTheDay } from '@/components/WordOfTheDay';
 import { BottomNav } from '@/components/BottomNav';
 import { Progress } from '@/components/ui/progress';
+import { ReviewReminders } from '@/components/ReviewReminders';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -71,6 +72,9 @@ const Dashboard = () => {
 
         {/* Word of the Day */}
         <WordOfTheDay word={wordOfDay} />
+
+        {/* Review Reminders */}
+        <ReviewReminders />
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
