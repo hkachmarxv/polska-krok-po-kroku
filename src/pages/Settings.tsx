@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, LogOut, User, Mail, Pencil, Check, X, Loader2, Camera, Lock, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, LogOut, User, Mail, Pencil, Check, X, Loader2, Camera, Lock, Eye, EyeOff, HelpCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -285,6 +285,21 @@ const Settings = () => {
             )}
           </div>
         </div>
+
+        {/* Help & Support */}
+        <a
+          href={`mailto:support@learnpolski.academy?subject=Support Request&body=Hi LearnPolski team,%0A%0A`}
+          className="bg-card rounded-xl border border-border p-4 flex items-center gap-3 hover:bg-muted/50 transition-colors block"
+        >
+          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <HelpCircle className="w-4 h-4 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground">Help & Support</p>
+            <p className="text-xs text-muted-foreground">support@learnpolski.academy</p>
+          </div>
+          <Mail className="w-4 h-4 text-muted-foreground" />
+        </a>
 
         {/* Sign out */}
         <button

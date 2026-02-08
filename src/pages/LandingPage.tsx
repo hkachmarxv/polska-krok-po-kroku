@@ -8,6 +8,7 @@ import PricingSection from '@/components/landing/PricingSection';
 import PolandSection from '@/components/landing/PolandSection';
 import TestimonialsSection from '@/components/landing/TestimonialsSection';
 import FinalCTA from '@/components/landing/FinalCTA';
+import ContactSection from '@/components/landing/ContactSection';
 import LandingFooter from '@/components/landing/LandingFooter';
 
 const LandingPage = () => {
@@ -23,6 +24,7 @@ const LandingPage = () => {
       <PolandSection />
       <TestimonialsSection />
       <FinalCTA />
+      <ContactSection />
       <LandingFooter />
     </div>
   );
