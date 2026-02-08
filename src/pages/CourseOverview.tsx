@@ -1,8 +1,9 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Lock, CheckCircle2, ChevronRight, BookOpen } from 'lucide-react';
+import { Lock, CheckCircle2, ChevronRight, BookOpen } from 'lucide-react';
 import { lessons } from '@/data/a1Course';
 import { useProgress } from '@/hooks/useProgress';
 import { Progress } from '@/components/ui/progress';
+import { BottomNav } from '@/components/BottomNav';
 
 const CourseOverview = () => {
   const navigate = useNavigate();
@@ -20,13 +21,11 @@ const CourseOverview = () => {
   const isCompleted = (lessonId: number) => completedLessons.includes(lessonId);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20">
       <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
-          <button onClick={() => navigate('/')} className="text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <h1 className="font-display text-base font-bold">A1 Course</h1>
+        <div className="container max-w-2xl mx-auto px-4 py-4 flex items-center gap-2">
+          <span className="text-2xl">🇵🇱</span>
+          <h1 className="font-display text-xl font-bold text-foreground">A1 Course</h1>
         </div>
       </header>
 
@@ -105,6 +104,8 @@ const CourseOverview = () => {
           })}
         </div>
       </main>
+
+      <BottomNav />
     </div>
   );
 };

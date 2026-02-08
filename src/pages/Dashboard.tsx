@@ -1,27 +1,26 @@
 import { useNavigate } from 'react-router-dom';
-import { Flame, BookOpen, Target, TrendingUp, ArrowRight, Sparkles, MessageCircleQuestion, PenLine, GraduationCap } from 'lucide-react';
-import { categories, getWordsByCategory, getWordOfTheDay } from '@/data/polishWords';
+import { Flame, BookOpen, Target, TrendingUp, ArrowRight, GraduationCap } from 'lucide-react';
+import { getWordOfTheDay } from '@/data/polishWords';
+import { lessons } from '@/data/a1Course';
 import { useProgress } from '@/hooks/useProgress';
-import { CategoryCard } from '@/components/CategoryCard';
 import { StatCard } from '@/components/StatCard';
 import { WordOfTheDay } from '@/components/WordOfTheDay';
+import { BottomNav } from '@/components/BottomNav';
+import { Progress } from '@/components/ui/progress';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { progress, getCategoryMastery, getOverallAccuracy, getWeakestCategory } = useProgress();
+  const { progress, getOverallAccuracy } = useProgress();
 
-  const categoryWordMap: Record<string, string[]> = {};
-  categories.forEach(cat => {
-    categoryWordMap[cat.id] = getWordsByCategory(cat.id).map(w => w.id);
-  });
-
-  const weakestCategoryId = getWeakestCategory(categoryWordMap);
-  const weakestCategory = categories.find(c => c.id === weakestCategoryId);
   const wordOfDay = getWordOfTheDay();
   const accuracy = getOverallAccuracy();
+  const completedLessons = progress.lessonsCompleted || [];
+  const currentLesson = Math.min(progress.currentLesson || 1, lessons.length);
+  const currentLessonData = lessons.find(l => l.id === currentLesson);
+  const coursePct = Math.round((completedLessons.length / lessons.length) * 100);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20">
       {/* Header */}
       <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="container max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -37,25 +36,33 @@ const Dashboard = () => {
       </header>
 
       <main className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
-        {/* A1 Course CTA */}
+        {/* Continue Learning CTA */}
         <button
-          onClick={() => navigate('/course')}
-          className="w-full bg-primary/10 border-2 border-primary/30 rounded-xl p-5 flex items-center justify-between card-hover group"
+          onClick={() => navigate(completedLessons.length === lessons.length ? '/course' : `/lesson/${currentLesson}`)}
+          className="w-full bg-primary/10 border-2 border-primary/30 rounded-2xl p-5 text-left card-hover group"
         >
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-              <GraduationCap className="w-6 h-6 text-primary" />
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+              <GraduationCap className="w-7 h-7 text-primary" />
             </div>
-            <div className="text-left">
-              <p className="font-display font-bold text-foreground">A1 Course</p>
-              <p className="text-xs text-muted-foreground">
-                {(progress.lessonsCompleted || []).length === 0
-                  ? '20 structured lessons — start learning!'
-                  : `Lesson ${Math.min((progress.currentLesson || 1), 20)} of 20 — continue learning`}
-              </p>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <p className="font-display font-bold text-foreground">
+                  {completedLessons.length === lessons.length ? 'Course Complete! 🎉' : 'Continue Learning'}
+                </p>
+                <ArrowRight className="w-4 h-4 text-primary group-hover:translate-x-1 transition-transform flex-shrink-0" />
+              </div>
+              {currentLessonData && completedLessons.length < lessons.length && (
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {currentLessonData.emoji} Lesson {currentLesson}: {currentLessonData.title}
+                </p>
+              )}
+              <div className="mt-2">
+                <Progress value={coursePct} className="h-2" />
+                <p className="text-[10px] text-muted-foreground mt-1">{completedLessons.length}/{lessons.length} lessons • {coursePct}%</p>
+              </div>
             </div>
           </div>
-          <ArrowRight className="w-5 h-5 text-primary group-hover:translate-x-1 transition-transform" />
         </button>
 
         {/* Word of the Day */}
@@ -66,77 +73,6 @@ const Dashboard = () => {
           <StatCard icon={<Flame className="w-5 h-5 text-streak" />} value={progress.streak} label="Day Streak" />
           <StatCard icon={<BookOpen className="w-5 h-5 text-primary" />} value={progress.totalWordsLearned} label="Learned" />
           <StatCard icon={<Target className="w-5 h-5 text-destructive" />} value={`${accuracy}%`} label="Accuracy" />
-        </div>
-
-        {/* Grammar Assistant */}
-        <button
-          onClick={() => navigate('/grammar')}
-          className="w-full bg-accent/10 border border-accent/20 rounded-lg p-4 flex items-center justify-between card-hover group"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
-              <MessageCircleQuestion className="w-5 h-5 text-accent" />
-            </div>
-            <div className="text-left">
-              <p className="text-sm font-semibold text-foreground">Grammar Assistant</p>
-              <p className="text-xs text-muted-foreground">Ask why a word takes a specific form</p>
-            </div>
-          </div>
-          <ArrowRight className="w-4 h-4 text-accent group-hover:translate-x-1 transition-transform" />
-        </button>
-
-        {/* Grammar Drills */}
-        <button
-          onClick={() => navigate('/grammar-drill')}
-          className="w-full bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-center justify-between card-hover group"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-              <PenLine className="w-5 h-5 text-primary" />
-            </div>
-            <div className="text-left">
-              <p className="text-sm font-semibold text-foreground">Grammar Drills</p>
-              <p className="text-xs text-muted-foreground">Choose the correct word form in sentences</p>
-            </div>
-          </div>
-          <ArrowRight className="w-4 h-4 text-primary group-hover:translate-x-1 transition-transform" />
-        </button>
-
-        {/* Suggested Practice */}
-        {weakestCategory && (
-          <button
-            onClick={() => navigate(`/flashcards/${weakestCategoryId}`)}
-            className="w-full bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-center justify-between card-hover group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-primary" />
-              </div>
-              <div className="text-left">
-                <p className="text-sm font-semibold text-foreground">Suggested Practice</p>
-                <p className="text-xs text-muted-foreground">Review {weakestCategory.name}</p>
-              </div>
-            </div>
-            <ArrowRight className="w-4 h-4 text-primary group-hover:translate-x-1 transition-transform" />
-          </button>
-        )}
-
-        {/* Categories */}
-        <div>
-          <h2 className="font-display text-lg font-bold text-foreground mb-3">Categories</h2>
-          <div className="space-y-3">
-            {categories.map((cat, i) => (
-              <CategoryCard
-                key={cat.id}
-                category={cat}
-                mastery={getCategoryMastery(cat.id, categoryWordMap[cat.id])}
-                wordCount={categoryWordMap[cat.id].length}
-                onFlashcards={() => navigate(`/flashcards/${cat.id}`)}
-                onQuiz={() => navigate(`/quiz/${cat.id}`)}
-                delay={i * 80}
-              />
-            ))}
-          </div>
         </div>
 
         {/* Quiz Results Chart */}
@@ -169,6 +105,8 @@ const Dashboard = () => {
           </div>
         )}
       </main>
+
+      <BottomNav />
     </div>
   );
 };
