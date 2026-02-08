@@ -53,6 +53,7 @@ export type Database = {
           lessons_completed: number[]
           quiz_results: Json
           streak: number
+          streak_freezes: number
           total_words_learned: number
           updated_at: string
           user_id: string
@@ -65,6 +66,7 @@ export type Database = {
           lessons_completed?: number[]
           quiz_results?: Json
           streak?: number
+          streak_freezes?: number
           total_words_learned?: number
           updated_at?: string
           user_id: string
@@ -77,6 +79,7 @@ export type Database = {
           lessons_completed?: number[]
           quiz_results?: Json
           streak?: number
+          streak_freezes?: number
           total_words_learned?: number
           updated_at?: string
           user_id?: string

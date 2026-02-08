@@ -24,7 +24,7 @@ const Dashboard = () => {
   const currentLesson = Math.min(progress.currentLesson || 1, lessons.length);
   const currentLessonData = lessons.find(l => l.id === currentLesson);
   const coursePct = Math.round((completedLessons.length / lessons.length) * 100);
-  const streakFreezes = (progress as any).streakFreezes ?? 10;
+  const streakFreezes = progress.streakFreezes ?? 10;
 
   // Determine Kazik's mood based on streak
   const kazikMood: CharacterMood = progress.streak >= 7 ? 'celebrating' : progress.streak >= 3 ? 'happy' : progress.streak === 0 ? 'encouraging' : 'happy';
