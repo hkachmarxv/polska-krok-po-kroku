@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Flame, BookOpen, Target, TrendingUp, ArrowRight, Sparkles } from 'lucide-react';
+import { Flame, BookOpen, Target, TrendingUp, ArrowRight, Sparkles, MessageCircleQuestion } from 'lucide-react';
 import { categories, getWordsByCategory, getWordOfTheDay } from '@/data/polishWords';
 import { useProgress } from '@/hooks/useProgress';
 import { CategoryCard } from '@/components/CategoryCard';
@@ -46,6 +46,23 @@ const Dashboard = () => {
           <StatCard icon={<BookOpen className="w-5 h-5 text-primary" />} value={progress.totalWordsLearned} label="Learned" />
           <StatCard icon={<Target className="w-5 h-5 text-destructive" />} value={`${accuracy}%`} label="Accuracy" />
         </div>
+
+        {/* Grammar Assistant */}
+        <button
+          onClick={() => navigate('/grammar')}
+          className="w-full bg-accent/10 border border-accent/20 rounded-lg p-4 flex items-center justify-between card-hover group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
+              <MessageCircleQuestion className="w-5 h-5 text-accent" />
+            </div>
+            <div className="text-left">
+              <p className="text-sm font-semibold text-foreground">Grammar Assistant</p>
+              <p className="text-xs text-muted-foreground">Ask why a word takes a specific form</p>
+            </div>
+          </div>
+          <ArrowRight className="w-4 h-4 text-accent group-hover:translate-x-1 transition-transform" />
+        </button>
 
         {/* Suggested Practice */}
         {weakestCategory && (

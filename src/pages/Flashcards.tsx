@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, RotateCcw, Check, X, Shuffle } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Check, X, ChevronRight } from 'lucide-react';
 import { categories, getWordsByCategory, Word } from '@/data/polishWords';
 import { useProgress } from '@/hooks/useProgress';
 
@@ -37,14 +37,19 @@ const Flashcards = () => {
   const backText = reversed ? word.english : word.polish;
   const showPhonetic = !reversed; // show phonetic on back when english->polish
 
+  const [answered, setAnswered] = useState(false);
+
   const handleAnswer = (correct: boolean) => {
     setFeedback(correct ? 'correct' : 'incorrect');
     recordCardResult(word.id, correct);
-    setTimeout(() => {
-      setFeedback(null);
-      setFlipped(false);
-      setCurrentIndex(prev => (prev + 1) % orderedWords.length);
-    }, 600);
+    setAnswered(true);
+    setTimeout(() => setFeedback(null), 600);
+  };
+
+  const handleNext = () => {
+    setFlipped(false);
+    setAnswered(false);
+    setCurrentIndex(prev => (prev + 1) % orderedWords.length);
   };
 
   const progressPct = orderedWords.length > 0
@@ -118,7 +123,7 @@ const Flashcards = () => {
         </div>
 
         {/* Answer Buttons */}
-        {flipped && (
+        {flipped && !answered && (
           <div className="flex gap-3 animate-fade-in">
             <button
               onClick={() => handleAnswer(false)}
@@ -135,6 +140,17 @@ const Flashcards = () => {
               Got it right
             </button>
           </div>
+        )}
+
+        {/* Next Button */}
+        {answered && (
+          <button
+            onClick={handleNext}
+            className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl py-4 font-bold transition-colors animate-fade-in"
+          >
+            Next Card
+            <ChevronRight className="w-5 h-5" />
+          </button>
         )}
       </main>
     </div>
