@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Volume2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { SpeakButton } from '@/components/SpeakButton';
 
 const categories = [
   {
@@ -97,9 +97,7 @@ const VocabPreviewSection = () => {
                 </div>
                 <p className="text-xs text-primary/70 font-medium mt-0.5">/{w.phonetic}/</p>
               </div>
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <Volume2 className="w-4 h-4 text-primary" />
-              </div>
+              <SpeakButton text={w.polish} size="sm" />
             </div>
           ))}
         </motion.div>
