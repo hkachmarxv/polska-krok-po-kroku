@@ -164,6 +164,17 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-6">
+        {/* Back to Home */}
+        <div className="flex justify-center">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to home
+          </button>
+        </div>
+
         {/* Logo */}
         <div className="text-center space-y-2">
           <span className="text-4xl">🇵🇱</span>
@@ -214,6 +225,7 @@ const Auth = () => {
               <input
                 type="text"
                 placeholder="Username (optional)"
+                aria-label="Username"
                 value={displayName}
                 onChange={e => setDisplayName(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
@@ -230,6 +242,7 @@ const Auth = () => {
             <input
               type={mode === 'signup' || mode === 'forgot' ? 'email' : 'text'}
               placeholder={mode === 'login' ? 'Email or username' : 'Email address'}
+              aria-label={mode === 'login' ? 'Email or username' : 'Email address'}
               value={identifier}
               onChange={e => setIdentifier(e.target.value)}
               required
@@ -243,6 +256,7 @@ const Auth = () => {
               <input
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Password (min. 6 characters)"
+                aria-label="Password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
@@ -252,6 +266,7 @@ const Auth = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -315,6 +330,10 @@ const Auth = () => {
             </button>
           </>
         )}
+
+        <p className="text-xs text-muted-foreground text-center">
+          Lesson 1 is completely free — no credit card needed.
+        </p>
 
         <p className="text-xs text-muted-foreground text-center">
           By continuing, you agree to our{' '}

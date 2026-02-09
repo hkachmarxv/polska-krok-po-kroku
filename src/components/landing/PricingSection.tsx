@@ -63,7 +63,7 @@ const PricingSection = () => {
                 Text-to-speech pronunciation
               </li>
             </ul>
-            <Button variant="outline" className="w-full" onClick={() => navigate('/auth')}>
+            <Button variant="outline" className="w-full" onClick={() => navigate('/auth?plan=free')}>
               Start Free <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           </motion.div>
@@ -95,7 +95,7 @@ const PricingSection = () => {
                 </li>
               ))}
             </ul>
-            <Button className="w-full font-bold" onClick={() => navigate('/auth')}>
+            <Button className="w-full font-bold" onClick={() => navigate('/auth?plan=monthly')}>
               Subscribe Monthly
             </Button>
           </motion.div>
@@ -132,7 +132,7 @@ const PricingSection = () => {
                 Pay once — keep A1 access forever
               </li>
             </ul>
-            <Button variant="outline" className="w-full font-bold border-accent text-accent hover:bg-accent/10" onClick={() => navigate('/auth')}>
+            <Button variant="outline" className="w-full font-bold border-accent text-accent hover:bg-accent/10" onClick={() => navigate('/auth?plan=lifetime')}>
               Get A1 Access — $80
             </Button>
           </motion.div>

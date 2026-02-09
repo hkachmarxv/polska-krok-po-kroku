@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 const LandingNav = () => {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, loading } = useAuth();
 
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
@@ -32,8 +34,14 @@ const LandingNav = () => {
 
         <div className="hidden md:flex items-center gap-3">
           <ThemeToggle />
-          <Button variant="ghost" size="sm" onClick={() => navigate('/auth')}>Sign In</Button>
-          <Button size="sm" onClick={() => navigate('/auth')} className="font-bold">Start Free</Button>
+          {!loading && user ? (
+            <Button size="sm" onClick={() => navigate('/dashboard')} className="font-bold">Go to Dashboard</Button>
+          ) : (
+            <>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/auth')}>Sign In</Button>
+              <Button size="sm" onClick={() => navigate('/auth')} className="font-bold">Start Free</Button>
+            </>
+          )}
         </div>
 
         {/* Mobile hamburger */}
@@ -54,8 +62,14 @@ const LandingNav = () => {
           <button onClick={() => scrollTo('pricing')} className="block w-full text-left text-sm font-medium text-muted-foreground hover:text-foreground">Pricing</button>
           <button onClick={() => scrollTo('contact')} className="block w-full text-left text-sm font-medium text-muted-foreground hover:text-foreground">Contact</button>
           <div className="flex gap-2 pt-2">
-            <Button variant="outline" size="sm" className="flex-1" onClick={() => navigate('/auth')}>Sign In</Button>
-            <Button size="sm" className="flex-1 font-bold" onClick={() => navigate('/auth')}>Start Free</Button>
+            {!loading && user ? (
+              <Button size="sm" className="flex-1 font-bold" onClick={() => { setMobileOpen(false); navigate('/dashboard'); }}>Go to Dashboard</Button>
+            ) : (
+              <>
+                <Button variant="outline" size="sm" className="flex-1" onClick={() => { setMobileOpen(false); navigate('/auth'); }}>Sign In</Button>
+                <Button size="sm" className="flex-1 font-bold" onClick={() => { setMobileOpen(false); navigate('/auth'); }}>Start Free</Button>
+              </>
+            )}
           </div>
         </div>
       )}
