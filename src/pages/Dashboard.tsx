@@ -102,6 +102,25 @@ const Dashboard = () => {
           </div>
         </button>
 
+        {/* Grammar Drills Quick Action */}
+        <button
+          onClick={() => navigate('/grammar-drill')}
+          className="w-full bg-card border-2 border-border rounded-2xl p-5 text-left card-hover group shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+              <span className="text-2xl">✏️</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <p className="font-display font-bold text-foreground">Grammar Drills</p>
+                <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform flex-shrink-0" />
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">Practice cases, verbs & more with AI exercises</p>
+            </div>
+          </div>
+        </button>
+
         {/* Word of the Day */}
         <WordOfTheDay word={wordOfDay} />
 
