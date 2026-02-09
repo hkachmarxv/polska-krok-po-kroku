@@ -53,6 +53,7 @@ const App = () => (
             <TestModeIndicator />
             <BrowserRouter>
               <CelebrationOverlay />
+              <main>
               <Suspense fallback={<div className="min-h-screen bg-background" />}>
                 <Routes>
                   <Route path="/" element={<LandingPage />} />
@@ -75,6 +76,7 @@ const App = () => (
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
+              </main>
             </BrowserRouter>
           </TooltipProvider>
         </SubscriptionProvider>
