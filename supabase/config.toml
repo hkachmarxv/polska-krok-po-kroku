@@ -6,6 +6,9 @@ verify_jwt = false
 [functions.grammar-drill]
 verify_jwt = false
 
+[functions.ai-usage-status]
+verify_jwt = false
+
 [functions.check-subscription]
 verify_jwt = false
 

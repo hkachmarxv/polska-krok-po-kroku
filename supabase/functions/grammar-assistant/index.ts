@@ -1,10 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+import { corsHeaders, aiGuard, recordUsage, validatePolishInput, softBlockResponse } from "../_shared/ai-guard.ts";
 
 const SYSTEM_PROMPT = `You are a Polish grammar assistant helping an English speaker learn Polish. You specialize in explaining:
 
@@ -21,7 +16,11 @@ When a user asks "Why is it X and not Y?", explain:
 
 Keep explanations concise and practical. Use phonetic guides (e.g. "kota" → "KOH-tah") when introducing new Polish words. Format responses with markdown for readability.
 
-Always be encouraging — Polish grammar is hard and the learner is doing great by asking questions!`;
+Always be encouraging — Polish grammar is hard and the learner is doing great by asking questions!
+
+IMPORTANT: You ONLY help with Polish language learning. If asked about anything unrelated to Polish grammar, vocabulary, pronunciation, or translation, politely redirect the user back to Polish learning.`;
+
+const MAX_OUTPUT_TOKENS = 1024;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -29,9 +28,43 @@ serve(async (req) => {
   }
 
   try {
+    // Auth + rate limit check
+    let guard;
+    try {
+      guard = await aiGuard(req, "grammar_assistant");
+    } catch (e: any) {
+      if (e.message === "UNAUTHORIZED") {
+        return new Response(JSON.stringify({ error: "Please sign in to use the AI tutor." }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      throw e;
+    }
+
+    if (!guard.allowed) {
+      return softBlockResponse(guard);
+    }
+
     const { messages } = await req.json();
+
+    // Validate last user message
+    const lastUserMsg = [...messages].reverse().find((m: any) => m.role === "user");
+    if (lastUserMsg) {
+      const validation = validatePolishInput(lastUserMsg.content);
+      if (!validation.valid) {
+        return new Response(JSON.stringify({ error: validation.reason }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
+    // Estimate input tokens (rough: 1 token ≈ 4 chars)
+    const inputTokensEstimate = Math.ceil(
+      messages.reduce((sum: number, m: any) => sum + (m.content?.length || 0), 0) / 4
+    );
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -47,6 +80,7 @@ serve(async (req) => {
             { role: "system", content: SYSTEM_PROMPT },
             ...messages,
           ],
+          max_tokens: MAX_OUTPUT_TOKENS,
           stream: true,
         }),
       }
@@ -72,6 +106,12 @@ serve(async (req) => {
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Record usage (estimate output tokens as MAX_OUTPUT_TOKENS worst case)
+    const estimatedTokens = inputTokensEstimate + MAX_OUTPUT_TOKENS;
+    recordUsage(guard.userId, "grammar_assistant", estimatedTokens).catch((e) =>
+      console.error("Failed to record usage:", e)
+    );
 
     return new Response(response.body, {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },

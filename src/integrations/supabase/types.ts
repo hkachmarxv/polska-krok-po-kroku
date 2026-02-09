@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_limits: {
+        Row: {
+          daily_request_limit: number
+          daily_token_limit: number
+          id: string
+          min_interval_seconds: number
+          tier: string
+          updated_at: string
+        }
+        Insert: {
+          daily_request_limit: number
+          daily_token_limit: number
+          id?: string
+          min_interval_seconds?: number
+          tier: string
+          updated_at?: string
+        }
+        Update: {
+          daily_request_limit?: number
+          daily_token_limit?: number
+          id?: string
+          min_interval_seconds?: number
+          tier?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ai_usage_daily: {
+        Row: {
+          created_at: string
+          grammar_assistant_count: number
+          grammar_drill_count: number
+          id: string
+          last_used_at: string | null
+          total_tokens_estimate: number
+          usage_date: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          grammar_assistant_count?: number
+          grammar_drill_count?: number
+          id?: string
+          last_used_at?: string | null
+          total_tokens_estimate?: number
+          usage_date?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          grammar_assistant_count?: number
+          grammar_drill_count?: number
+          id?: string
+          last_used_at?: string | null
+          total_tokens_estimate?: number
+          usage_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
