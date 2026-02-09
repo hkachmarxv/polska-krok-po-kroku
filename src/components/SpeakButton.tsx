@@ -2,9 +2,22 @@ import { useState, useCallback, useRef } from 'react';
 import { Volume2, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { VOICES, type VoicePreference } from '@/hooks/useVoicePreference';
-
+import { supabase } from '@/integrations/supabase/client';
 // Client-side audio cache to avoid duplicate API calls
 const audioCache = new Map<string, string>();
+
+// Helper to get current session token
+const getAuthToken = async (): Promise<string> => {
+  try {
+    const { data } = await supabase.auth.getSession();
+    if (data?.session?.access_token) {
+      return data.session.access_token;
+    }
+  } catch {
+    // Fall back to anon key
+  }
+  return import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+};
 
 interface SpeakButtonProps {
   text: string;
@@ -51,6 +64,7 @@ export const SpeakButton = ({ text, size = 'sm', className, speakerGender, voice
 
     setLoading(true);
     try {
+      const authToken = await getAuthToken();
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/tts`,
         {
@@ -58,7 +72,7 @@ export const SpeakButton = ({ text, size = 'sm', className, speakerGender, voice
           headers: {
             'Content-Type': 'application/json',
             apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            Authorization: `Bearer ${authToken}`,
           },
           body: JSON.stringify({ text, voiceId }),
         }
