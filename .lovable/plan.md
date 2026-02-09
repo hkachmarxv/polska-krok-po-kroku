@@ -1,66 +1,49 @@
 
 
-# Test Mode Plan
+## Plan: Settings Cancellation + Bug Fixes + Final Polish
 
-## What This Solves
+### 1. Add Cancel Subscription to Settings Page
+Add a "Subscription" card to the Settings page (between Help & Support and Test Mode) that shows:
+- Current plan status (active monthly / lifetime / free)
+- Renewal date if monthly
+- "Manage Billing" link to Stripe portal
+- "Cancel subscription" trigger that opens the same `CancellationDialog`
 
-Right now, to fully test the app you'd need to: pay for a subscription, complete lessons sequentially, and are limited to 5 AI uses per day. This makes it nearly impossible to verify all flows, test the premium experience, or check how checkout looks.
+This requires importing `useSubscription` and `CancellationDialog` into Settings.
 
-## How It Works
+### 2. Fix Privacy Policy Email (Bug)
+Line 53 currently says `privacy@learnpolski.com` -- change to `support@learnpolski.academy`.
+Also update the surrounding text to remove the "contact form" reference and point solely to the support email.
 
-A hidden **Test Mode** toggle will be added to your Settings page, protected so only your admin email can see it. When enabled, a small indicator badge appears on screen so you always know you're in test mode.
+### 3. Fix Terms of Service Email (Bug)
+Line 63 currently says `legal@learnpolski.com` -- change to `support@learnpolski.academy`.
+Same cleanup: single point of contact.
 
-### What Test Mode Unlocks
+### 4. Add Support Email to Welcome Email Footer
+The welcome email (send-welcome-email) has no support contact in its footer. Add a line: "Questions? Contact support@learnpolski.academy" to match the subscription and cancellation emails.
 
-| Restriction | Normal | Test Mode |
-|---|---|---|
-| Lessons 2-20 | Locked (need payment) | All unlocked |
-| Lesson sequence | Must complete previous | All accessible |
-| AI Grammar tools | 5 uses/day | Unlimited |
-| Checkout flow | Real Stripe payment | Stripe test mode (same flow, fake card numbers) |
-| Subscription status | From Stripe API | Simulated as "subscribed" |
+### 5. Summary of All Changes
 
-### For Testing Checkout Specifically
+| File | Change |
+|------|--------|
+| `src/pages/Settings.tsx` | Add subscription management card with cancel option + import useSubscription and CancellationDialog |
+| `src/pages/PrivacyPolicy.tsx` | Fix contact email to support@learnpolski.academy |
+| `src/pages/TermsOfService.tsx` | Fix contact email to support@learnpolski.academy |
+| `supabase/functions/send-welcome-email/index.ts` | Add support email to footer |
 
-When test mode is on and you tap "Subscribe" or "Get Access", the checkout still opens Stripe -- but since your Stripe account has test mode, you can use Stripe's test card numbers (e.g., `4242 4242 4242 4242`, any future date, any CVC) to go through the full flow without real charges.
+### Technical Details
 
-## Technical Details
+**Settings.tsx changes:**
+- Import `useSubscription` and `CancellationDialog`
+- Add a subscription card after Help & Support showing: Crown icon, plan name, renewal date, Manage Billing button, Cancel link
+- Only show cancel for non-lifetime active subscribers
+- Include the `CancellationDialog` component in the render
 
-### 1. Admin email constant
+**Privacy Policy fix:**
+- Section 7 text changes from "contact form on our website or email us at privacy@learnpolski.com" to "email us at support@learnpolski.academy"
 
-A single constant defines which email(s) can access test mode. Only your account email will be listed.
+**Terms of Service fix:**
+- Section 9 text changes from "contact us through our website or email legal@learnpolski.com" to "email us at support@learnpolski.academy"
 
-### 2. Settings page addition
-
-A new card in Settings (visible only to admin emails) with a toggle switch labeled "Test Mode". The state is stored in `localStorage` under a key like `learnpolski-test-mode`.
-
-### 3. Modify `useSubscription` hook
-
-When test mode is active:
-- `isLessonAccessible()` returns `true` for all lessons
-- `subscribed` returns `true` (so upgrade banners hide and all content unlocks)
-
-### 4. Modify `CourseOverview` lesson sequencing
-
-When test mode is active:
-- `isUnlocked()` returns `true` for all lessons (bypass sequential requirement)
-
-### 5. Modify `useAiUsage` hook
-
-When test mode is active:
-- `canUse` always returns `true`
-- `remaining` shows unlimited
-
-### 6. Visual indicator
-
-A small fixed-position badge (bottom-right or top-right, near the edge) showing "TEST MODE" in a bright color so you never accidentally confuse test with production behavior.
-
-### Files to Create/Modify
-
-- **New**: `src/hooks/useTestMode.ts` — simple hook reading localStorage + checking admin email
-- **Modify**: `src/hooks/useSubscription.tsx` — override gating when test mode on
-- **Modify**: `src/hooks/useAiUsage.ts` — bypass daily limit when test mode on
-- **Modify**: `src/pages/CourseOverview.tsx` — bypass sequential lock when test mode on
-- **Modify**: `src/pages/Settings.tsx` — add test mode toggle (admin only)
-- **Modify**: `src/App.tsx` — add floating test mode indicator component
-
+**Welcome email fix:**
+- Add a support email line to the footer section matching the pattern used in subscription and cancellation emails
