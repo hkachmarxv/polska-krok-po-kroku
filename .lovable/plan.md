@@ -1,44 +1,74 @@
 
 
-# Surface Grammar Drills Across the App
+# Enhanced Grammar Drills: Teach the Word, Not Just the Form
 
-## The Problem
+## What Changes
 
-Grammar Drills is only accessible via a small "Grammar Drills" pill button in the top-right corner of the AI Tutor page. A user who never visits the AI Tutor tab will never discover it. Even users on the AI Tutor page may not notice the small button.
+After answering a drill, the student will:
+1. See the English translation with the blank filled in (no more mystery meaning)
+2. See a vocabulary card with the dictionary form, meaning, syllable breakdown, and a listen button
+3. Handle edge cases where the tested item is a grammar-only concept (endings, pronouns)
 
-## The Solution: Surface It in 3 Key Places
+## Files Changed (3 files)
 
-### 1. Dashboard: Add a Grammar Drills Quick-Action Card
+### 1. Edge Function: `supabase/functions/grammar-drill/index.ts`
 
-Add a dedicated card on the Dashboard (below "Continue Learning" or near the stats section) that promotes Grammar Drills as a daily practice activity.
+**Update the system prompt** to require two new fields in the JSON output:
 
-- A card with a pencil/pen icon, title "Grammar Drills", subtitle like "Practice cases, verbs & more"
-- Tapping it navigates to `/grammar-drill`
-- Styled similarly to the "Continue Learning" CTA but secondary (border style, not filled)
+- `translationFull` -- the English sentence with the blank filled in (e.g. "My sister is a very **talented** student.")
+- `vocabulary` -- object with word details:
 
-**File:** `src/pages/Dashboard.tsx`
+```text
+"translationFull": "My sister is a very talented student.",
+"vocabulary": {
+  "type": "word",          // "word" or "grammar_only"
+  "lemma": "zdolny",       // dictionary form
+  "meaning": "talented, gifted",
+  "syllables": "zdol-ny",  // syllable split (not IPA)
+  "genderForms": {         // optional, only for adjectives/nouns
+    "m": "zdolny",
+    "f": "zdolna",
+    "n": "zdolne"
+  },
+  "examplePl": "Moja siostra jest bardzo zdolna.",
+  "exampleEn": "My sister is very talented."
+}
+```
 
-### 2. Practice Page: Add a Grammar Drills Section at the Top
+For grammar-only items (endings, pronouns, particles), the AI returns:
 
-The Practice page is all about review and reinforcement -- Grammar Drills belongs here naturally. Add a prominent card above the vocabulary categories.
+```text
+"vocabulary": {
+  "type": "grammar_only",
+  "note": "The ending -a marks feminine singular in the nominative case."
+}
+```
 
-- A highlighted card with title "Grammar Drills" and brief description
-- Topic pills (Cases, Verbs, Gender, etc.) as quick-launch buttons that deep-link to `/grammar-drill?topic=cases` etc.
-- This makes Grammar Drills feel like a first-class part of the Practice tab
+**Bump `MAX_OUTPUT_TOKENS`** from 512 to 700 to accommodate the larger response.
 
-**File:** `src/pages/Practice.tsx`
+**Add server-side validation** after JSON.parse: if `vocabulary` is missing or malformed, strip it out rather than failing -- the drill still works, just without the vocab card.
 
-### 3. Keep the AI Tutor Link (but make it more visible)
+### 2. Standalone Drill Page: `src/pages/GrammarDrill.tsx`
 
-The existing link in the Grammar Assistant header is fine as a cross-link, but keep it as-is since we're adding primary entry points elsewhere.
+- Extend the `Drill` interface with optional `translationFull` and `vocabulary` fields
+- After answering, show `translationFull` instead of `translation` (with `___`) -- this is the 80% fix
+- Below the explanation/tip section, render a **vocabulary card** (only when `vocabulary.type === "word"`):
+  - Dictionary form (lemma) with a `SpeakButton`
+  - Meaning in English
+  - Syllable breakdown
+  - Gender forms row (if present)
+  - Example sentence pair
+- When `vocabulary.type === "grammar_only"`, show a smaller card with the grammar note instead
+- If `vocabulary` is missing entirely, no card shown -- graceful degradation
 
----
+### 3. Lesson Drill Component: `src/components/course/LessonGrammarDrill.tsx`
 
-## Technical Details
+Apply the same interface and UI changes as the standalone page to keep the in-lesson drill consistent.
 
-**Files to modify:**
-- `src/pages/Dashboard.tsx` -- add Grammar Drills quick-action card after the "Continue Learning" button
-- `src/pages/Practice.tsx` -- add a Grammar Drills section above the vocabulary categories with topic quick-launch chips
+## What This Does NOT Change
 
-**No new files, dependencies, or database changes needed.**
+- Drill difficulty, topic selection, scoring, or AI limit logic
+- No database changes
+- No new dependencies
+- The `vocabulary` field is optional so any in-flight or cached responses without it degrade gracefully
 
