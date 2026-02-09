@@ -7,7 +7,8 @@ const corsHeaders = {
 
 // --- In-memory IP rate limiter ---
 const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
-const RATE_LIMIT_MAX = 20; // max requests per window per IP
+const RATE_LIMIT_MAX_ANON = 10; // max requests per window for anonymous
+const RATE_LIMIT_MAX_AUTH = 30; // max requests per window for authenticated
 
 interface RateBucket {
   count: number;
@@ -16,17 +17,17 @@ interface RateBucket {
 
 const ipBuckets = new Map<string, RateBucket>();
 
-function isRateLimited(ip: string): boolean {
+function isRateLimited(key: string, maxRequests: number): boolean {
   const now = Date.now();
-  const bucket = ipBuckets.get(ip);
+  const bucket = ipBuckets.get(key);
 
   if (!bucket || now > bucket.resetAt) {
-    ipBuckets.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    ipBuckets.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
     return false;
   }
 
   bucket.count++;
-  return bucket.count > RATE_LIMIT_MAX;
+  return bucket.count > maxRequests;
 }
 
 // Clean stale buckets every 5 minutes to prevent memory leak
@@ -50,8 +51,35 @@ serve(async (req) => {
       || req.headers.get("cf-connecting-ip")
       || "unknown";
 
-    if (isRateLimited(clientIp)) {
-      console.warn(`Rate limited IP: ${clientIp}`);
+    const { text, voiceId } = await req.json();
+
+    // Optional authentication - authenticated users get higher limits
+    const authHeader = req.headers.get("authorization");
+    let userId: string | null = null;
+    if (authHeader?.startsWith("Bearer ")) {
+      try {
+        const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
+        const client = createClient(
+          Deno.env.get("SUPABASE_URL")!,
+          Deno.env.get("SUPABASE_ANON_KEY")!,
+          { global: { headers: { Authorization: authHeader } } }
+        );
+        const token = authHeader.replace("Bearer ", "");
+        const { data } = await client.auth.getClaims(token);
+        if (data?.claims?.sub) {
+          userId = data.claims.sub as string;
+        }
+      } catch {
+        // Continue as anonymous
+      }
+    }
+
+    // Tiered rate limiting: use userId if authenticated, otherwise IP
+    const rateLimitKey = userId ? `user:${userId}` : `ip:${clientIp}`;
+    const rateLimitMax = userId ? RATE_LIMIT_MAX_AUTH : RATE_LIMIT_MAX_ANON;
+
+    if (isRateLimited(rateLimitKey, rateLimitMax)) {
+      console.warn(`Rate limited: ${rateLimitKey}`);
       return new Response(
         JSON.stringify({ error: "Too many requests. Please try again later." }),
         {
@@ -60,8 +88,6 @@ serve(async (req) => {
         }
       );
     }
-
-    const { text, voiceId } = await req.json();
 
     // Input validation
     if (!text || typeof text !== "string") {
@@ -84,7 +110,7 @@ serve(async (req) => {
       throw new Error("ELEVENLABS_API_KEY is not configured");
     }
 
-    console.log(`TTS request: "${trimmedText}" voice=${voiceId || "default"} ip=${clientIp}`);
+    console.log(`TTS request: "${trimmedText}" voice=${voiceId || "default"} user=${userId || "anon"} ip=${clientIp}`);
 
     const response = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${voiceId || "JWUOwsYG4XgR9Od3eeon"}/stream?output_format=mp3_22050_32`,
