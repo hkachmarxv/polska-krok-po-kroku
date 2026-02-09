@@ -1,94 +1,89 @@
 
 
-# App Navigation & Experience Overhaul
+# Full App Review: Issues Found and Improvements
 
-## The Problems (from a user's perspective)
+## Critical Bug: Step Progress Not Syncing to Cloud
 
-1. **Steps are locked inside lessons** -- You want to try flashcards or the match game but you can't because you haven't completed the previous step. This feels restrictive, not safe.
+The `syncToCloud` function in `useProgress.ts` (line 352-369) does NOT include `lessonStepsCompleted` in the update payload. This means step completion data is only stored in localStorage and will be lost if a user switches devices or clears their browser. This needs to be fixed immediately by adding `lesson_steps_completed: progress.lessonStepsCompleted` to the sync payload.
 
-2. **The AI Grammar Assistant is buried** -- It's your key differentiator, but it's hidden behind a "Tools" wrench icon in the bottom nav. A new user would never know it exists.
-
-3. **The Alphabet is also buried in Tools** -- It's the recommended foundation before Lesson 1, but it sits alongside Grammar Drills in a generic "Tools" page. That's like hiding the front door behind a closet.
-
-4. **The "Tools" tab itself is a catch-all** -- It groups unrelated things (Alphabet, Grammar Assistant, Grammar Drills) under a vague label. Nothing about it says "this is valuable."
-
-5. **The bottom nav doesn't guide the journey** -- Home, Course, Practice, Tools -- this doesn't tell a story. "Practice" is category-based vocab drills separate from the course, which is confusing alongside the course's own flashcards and quizzes.
+Additionally, the `user_progress` table may not have a `lesson_steps_completed` column yet -- we need to verify and add a migration if missing.
 
 ---
 
-## The Solution: Restructure Around What Users Actually Need
+## UX Issues Found
 
-### 1. Remove step locking inside lessons
+### 1. Practice page feels disconnected from the Course
 
-All 6 steps remain visible and tappable. Completed steps show a checkmark. The "recommended next" step gets a subtle highlight (primary border), but nothing is ever disabled. Users can jump to any step they want.
+The Practice tab shows category-based vocabulary (Food, Numbers, etc.) which overlaps with lesson content but uses a completely separate organization. A new user completing Lesson 1 sees "Practice" in the nav and gets confused -- "Didn't I just practice inside the lesson?"
 
-This respects the user's autonomy while still guiding them with visual cues.
+**Fix:** Add a subtitle or context banner on the Practice page explaining it pulls vocabulary from ALL lessons for cross-cutting review. Something like: "Review vocabulary across all your completed lessons, organized by topic."
 
-### 2. Kill the "Tools" page -- promote its contents
+### 2. Review Reminders link is broken
 
-The Tools page disappears entirely. Its contents get promoted:
+`ReviewReminders.tsx` line 39 navigates to `/lesson/${lesson.id}?tab=flashcards` -- but the lesson page no longer uses tab-based navigation. It uses `activeStep` state. The `?tab=flashcards` query param is ignored, so users land on the step list instead of going directly into flashcards.
 
-- **Grammar Assistant** gets its own bottom nav tab (replacing Tools) with a distinctive icon and label like "AI Tutor" -- this is the differentiator, it deserves prime real estate
-- **Alphabet** moves into the Course page as a prominent "Lesson 0" card at the very top (it's already partially there, but we'll make it more prominent and remove it from Tools)
-- **Grammar Drills** stay accessible from within lessons (Step 5) and can also be reached from the AI Tutor tab as a secondary action
+**Fix:** Update the link to navigate to `/lesson/${lesson.id}` and auto-open step 2 (Flashcards) via a query param like `?step=2`, then read that param in `LessonPage.tsx` to set `activeStep` on mount.
 
-### 3. Redesign the bottom navigation
+### 3. Flashcards "Back" button goes to root
 
-Current: `Home | Course | Practice | Tools`
+In `Flashcards.tsx` (line 64), the standalone flashcards page navigates to `/` (landing page) instead of back to Practice. It should use `navigate(-1)` or navigate to `/practice`.
 
-New: `Home | Course | Practice | AI Tutor`
+### 4. WhyUs comparison table is misleading
 
-The AI Tutor tab opens the Grammar Assistant directly -- no intermediate page. This puts your best feature one tap away at all times.
+The comparison table says "Gamification & badges" has a red X for LearnPolski and green check for others. This frames your app negatively. Since you do have streaks, progress bars, and step completion -- that IS gamification. Either flip it to a check, or reword the row to something like "Gimmicky gamification" to make the comparison honest.
 
-### 4. Add a floating "Ask AI" shortcut
+### 5. No empty state for Recent Scores on Dashboard
 
-During any lesson step, add a small floating button that lets users quickly ask the AI Grammar Assistant about something they just encountered -- without leaving the lesson. This creates a "learning companion" feel.
+When a user first signs up, the Dashboard shows streak, words learned, and accuracy -- all at 0. But the "Recent Scores" section just doesn't appear at all. There's no nudge to take a quiz. Adding a small motivational card here would help conversion.
+
+### 6. The `getStepStatus` function has dead logic
+
+In `LessonPage.tsx` line 43-49, the function always returns `'current'` for non-completed steps. The `recommendedStep` variable already handles highlighting. The function's distinction is meaningless -- it could be simplified to just check `isDone`.
 
 ---
 
-## Technical Plan
+## Technical Improvements
 
 ### Files to Modify
 
-**1. `src/pages/LessonPage.tsx`** -- Remove locking logic
-- Change `getStepStatus` to only return `'done'` or `'current'` (never `'locked'`)
-- Remove the `disabled` prop and locked styling from step buttons
-- The "current" highlight goes to the first incomplete step; all others show as available
-- Keep the progress bar and completion checkmarks
+**1. `src/hooks/useProgress.ts`** -- Fix cloud sync
+- Add `lesson_steps_completed: progress.lessonStepsCompleted` to the `syncToCloud` function's update payload (line 356-366)
+- Verify/add the column via a database migration
 
-**2. `src/components/BottomNav.tsx`** -- Replace Tools with AI Tutor
-- Change the 4th tab from `{ label: 'Tools', icon: Wrench, path: '/tools' }` to `{ label: 'AI Tutor', icon: MessageCircleQuestion, path: '/grammar' }`
-- Update the active-tab detection to match `/grammar` routes
+**2. `src/pages/LessonPage.tsx`** -- Fix review deep-linking + simplify logic
+- Read `?step=N` query param on mount to auto-open a specific step (for Review Reminders)
+- Simplify `getStepStatus` to just return `'done'` or `'available'`
 
-**3. `src/pages/Tools.tsx`** -- Delete this page entirely
-- Remove the file
-- Remove its route from `App.tsx`
+**3. `src/components/ReviewReminders.tsx`** -- Fix navigation
+- Change navigation from `/lesson/${lesson.id}?tab=flashcards` to `/lesson/${lesson.id}?step=2`
 
-**4. `src/App.tsx`** -- Remove Tools route
-- Delete the `/tools` route
-- The `/grammar`, `/grammar-drill`, and `/alphabet` routes already exist independently
+**4. `src/pages/Flashcards.tsx`** -- Fix back navigation
+- Change `navigate('/')` to `navigate('/practice')` on the back button
 
-**5. `src/pages/CourseOverview.tsx`** -- Strengthen the Alphabet card
-- The Alphabet "Lesson 0" card is already here; keep it as-is (it's already prominent with a gradient border)
-- Optionally add a "Start Here" badge if the user hasn't visited it yet
+**5. `src/pages/Practice.tsx`** -- Add context banner
+- Add a brief explanation line: "Review vocabulary across all your lessons, organized by topic"
 
-**6. `src/pages/GrammarAssistant.tsx`** -- Small navigation update
-- Change the "Back" button to navigate to `/dashboard` instead of `navigate(-1)` since it's now a primary tab destination, not a sub-page
-- Add a small link/button to "Grammar Drills" at the bottom of the empty state so users can discover drills from this tab
+**6. `src/components/landing/WhyUsSection.tsx`** -- Fix comparison honesty
+- Change "Gamification & badges" row: flip `us: true` since LearnPolski does have streaks, progress tracking, and step completion rewards
 
-### Files to Delete
+**7. `src/pages/Dashboard.tsx`** -- Add empty quiz state
+- When `quizResults.length === 0`, show a small card encouraging the user to start Lesson 1's quiz
 
-- `src/pages/Tools.tsx`
+### Database Migration
 
-### No database changes needed
-
-This is purely a frontend navigation and UX restructure.
+Add `lesson_steps_completed` column to `user_progress` table if it doesn't already exist:
+```sql
+ALTER TABLE user_progress 
+ADD COLUMN IF NOT EXISTS lesson_steps_completed jsonb DEFAULT '{}';
+```
 
 ### Implementation Order
 
-1. Update `LessonPage.tsx` to remove step locking (keep visual guidance)
-2. Update `BottomNav.tsx` to replace Tools with AI Tutor
-3. Delete `Tools.tsx` and remove its route from `App.tsx`
-4. Update `GrammarAssistant.tsx` navigation and add Grammar Drills link
-5. Optionally enhance the Alphabet card in `CourseOverview.tsx`
+1. Database migration for `lesson_steps_completed` column
+2. Fix `syncToCloud` in `useProgress.ts`
+3. Fix Review Reminders deep-linking + LessonPage query param reading
+4. Fix Flashcards back button
+5. Update Practice page banner
+6. Fix WhyUs comparison
+7. Add Dashboard empty quiz state
 
