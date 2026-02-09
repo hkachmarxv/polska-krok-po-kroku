@@ -36,7 +36,7 @@ export const ReviewReminders = () => {
         {lessonsWithDueCards.slice(0, 4).map(({ lesson, dueCount }) => (
           <button
             key={lesson.id}
-            onClick={() => navigate(`/lesson/${lesson.id}?tab=flashcards`)}
+            onClick={() => navigate(`/lesson/${lesson.id}?step=2`)}
             className="w-full bg-card border border-border rounded-xl p-3 text-left card-hover flex items-center gap-3"
           >
             <span className="text-xl">{lesson.emoji}</span>

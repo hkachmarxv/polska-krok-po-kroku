@@ -6,7 +6,7 @@ const comparisons = [
   { feature: 'AI grammar explanations', us: true, others: false },
   { feature: 'Cases & declension drills', us: true, others: false },
   { feature: 'Sentence building exercises', us: true, others: false },
-  { feature: 'Gamification & badges', us: false, others: true },
+  { feature: 'Progress tracking & streaks', us: true, others: true },
   { feature: 'Affordable pricing (from $30/mo)', us: true, others: false },
 ];
 

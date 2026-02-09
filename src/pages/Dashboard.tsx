@@ -115,7 +115,17 @@ const Dashboard = () => {
         </div>
 
         {/* Quiz Results */}
-        {progress.quizResults.length > 0 && (
+        {progress.quizResults.length === 0 ? (
+          <button
+            onClick={() => navigate(completedLessons.length > 0 ? `/lesson/${completedLessons[completedLessons.length - 1]}?step=6` : '/lesson/1')}
+            className="w-full bg-card border border-dashed border-primary/30 rounded-2xl p-5 text-center card-hover"
+          >
+            <Target className="w-8 h-8 text-primary mx-auto mb-2" />
+            <p className="font-display font-bold text-sm text-foreground">No quiz scores yet</p>
+            <p className="text-xs text-muted-foreground mt-1">Take your first quiz to track your progress!</p>
+            <span className="inline-block mt-3 text-xs bg-primary/10 text-primary px-3 py-1 rounded-full font-medium">Start a Quiz →</span>
+          </button>
+        ) : (
           <div>
             <h2 className="font-display text-lg font-bold text-foreground mb-3 flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-primary" />
