@@ -27,11 +27,14 @@ interface SubscriptionState {
   lifetime: boolean;
   subscriptionEnd: string | null;
   loading: boolean;
+  hasAiBoost: boolean;
+  aiBoostPlan: string | null;
 }
 
 interface SubscriptionContextType extends SubscriptionState {
   checkSubscription: () => Promise<void>;
   startCheckout: (plan: 'monthly' | 'onetime') => Promise<void>;
+  startBoostCheckout: (plan: 'plus' | 'pro') => Promise<void>;
   openCustomerPortal: () => Promise<void>;
   cancelSubscription: () => Promise<void>;
   isLessonAccessible: (lessonId: number) => boolean;
@@ -52,6 +55,8 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     lifetime: false,
     subscriptionEnd: null,
     loading: true,
+    hasAiBoost: false,
+    aiBoostPlan: null,
   });
 
   const checkSubscription = useCallback(async () => {
@@ -77,6 +82,8 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
         lifetime: data.lifetime ?? false,
         subscriptionEnd: data.subscription_end ?? null,
         loading: false,
+        hasAiBoost: data.has_ai_boost ?? false,
+        aiBoostPlan: data.ai_boost_plan ?? null,
       });
     } catch (e) {
       console.error('check-subscription failed:', e);
@@ -89,7 +96,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     if (user) {
       checkSubscription();
     } else {
-      setState({ subscribed: false, hasSubscription: false, lifetime: false, subscriptionEnd: null, loading: false });
+      setState({ subscribed: false, hasSubscription: false, lifetime: false, subscriptionEnd: null, loading: false, hasAiBoost: false, aiBoostPlan: null });
     }
   }, [user, checkSubscription]);
 
@@ -171,6 +178,29 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const startBoostCheckout = async (plan: 'plus' | 'pro') => {
+    if (!session?.access_token) return;
+
+    try {
+      const { data, error } = await supabase.functions.invoke('create-ai-boost-checkout', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: { boostPlan: plan },
+      });
+
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, '_blank');
+        // Poll for subscription change
+        const pollInterval = setInterval(async () => {
+          await checkSubscription();
+        }, 5000);
+        setTimeout(() => clearInterval(pollInterval), 300_000);
+      }
+    } catch (e) {
+      console.error('Boost checkout error:', e);
+    }
+  };
+
   const openCustomerPortal = async () => {
     if (!session?.access_token) return;
 
@@ -235,6 +265,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
       subscribed: effectiveSubscribed,
       checkSubscription,
       startCheckout,
+      startBoostCheckout,
       openCustomerPortal,
       cancelSubscription,
       isLessonAccessible,

@@ -6,6 +6,14 @@ export const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+export interface BoostInfo {
+  name: string;
+  slug: string;
+  extraDailyRequests: number;
+  extraDailyTokens: number;
+  monthlyTokenCap: number;
+}
+
 export interface AiGuardResult {
   userId: string;
   tier: "free" | "monthly" | "lifetime";
@@ -13,6 +21,8 @@ export interface AiGuardResult {
   usage: { request_count: number; token_count: number; last_used_at: string | null };
   allowed: boolean;
   reason?: string;
+  boost?: BoostInfo | null;
+  totalLimits?: { dailyRequests: number; dailyTokens: number };
 }
 
 function getServiceClient() {
@@ -48,17 +58,14 @@ export async function authenticateUser(req: Request): Promise<string> {
 
 /** Determine user tier based on subscription status */
 export async function getUserTier(userId: string): Promise<"free" | "monthly" | "lifetime"> {
-  // Check subscription via Stripe (reuse check-subscription logic)
   const serviceClient = getServiceClient();
   const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY");
   if (!STRIPE_SECRET_KEY) return "free";
 
   try {
-    // Get user email
     const { data: userData } = await serviceClient.auth.admin.getUserById(userId);
     if (!userData?.user?.email) return "free";
 
-    // Check Stripe customers
     const customerRes = await fetch(
       `https://api.stripe.com/v1/customers?email=${encodeURIComponent(userData.user.email)}&limit=1`,
       { headers: { Authorization: `Basic ${btoa(STRIPE_SECRET_KEY + ":")}` } }
@@ -68,13 +75,20 @@ export async function getUserTier(userId: string): Promise<"free" | "monthly" | 
 
     const customerId = customers.data[0].id;
 
-    // Check active subscriptions
+    // Check active subscriptions (exclude boost subscriptions)
     const subRes = await fetch(
-      `https://api.stripe.com/v1/subscriptions?customer=${customerId}&status=active&limit=1`,
+      `https://api.stripe.com/v1/subscriptions?customer=${customerId}&status=active&limit=10`,
       { headers: { Authorization: `Basic ${btoa(STRIPE_SECRET_KEY + ":")}` } }
     );
     const subs = await subRes.json();
-    if (subs.data?.length > 0) return "monthly";
+    
+    // Get boost product IDs to filter them out
+    const boostProductIds = await getBoostProductIds();
+    
+    const hasCourseSubscription = subs.data?.some((s: any) =>
+      s.items.data.some((item: any) => !boostProductIds.has(item.price.product))
+    );
+    if (hasCourseSubscription) return "monthly";
 
     // Check for lifetime (successful one-time payment)
     const piRes = await fetch(
@@ -90,6 +104,90 @@ export async function getUserTier(userId: string): Promise<"free" | "monthly" | 
     console.error("getUserTier error:", e);
     return "free";
   }
+}
+
+/** Get boost product IDs from the database */
+async function getBoostProductIds(): Promise<Set<string>> {
+  const serviceClient = getServiceClient();
+  const { data } = await serviceClient
+    .from("ai_boost_plans")
+    .select("stripe_product_id")
+    .eq("active", true);
+  return new Set((data || []).map((p: any) => p.stripe_product_id));
+}
+
+/** Detect active AI Boost subscription for a user */
+export async function getUserBoost(userId: string): Promise<BoostInfo | null> {
+  const serviceClient = getServiceClient();
+  const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY");
+  if (!STRIPE_SECRET_KEY) return null;
+
+  try {
+    const { data: userData } = await serviceClient.auth.admin.getUserById(userId);
+    if (!userData?.user?.email) return null;
+
+    const customerRes = await fetch(
+      `https://api.stripe.com/v1/customers?email=${encodeURIComponent(userData.user.email)}&limit=1`,
+      { headers: { Authorization: `Basic ${btoa(STRIPE_SECRET_KEY + ":")}` } }
+    );
+    const customers = await customerRes.json();
+    if (!customers.data?.length) return null;
+
+    const customerId = customers.data[0].id;
+
+    // Get active subscriptions
+    const subRes = await fetch(
+      `https://api.stripe.com/v1/subscriptions?customer=${customerId}&status=active&limit=10`,
+      { headers: { Authorization: `Basic ${btoa(STRIPE_SECRET_KEY + ":")}` } }
+    );
+    const subs = await subRes.json();
+
+    // Get all active boost plans from DB
+    const { data: boostPlans } = await serviceClient
+      .from("ai_boost_plans")
+      .select("*")
+      .eq("active", true);
+
+    if (!boostPlans?.length || !subs.data?.length) return null;
+
+    const boostPriceMap = new Map(boostPlans.map((p: any) => [p.stripe_price_id, p]));
+
+    // Find the first matching boost subscription
+    for (const sub of subs.data) {
+      for (const item of sub.items.data) {
+        const boostPlan = boostPriceMap.get(item.price.id);
+        if (boostPlan) {
+          return {
+            name: boostPlan.name,
+            slug: boostPlan.slug,
+            extraDailyRequests: boostPlan.extra_daily_requests,
+            extraDailyTokens: boostPlan.extra_daily_tokens,
+            monthlyTokenCap: boostPlan.monthly_token_cap,
+          };
+        }
+      }
+    }
+
+    return null;
+  } catch (e) {
+    console.error("getUserBoost error:", e);
+    return null;
+  }
+}
+
+/** Get monthly token usage for the current calendar month */
+export async function getMonthlyTokenUsage(userId: string): Promise<number> {
+  const serviceClient = getServiceClient();
+  const now = new Date();
+  const firstOfMonth = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-01`;
+
+  const { data } = await serviceClient
+    .from("ai_usage_daily")
+    .select("total_tokens_estimate")
+    .eq("user_id", userId)
+    .gte("usage_date", firstOfMonth);
+
+  return (data || []).reduce((sum: number, row: any) => sum + (row.total_tokens_estimate || 0), 0);
 }
 
 /** Get limits for a tier from DB */
@@ -119,34 +217,63 @@ export async function getTodayUsage(userId: string) {
   return data || { grammar_assistant_count: 0, grammar_drill_count: 0, total_tokens_estimate: 0, last_used_at: null };
 }
 
-/** Full guard check: auth + limits + burst rate */
+/** Full guard check: auth + limits + burst rate + boost */
 export async function aiGuard(req: Request, feature: "grammar_assistant" | "grammar_drill"): Promise<AiGuardResult> {
   const userId = await authenticateUser(req);
   const tier = await getUserTier(userId);
-  const limits = await getTierLimits(tier);
+  const baseLimits = await getTierLimits(tier);
   const usage = await getTodayUsage(userId);
 
+  // Detect boost (only for paid tiers — defense-in-depth)
+  let boost: BoostInfo | null = null;
+  if (tier !== "free") {
+    boost = await getUserBoost(userId);
+  }
+
+  // Calculate effective limits (base + boost)
+  const effectiveDailyRequests = baseLimits.daily_request_limit + (boost?.extraDailyRequests || 0);
+  const effectiveDailyTokens = baseLimits.daily_token_limit + (boost?.extraDailyTokens || 0);
+
   const totalRequests = usage.grammar_assistant_count + usage.grammar_drill_count;
+
+  const makeResult = (allowed: boolean, reason?: string): AiGuardResult => ({
+    userId,
+    tier,
+    limits: baseLimits,
+    usage: { request_count: totalRequests, token_count: usage.total_tokens_estimate, last_used_at: usage.last_used_at },
+    allowed,
+    reason,
+    boost,
+    totalLimits: { dailyRequests: effectiveDailyRequests, dailyTokens: effectiveDailyTokens },
+  });
 
   // Burst rate check
   if (usage.last_used_at) {
     const elapsed = (Date.now() - new Date(usage.last_used_at).getTime()) / 1000;
-    if (elapsed < limits.min_interval_seconds) {
-      return { userId, tier, limits, usage: { request_count: totalRequests, token_count: usage.total_tokens_estimate, last_used_at: usage.last_used_at }, allowed: false, reason: "RATE_LIMIT" };
+    if (elapsed < baseLimits.min_interval_seconds) {
+      return makeResult(false, "RATE_LIMIT");
     }
   }
 
-  // Request count check
-  if (totalRequests >= limits.daily_request_limit) {
-    return { userId, tier, limits, usage: { request_count: totalRequests, token_count: usage.total_tokens_estimate, last_used_at: usage.last_used_at }, allowed: false, reason: "DAILY_LIMIT" };
+  // Request count check (against effective limit)
+  if (totalRequests >= effectiveDailyRequests) {
+    return makeResult(false, "DAILY_LIMIT");
   }
 
-  // Token budget check
-  if (usage.total_tokens_estimate >= limits.daily_token_limit) {
-    return { userId, tier, limits, usage: { request_count: totalRequests, token_count: usage.total_tokens_estimate, last_used_at: usage.last_used_at }, allowed: false, reason: "TOKEN_LIMIT" };
+  // Token budget check (against effective limit)
+  if (usage.total_tokens_estimate >= effectiveDailyTokens) {
+    return makeResult(false, "TOKEN_LIMIT");
   }
 
-  return { userId, tier, limits, usage: { request_count: totalRequests, token_count: usage.total_tokens_estimate, last_used_at: usage.last_used_at }, allowed: true };
+  // Monthly token cap check (only if boost is active)
+  if (boost) {
+    const monthlyTokens = await getMonthlyTokenUsage(userId);
+    if (monthlyTokens >= boost.monthlyTokenCap) {
+      return makeResult(false, "MONTHLY_CAP");
+    }
+  }
+
+  return makeResult(true);
 }
 
 /** Record usage after a successful AI call */
@@ -155,7 +282,6 @@ export async function recordUsage(userId: string, feature: "grammar_assistant" |
   const today = new Date().toISOString().slice(0, 10);
   const countCol = feature === "grammar_assistant" ? "grammar_assistant_count" : "grammar_drill_count";
 
-  // Upsert: increment the count and tokens
   const { data: existing } = await serviceClient
     .from("ai_usage_daily")
     .select("id, grammar_assistant_count, grammar_drill_count, total_tokens_estimate")
@@ -200,7 +326,6 @@ export function validatePolishInput(text: string): { valid: boolean; reason?: st
   if (trimmed.length === 0) return { valid: false, reason: "Empty input" };
   if (trimmed.length > 1500) return { valid: false, reason: "Input too long (max 1,500 characters)" };
 
-  // Basic abuse detection: reject obvious non-Polish-learning prompts
   const abusePatterns = [
     /write\s+(me\s+)?(a\s+)?(code|script|program|essay|story|article)/i,
     /generate\s+(a\s+)?(code|script|program|essay|story|article)/i,
@@ -231,9 +356,10 @@ export function softBlockResponse(guard: AiGuardResult) {
     resetsInHours: resetHour,
     usage: guard.usage,
     limits: {
-      dailyRequests: guard.limits.daily_request_limit,
-      dailyTokens: guard.limits.daily_token_limit,
+      dailyRequests: guard.totalLimits?.dailyRequests ?? guard.limits.daily_request_limit,
+      dailyTokens: guard.totalLimits?.dailyTokens ?? guard.limits.daily_token_limit,
     },
+    boost: guard.boost ? { name: guard.boost.name, slug: guard.boost.slug } : null,
   };
 
   if (guard.reason === "RATE_LIMIT") {

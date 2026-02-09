@@ -111,11 +111,42 @@ serve(async (req) => {
     const hasAccess = hasActiveSub || lifetimeAccess;
     logStep("Access check complete", { hasActiveSub, lifetimeAccess, hasAccess });
 
+    // Check for AI Boost subscription
+    let hasAiBoost = false;
+    let aiBoostPlan: string | null = null;
+    
+    // Get boost plan price IDs from DB
+    const { data: boostPlans } = await supabaseClient
+      .from("ai_boost_plans")
+      .select("slug, stripe_price_id")
+      .eq("active", true);
+    
+    if (boostPlans?.length && subscriptions.data.length > 0) {
+      const boostPriceMap = new Map(boostPlans.map((p: any) => [p.stripe_price_id, p.slug]));
+      // Check all active subscriptions for a boost
+      const allSubs = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 10 });
+      for (const sub of allSubs.data) {
+        for (const item of sub.items.data) {
+          const slug = boostPriceMap.get(item.price.id);
+          if (slug) {
+            hasAiBoost = true;
+            aiBoostPlan = slug;
+            break;
+          }
+        }
+        if (hasAiBoost) break;
+      }
+    }
+
+    logStep("AI Boost check", { hasAiBoost, aiBoostPlan });
+
     return new Response(JSON.stringify({
       subscribed: hasAccess,
       has_subscription: hasActiveSub,
       lifetime: lifetimeAccess,
       subscription_end: subscriptionEnd,
+      has_ai_boost: hasAiBoost,
+      ai_boost_plan: aiBoostPlan,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

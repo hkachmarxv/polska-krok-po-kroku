@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders, authenticateUser, getUserTier, getTierLimits, getTodayUsage } from "../_shared/ai-guard.ts";
+import { corsHeaders, authenticateUser, getUserTier, getTierLimits, getTodayUsage, getUserBoost, getMonthlyTokenUsage } from "../_shared/ai-guard.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -21,6 +21,19 @@ serve(async (req) => {
     const usage = await getTodayUsage(userId);
     const totalRequests = usage.grammar_assistant_count + usage.grammar_drill_count;
 
+    // Detect boost (only for paid tiers)
+    let boost = null;
+    let monthlyTokensUsed = 0;
+    if (tier !== "free") {
+      boost = await getUserBoost(userId);
+      if (boost) {
+        monthlyTokensUsed = await getMonthlyTokenUsage(userId);
+      }
+    }
+
+    const effectiveDailyRequests = limits.daily_request_limit + (boost?.extraDailyRequests || 0);
+    const effectiveDailyTokens = limits.daily_token_limit + (boost?.extraDailyTokens || 0);
+
     const resetHour = 24 - new Date().getUTCHours();
 
     return new Response(JSON.stringify({
@@ -35,10 +48,22 @@ serve(async (req) => {
         dailyRequests: limits.daily_request_limit,
         dailyTokens: limits.daily_token_limit,
       },
-      remaining: {
-        requests: Math.max(0, limits.daily_request_limit - totalRequests),
-        tokens: Math.max(0, limits.daily_token_limit - usage.total_tokens_estimate),
+      totalLimits: {
+        dailyRequests: effectiveDailyRequests,
+        dailyTokens: effectiveDailyTokens,
       },
+      remaining: {
+        requests: Math.max(0, effectiveDailyRequests - totalRequests),
+        tokens: Math.max(0, effectiveDailyTokens - usage.total_tokens_estimate),
+      },
+      boost: boost ? {
+        name: boost.name,
+        slug: boost.slug,
+        extraDailyRequests: boost.extraDailyRequests,
+        extraDailyTokens: boost.extraDailyTokens,
+        monthlyTokenCap: boost.monthlyTokenCap,
+        monthlyTokensUsed,
+      } : null,
       resetsInHours: resetHour,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

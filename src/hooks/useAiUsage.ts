@@ -3,19 +3,31 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTestMode } from '@/hooks/useTestMode';
 import { supabase } from '@/integrations/supabase/client';
 
+export interface AiBoostStatus {
+  name: string;
+  slug: string;
+  extraDailyRequests: number;
+  extraDailyTokens: number;
+  monthlyTokenCap: number;
+  monthlyTokensUsed: number;
+}
+
 export interface AiUsageStatus {
   tier: 'free' | 'monthly' | 'lifetime';
   usage: { requestsUsed: number; tokensUsed: number };
   limits: { dailyRequests: number; dailyTokens: number };
+  totalLimits: { dailyRequests: number; dailyTokens: number };
   remaining: { requests: number; tokens: number };
+  boost: AiBoostStatus | null;
   resetsInHours: number;
 }
 
 export interface AiLimitInfo {
-  reason: 'DAILY_LIMIT' | 'TOKEN_LIMIT' | 'RATE_LIMIT';
+  reason: 'DAILY_LIMIT' | 'TOKEN_LIMIT' | 'RATE_LIMIT' | 'MONTHLY_CAP';
   tier: string;
   resetsInHours: number;
   retryAfterSeconds?: number;
+  boost?: { name: string; slug: string } | null;
 }
 
 export function useAiUsage() {
@@ -46,6 +58,7 @@ export function useAiUsage() {
     fetchStatus();
   }, [fetchStatus]);
 
+  const effectiveLimit = status?.totalLimits?.dailyRequests ?? status?.limits?.dailyRequests ?? Infinity;
   const canUse = isTestMode || (status ? status.remaining.requests > 0 && status.remaining.tokens > 0 : true);
   const remaining = isTestMode ? Infinity : (status?.remaining.requests ?? Infinity);
 
@@ -57,8 +70,8 @@ export function useAiUsage() {
         tier: errorBody.tier,
         resetsInHours: errorBody.resetsInHours,
         retryAfterSeconds: errorBody.retryAfterSeconds,
+        boost: errorBody.boost,
       });
-      // Refresh status
       fetchStatus();
       return true;
     }
@@ -72,6 +85,8 @@ export function useAiUsage() {
     loading,
     canUse,
     remaining,
+    effectiveLimit,
+    boostPlan: status?.boost ?? null,
     limitInfo,
     handleLimitError,
     dismissLimit,
