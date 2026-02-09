@@ -5,7 +5,7 @@ const levels = [
   {
     level: 'A1 — Beginner',
     status: 'live' as const,
-    description: '20 structured lessons covering greetings, ordering food, introductions, directions, and everyday essentials.',
+    description: '20 structured lessons aligned to CEFR A1 standards. Pass the A1 checkpoint to prove your competence.',
     lessons: '20 lessons',
     badge: 'Available Now',
   },

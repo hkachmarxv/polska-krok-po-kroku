@@ -1,11 +1,13 @@
 import { useNavigate } from 'react-router-dom';
-import { Lock, CheckCircle2, ChevronRight, BookOpen, Crown, Languages } from 'lucide-react';
+import { Lock, CheckCircle2, ChevronRight, BookOpen, Crown, Languages, Shield, ChevronDown } from 'lucide-react';
+import { useState } from 'react';
 import { lessons } from '@/data/a1Course';
 import { useProgress } from '@/hooks/useProgress';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useTestMode } from '@/hooks/useTestMode';
 import { Progress } from '@/components/ui/progress';
 import { BottomNav } from '@/components/BottomNav';
+import { cefrCanDoStatements } from '@/data/checkpointData';
 
 const CourseOverview = () => {
   const navigate = useNavigate();
@@ -56,6 +58,37 @@ const CourseOverview = () => {
                 : `${overallPct}% complete — keep going!`}
           </p>
         </div>
+
+        {/* A1 Badge (if passed) */}
+        {progress.a1CheckpointPassed && (
+          <div className="bg-success/10 border-2 border-success/30 rounded-2xl p-4 flex items-center gap-3">
+            <div className="w-11 h-11 rounded-full bg-success/15 flex items-center justify-center">
+              <Shield className="w-6 h-6 text-success" />
+            </div>
+            <div className="flex-1">
+              <p className="font-display font-bold text-success text-sm">CEFR A1 Certified ✓</p>
+              <p className="text-xs text-muted-foreground">You've proven A1-level Polish competence</p>
+            </div>
+          </div>
+        )}
+
+        {/* A1 Readiness / Checkpoint CTA */}
+        {totalCompleted === lessons.length && !progress.a1CheckpointPassed && (
+          <button
+            onClick={() => navigate('/a1-checkpoint')}
+            className="w-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-2xl p-4 flex items-center gap-3 shadow-lg shadow-primary/20 hover:shadow-xl transition-shadow"
+          >
+            <Shield className="w-8 h-8" />
+            <div className="text-left flex-1">
+              <p className="font-display font-bold text-sm">Take Your A1 Final Exam</p>
+              <p className="text-xs opacity-80">Prove your CEFR A1 competence — 30 questions, 5 skill areas</p>
+            </div>
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        )}
+
+        {/* Can-Do Checklist */}
+        <CanDoChecklist completedLessons={completedLessons} />
 
         {/* Upgrade Banner */}
         {!subscribed && (
@@ -169,6 +202,40 @@ const CourseOverview = () => {
       </main>
 
       <BottomNav />
+    </div>
+  );
+};
+
+// Collapsible can-do checklist
+const CanDoChecklist = ({ completedLessons }: { completedLessons: number[] }) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
+      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between px-5 py-4 text-left">
+        <div className="flex items-center gap-2">
+          <Shield className="w-4 h-4 text-primary" />
+          <span className="font-display font-bold text-foreground text-sm">By completing this course, you'll be able to…</span>
+        </div>
+        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="px-5 pb-4 space-y-2">
+          {cefrCanDoStatements.map(cd => {
+            const achieved = cd.lessonsRequired.every(l => completedLessons.includes(l));
+            return (
+              <div key={cd.id} className="flex items-center gap-2.5">
+                {achieved ? (
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
+                ) : (
+                  <div className="w-4 h-4 rounded-full border-2 border-border shrink-0" />
+                )}
+                <span className={`text-xs ${achieved ? 'text-foreground' : 'text-muted-foreground'}`}>{cd.statement}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

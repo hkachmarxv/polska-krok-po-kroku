@@ -46,6 +46,8 @@ export type Database = {
       }
       user_progress: {
         Row: {
+          a1_checkpoint_passed: boolean
+          a1_checkpoint_score: Json | null
           cards: Json
           current_lesson: number
           id: string
@@ -60,6 +62,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          a1_checkpoint_passed?: boolean
+          a1_checkpoint_score?: Json | null
           cards?: Json
           current_lesson?: number
           id?: string
@@ -74,6 +78,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          a1_checkpoint_passed?: boolean
+          a1_checkpoint_score?: Json | null
           cards?: Json
           current_lesson?: number
           id?: string
