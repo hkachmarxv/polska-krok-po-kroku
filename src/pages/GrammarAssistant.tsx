@@ -20,7 +20,7 @@ const SUGGESTED_QUESTIONS = [
 const GrammarAssistant = () => {
   const navigate = useNavigate();
   const { session } = useAuth();
-  const { canUse, remaining, limitInfo, handleLimitError, dismissLimit, status, refreshStatus } = useAiUsage();
+  const { canUse, remaining, limitInfo, handleLimitError, dismissLimit, status, refreshStatus, boostPlan, effectiveLimit } = useAiUsage();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -141,6 +141,11 @@ const GrammarAssistant = () => {
             <h1 className="font-display text-base font-bold text-foreground">AI Tutor</h1>
           </div>
           <div className="flex items-center gap-3">
+            {boostPlan && (
+              <span className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">
+                ⚡ {boostPlan.name}
+              </span>
+            )}
             {status && remaining !== Infinity && (
               <span className="text-xs text-muted-foreground">
                 {remaining} left today

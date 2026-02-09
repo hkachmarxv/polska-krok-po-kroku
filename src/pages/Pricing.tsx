@@ -4,12 +4,12 @@ import { useSubscription, PLANS } from '@/hooks/useSubscription';
 import { useTestMode } from '@/hooks/useTestMode';
 import { BottomNav } from '@/components/BottomNav';
 import CancellationDialog from '@/components/CancellationDialog';
+import { AiBoostSection } from '@/components/AiBoostSection';
 
 const Pricing = () => {
   const navigate = useNavigate();
   const { subscribed, lifetime, hasSubscription, subscriptionEnd, loading, startCheckout, openCustomerPortal, cancelSubscription, showCancellation, setShowCancellation } = useSubscription();
   const { isTestMode } = useTestMode();
-  // Use real subscription state (not test-mode-overridden) for displaying pricing UI
   const reallySubscribed = isTestMode ? (hasSubscription || lifetime) : subscribed;
 
   const features = [
@@ -17,8 +17,8 @@ const Pricing = () => {
     'Interactive flashcards & quizzes',
     'Sentence builder exercises',
     'Match game & grammar drills',
-    'AI Grammar Assistant (5 uses/day)',
-    'AI Grammar Drill (5 uses/day)',
+    'AI Grammar Assistant (generous daily limit)',
+    'AI Grammar Drill (generous daily limit)',
     'Progress tracking & streaks',
     'Text-to-speech pronunciation',
   ];
@@ -151,6 +151,10 @@ const Pricing = () => {
             </div>
           </div>
         )}
+
+        {/* AI Boost Add-ons — only for users with course access */}
+        {reallySubscribed && <AiBoostSection />}
+
         <CancellationDialog
           isOpen={showCancellation}
           onClose={() => setShowCancellation(false)}

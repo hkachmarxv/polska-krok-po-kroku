@@ -37,7 +37,7 @@ const GrammarDrill = () => {
   const lessonTopic = searchParams.get('topic');
   const lessonId = searchParams.get('lesson');
   const { session } = useAuth();
-  const { canUse, remaining, limitInfo, handleLimitError, dismissLimit, status, refreshStatus } = useAiUsage();
+  const { canUse, remaining, limitInfo, handleLimitError, dismissLimit, status, refreshStatus, boostPlan } = useAiUsage();
 
   const [topic, setTopic] = useState(lessonTopic || 'mixed');
   const [difficulty, setDifficulty] = useState('medium');
@@ -122,6 +122,11 @@ const GrammarDrill = () => {
             📝 {lessonId ? `Lesson ${lessonId} Drill` : 'Grammar Drills'}
           </h1>
           <div className="flex items-center gap-2">
+            {boostPlan && (
+              <span className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">
+                ⚡ {boostPlan.name}
+              </span>
+            )}
             {status && remaining !== Infinity && (
               <span className="text-xs text-muted-foreground">{remaining} left</span>
             )}

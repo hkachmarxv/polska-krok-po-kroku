@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { Clock, Sparkles, BookOpen, ArrowRight } from 'lucide-react';
+import { Clock, Sparkles, BookOpen, ArrowRight, Zap } from 'lucide-react';
 import type { AiLimitInfo } from '@/hooks/useAiUsage';
+import { useSubscription } from '@/hooks/useSubscription';
 
 interface AiLimitModalProps {
   limitInfo: AiLimitInfo;
@@ -9,11 +10,14 @@ interface AiLimitModalProps {
 
 export const AiLimitModal = ({ limitInfo, onDismiss }: AiLimitModalProps) => {
   const navigate = useNavigate();
+  const { subscribed, startBoostCheckout } = useSubscription();
   const isFree = limitInfo.tier === 'free';
   const isRateLimit = limitInfo.reason === 'RATE_LIMIT';
+  const isMonthly = limitInfo.reason === 'MONTHLY_CAP';
+  const hasBoost = !!limitInfo.boost;
+  const isPaidNoBoost = !isFree && !hasBoost;
 
   if (isRateLimit) {
-    // Brief toast-style for burst rate limits — auto-dismiss
     return (
       <div className="fixed inset-0 z-50 flex items-end justify-center p-4 pointer-events-none">
         <div className="bg-card border border-border rounded-2xl shadow-xl p-4 max-w-sm w-full pointer-events-auto animate-fade-in">
@@ -40,19 +44,25 @@ export const AiLimitModal = ({ limitInfo, onDismiss }: AiLimitModalProps) => {
             <Sparkles className="w-7 h-7 text-accent" />
           </div>
           <h2 className="font-display text-lg font-bold text-foreground">
-            You've reached today's AI limit
+            You've used today's AI power
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Resets in ~{limitInfo.resetsInHours} {limitInfo.resetsInHours === 1 ? 'hour' : 'hours'}
+            {isMonthly
+              ? 'Your monthly AI budget has been reached'
+              : `Resets in ~${limitInfo.resetsInHours} ${limitInfo.resetsInHours === 1 ? 'hour' : 'hours'}`
+            }
           </p>
         </div>
 
         {/* Explanation */}
         <div className="bg-muted/30 rounded-xl p-4 mb-5">
           <p className="text-sm text-foreground">
-            {limitInfo.reason === 'TOKEN_LIMIT'
-              ? "You've used your daily AI token budget. This helps us keep AI features available for everyone."
-              : "You've used all your AI requests for today. This helps us keep AI features available for everyone."}
+            {isFree
+              ? 'The AI Tutor is one of your most powerful tools for mastering Polish grammar. Upgrade your plan to unlock more AI explanations.'
+              : isPaidNoBoost
+                ? 'Want more? AI Boost gives you up to 300 additional AI explanations per day.'
+                : 'Even with AI Boost, you\'ve hit today\'s ceiling. Your AI power resets soon.'
+            }
           </p>
         </div>
 
@@ -76,13 +86,23 @@ export const AiLimitModal = ({ limitInfo, onDismiss }: AiLimitModalProps) => {
             </button>
           )}
 
-          {!isFree && (
+          {isPaidNoBoost && subscribed && (
+            <button
+              onClick={() => { onDismiss(); startBoostCheckout('plus'); }}
+              className="w-full flex items-center justify-center gap-2 bg-accent/10 hover:bg-accent/20 text-accent rounded-xl py-3.5 font-medium transition-colors"
+            >
+              <Zap className="w-4 h-4" />
+              Get AI Boost — from $5/mo
+            </button>
+          )}
+
+          {hasBoost && (
             <a
-              href="mailto:support@learnpolski.academy?subject=Request extra AI access"
+              href="mailto:support@learnpolski.academy?subject=Request custom AI limits"
               className="w-full flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground text-sm py-2 transition-colors"
               onClick={onDismiss}
             >
-              Request extra AI access →
+              Contact support for custom limits →
             </a>
           )}
         </div>

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, LogOut, User, Mail, Pencil, Check, X, Loader2, Camera, Lock, Eye, EyeOff, HelpCircle, Volume2, FlaskConical, Crown, ExternalLink } from 'lucide-react';
+import { ArrowLeft, LogOut, User, Mail, Pencil, Check, X, Loader2, Camera, Lock, Eye, EyeOff, HelpCircle, Volume2, FlaskConical, Crown, ExternalLink, Zap } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -17,7 +17,7 @@ const Settings = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { subscribed, lifetime, subscriptionEnd, loading: subLoading, openCustomerPortal, cancelSubscription, showCancellation, setShowCancellation } = useSubscription();
+  const { subscribed, lifetime, subscriptionEnd, loading: subLoading, openCustomerPortal, cancelSubscription, showCancellation, setShowCancellation, hasAiBoost, aiBoostPlan } = useSubscription();
 
   const [editingName, setEditingName] = useState(false);
   const [displayName, setDisplayName] = useState(user?.user_metadata?.display_name || '');
@@ -353,6 +353,12 @@ const Settings = () => {
             </div>
             {(subscribed || lifetime) && (
               <div className="mt-3 pl-12 space-y-2">
+                {hasAiBoost && (
+                  <div className="flex items-center gap-1.5 text-xs bg-accent/10 text-accent px-2.5 py-1 rounded-full w-fit font-medium">
+                    <Zap className="w-3 h-3" />
+                    AI Boost {aiBoostPlan === 'pro' ? 'Pro' : 'Plus'} active
+                  </div>
+                )}
                 <button
                   onClick={openCustomerPortal}
                   className="flex items-center gap-1.5 text-sm text-primary hover:underline"

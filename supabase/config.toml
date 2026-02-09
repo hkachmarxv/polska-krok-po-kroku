@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.send-subscription-email]
 verify_jwt = false
+
+[functions.create-ai-boost-checkout]
+verify_jwt = false

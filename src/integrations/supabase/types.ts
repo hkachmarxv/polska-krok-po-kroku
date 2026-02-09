@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_boost_plans: {
+        Row: {
+          active: boolean
+          created_at: string
+          extra_daily_requests: number
+          extra_daily_tokens: number
+          id: string
+          monthly_token_cap: number
+          name: string
+          price_display: string
+          slug: string
+          stripe_price_id: string
+          stripe_product_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          extra_daily_requests: number
+          extra_daily_tokens: number
+          id?: string
+          monthly_token_cap: number
+          name: string
+          price_display: string
+          slug: string
+          stripe_price_id: string
+          stripe_product_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          extra_daily_requests?: number
+          extra_daily_tokens?: number
+          id?: string
+          monthly_token_cap?: number
+          name?: string
+          price_display?: string
+          slug?: string
+          stripe_price_id?: string
+          stripe_product_id?: string
+        }
+        Relationships: []
+      }
       ai_limits: {
         Row: {
           daily_request_limit: number
