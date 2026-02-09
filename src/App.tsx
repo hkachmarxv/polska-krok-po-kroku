@@ -16,6 +16,7 @@ import Quiz from "./pages/Quiz";
 import GrammarAssistant from "./pages/GrammarAssistant";
 import GrammarDrill from "./pages/GrammarDrill";
 import CourseOverview from "./pages/CourseOverview";
+import A1Checkpoint from "./pages/A1Checkpoint";
 import LessonPage from "./pages/LessonPage";
 import Practice from "./pages/Practice";
 
@@ -60,6 +61,7 @@ const App = () => (
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 <Route path="/course" element={<ProtectedRoute><CourseOverview /></ProtectedRoute>} />
                 <Route path="/lesson/:lessonId" element={<ProtectedRoute><LessonPage /></ProtectedRoute>} />
+                <Route path="/a1-checkpoint" element={<ProtectedRoute><A1Checkpoint /></ProtectedRoute>} />
                 <Route path="/practice" element={<ProtectedRoute><Practice /></ProtectedRoute>} />
                 
                 <Route path="/alphabet" element={<ProtectedRoute><Alphabet /></ProtectedRoute>} />

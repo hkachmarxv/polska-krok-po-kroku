@@ -29,6 +29,8 @@ export interface UserProgress {
   currentLesson: number;
   streakFreezes: number;
   lessonStepsCompleted: Record<number, number[]>;
+  a1CheckpointPassed: boolean;
+  a1CheckpointScore: any;
 }
 
 const STORAGE_KEY = 'polish-learner-progress';
@@ -43,6 +45,8 @@ const defaultProgress: UserProgress = {
   currentLesson: 1,
   streakFreezes: 10,
   lessonStepsCompleted: {},
+  a1CheckpointPassed: false,
+  a1CheckpointScore: null,
 };
 
 export function useProgress() {
@@ -90,6 +94,8 @@ export function useProgress() {
           currentLesson: data.current_lesson,
           streakFreezes: (data as any).streak_freezes ?? 10,
           lessonStepsCompleted: ((data as any).lesson_steps_completed as Record<number, number[]>) || {},
+          a1CheckpointPassed: (data as any).a1_checkpoint_passed ?? false,
+          a1CheckpointScore: (data as any).a1_checkpoint_score ?? null,
         };
 
         // Merge: take whichever has more progress
@@ -289,6 +295,14 @@ export function useProgress() {
     return (progress.lessonStepsCompleted?.[lessonId] || []).includes(stepNumber);
   }, [progress.lessonStepsCompleted]);
 
+  const saveCheckpointResult = useCallback((passed: boolean, score: any) => {
+    setProgress(prev => ({
+      ...prev,
+      a1CheckpointPassed: passed,
+      a1CheckpointScore: score,
+    }));
+  }, []);
+
   return {
     progress,
     recordCardResult,
@@ -301,6 +315,7 @@ export function useProgress() {
     completeLesson,
     completeStep,
     isStepCompleted,
+    saveCheckpointResult,
   };
 }
 
@@ -346,6 +361,8 @@ function mergeProgress(local: UserProgress, cloud: UserProgress): UserProgress {
     currentLesson: Math.max(local.currentLesson || 1, cloud.currentLesson || 1),
     streakFreezes: Math.min(local.streakFreezes ?? 10, cloud.streakFreezes ?? 10),
     lessonStepsCompleted: mergedSteps,
+    a1CheckpointPassed: local.a1CheckpointPassed || cloud.a1CheckpointPassed,
+    a1CheckpointScore: local.a1CheckpointPassed ? local.a1CheckpointScore : cloud.a1CheckpointScore,
   };
 }
 
@@ -363,6 +380,8 @@ async function syncToCloud(progress: UserProgress, userId: string) {
         current_lesson: progress.currentLesson,
         streak_freezes: progress.streakFreezes,
         lesson_steps_completed: progress.lessonStepsCompleted,
+        a1_checkpoint_passed: progress.a1CheckpointPassed,
+        a1_checkpoint_score: progress.a1CheckpointScore,
       } as any)
       .eq('user_id', userId);
   } catch {

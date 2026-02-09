@@ -29,7 +29,7 @@ const HeroSection = () => {
             className="inline-flex items-center gap-2 bg-primary/10 text-primary px-5 py-2 rounded-full text-sm font-semibold"
           >
             <Sparkles className="w-4 h-4" />
-            Lesson 1 completely free — no credit card needed
+            CEFR A1 aligned • Lesson 1 free — no credit card needed
           </motion.div>
 
           <motion.h1
