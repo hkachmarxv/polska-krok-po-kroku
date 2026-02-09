@@ -4,15 +4,18 @@ import { ArrowLeft, Loader2, ChevronRight, Lightbulb, CheckCircle2, XCircle, Rot
 import { AiLimitModal } from '@/components/AiLimitModal';
 import { useAiUsage } from '@/hooks/useAiUsage';
 import { useAuth } from '@/hooks/useAuth';
+import { DrillVocabCard, type DrillVocabulary } from '@/components/course/DrillVocabCard';
 
 interface Drill {
   sentence: string;
   translation: string;
+  translationFull?: string;
   options: string[];
   correctIndex: number;
   explanation: string;
   rule: string;
   tip: string;
+  vocabulary?: DrillVocabulary;
 }
 
 const TOPICS = [
@@ -231,7 +234,9 @@ const GrammarDrill = () => {
                   </span>
                 ))}
               </p>
-              <p className="text-sm text-muted-foreground mt-3 italic">{drill.translation}</p>
+              <p className="text-sm text-muted-foreground mt-3 italic">
+                {isAnswered && drill.translationFull ? drill.translationFull : drill.translation}
+              </p>
             </div>
 
             {/* Options */}
@@ -293,6 +298,11 @@ const GrammarDrill = () => {
                   </div>
                 )}
               </div>
+            )}
+
+            {/* Vocabulary Card */}
+            {isAnswered && drill.vocabulary && (
+              <DrillVocabCard vocabulary={drill.vocabulary} />
             )}
 
             {/* Next Button */}

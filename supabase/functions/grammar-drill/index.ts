@@ -8,11 +8,37 @@ When asked, generate a grammar drill exercise. Return ONLY valid JSON (no markdo
 {
   "sentence": "The sentence in Polish with ___ for the blank",
   "translation": "English translation with ___ for the blank",
+  "translationFull": "English translation with the blank filled in (e.g. My sister is a very talented student.)",
   "options": ["form1", "form2", "form3", "form4"],
   "correctIndex": 0,
   "explanation": "2-3 sentence explanation of why this form is correct, mentioning the grammatical rule (case, gender, conjugation, etc.)",
   "rule": "Short rule name, e.g. 'Accusative case after widzieć'",
-  "tip": "A memorable trick to remember this pattern"
+  "tip": "A memorable trick to remember this pattern",
+  "vocabulary": {
+    "type": "word",
+    "lemma": "zdolny",
+    "meaning": "talented, gifted",
+    "syllables": "zdol-ny",
+    "genderForms": { "m": "zdolny", "f": "zdolna", "n": "zdolne" },
+    "examplePl": "Moja siostra jest bardzo zdolna.",
+    "exampleEn": "My sister is very talented."
+  }
+}
+
+The "vocabulary" field teaches the student what the tested word means:
+- "type" must be "word" when the blank tests a real vocabulary word (noun, adjective, verb form).
+- "lemma" is the dictionary/base form.
+- "meaning" should be short, A1-friendly English (e.g. "talented" not "highly competent / capable").
+- "syllables" is a hyphenated syllable split (e.g. "zdol-ny"), NOT IPA.
+- "genderForms" is optional; include only for adjectives and nouns that change by gender.
+- "examplePl" and "exampleEn" are a simple example sentence pair using the word.
+
+When the blank tests a grammar-only concept (case endings, pronouns, particles, prepositions), use:
+{
+  "vocabulary": {
+    "type": "grammar_only",
+    "note": "The ending -a marks feminine singular in the nominative case."
+  }
 }
 
 Guidelines:
@@ -28,7 +54,7 @@ When given a "difficulty" parameter (easy/medium/hard), adjust complexity accord
 
 CRITICAL: Return ONLY the JSON object, no other text.`;
 
-const MAX_OUTPUT_TOKENS = 512;
+const MAX_OUTPUT_TOKENS = 700;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -132,6 +158,22 @@ serve(async (req) => {
     }
 
     const drill = JSON.parse(cleaned);
+
+    // Validate vocabulary field — strip if malformed rather than failing
+    if (drill.vocabulary) {
+      const v = drill.vocabulary;
+      if (v.type === "word") {
+        if (typeof v.lemma !== "string" || typeof v.meaning !== "string") {
+          delete drill.vocabulary;
+        }
+      } else if (v.type === "grammar_only") {
+        if (typeof v.note !== "string") {
+          delete drill.vocabulary;
+        }
+      } else {
+        delete drill.vocabulary;
+      }
+    }
 
     return new Response(JSON.stringify(drill), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
