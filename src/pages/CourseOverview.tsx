@@ -3,6 +3,7 @@ import { Lock, CheckCircle2, ChevronRight, BookOpen, Crown, Languages } from 'lu
 import { lessons } from '@/data/a1Course';
 import { useProgress } from '@/hooks/useProgress';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useTestMode } from '@/hooks/useTestMode';
 import { Progress } from '@/components/ui/progress';
 import { BottomNav } from '@/components/BottomNav';
 
@@ -10,12 +11,14 @@ const CourseOverview = () => {
   const navigate = useNavigate();
   const { progress, getCategoryMastery } = useProgress();
   const { isLessonAccessible, subscribed } = useSubscription();
+  const { isTestMode } = useTestMode();
 
   const completedLessons = progress.lessonsCompleted || [];
   const totalCompleted = completedLessons.length;
   const overallPct = Math.round((totalCompleted / lessons.length) * 100);
 
   const isUnlocked = (lessonId: number) => {
+    if (isTestMode) return true;
     if (!isLessonAccessible(lessonId)) return false;
     if (lessonId === 1) return true;
     return completedLessons.includes(lessonId - 1);

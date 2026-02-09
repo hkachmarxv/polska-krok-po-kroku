@@ -7,6 +7,7 @@ import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/hooks/useAuth";
 import { SubscriptionProvider } from "@/hooks/useSubscription";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { TestModeIndicator } from "@/components/TestModeIndicator";
 import LandingPage from "./pages/LandingPage";
 import Dashboard from "./pages/Dashboard";
 import Flashcards from "./pages/Flashcards";
@@ -35,6 +36,7 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
+            <TestModeIndicator />
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<LandingPage />} />

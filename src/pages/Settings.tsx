@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, LogOut, User, Mail, Pencil, Check, X, Loader2, Camera, Lock, Eye, EyeOff, HelpCircle, Volume2 } from 'lucide-react';
+import { ArrowLeft, LogOut, User, Mail, Pencil, Check, X, Loader2, Camera, Lock, Eye, EyeOff, HelpCircle, Volume2, FlaskConical } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { BottomNav } from '@/components/BottomNav';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
+import { useTestMode } from '@/hooks/useTestMode';
+import { Switch } from '@/components/ui/switch';
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -28,6 +30,7 @@ const Settings = () => {
   const [changingPassword, setChangingPassword] = useState(false);
   const sfx = useSoundEffects();
   const [sfxEnabled, setSfxEnabled] = useState(sfx.enabled);
+  const { isAdmin, enabled: testModeEnabled, setEnabled: setTestMode } = useTestMode();
 
   const email = user?.email || '';
 
@@ -325,6 +328,23 @@ const Settings = () => {
           </div>
           <Mail className="w-4 h-4 text-muted-foreground" />
         </a>
+
+        {/* Test Mode (admin only) */}
+        {isAdmin && (
+          <div className="bg-card rounded-xl border-2 border-destructive/30 p-4 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-destructive/10 flex items-center justify-center flex-shrink-0">
+              <FlaskConical className="w-4 h-4 text-destructive" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground">Test Mode</p>
+              <p className="text-xs text-muted-foreground">Unlock all lessons, bypass limits</p>
+            </div>
+            <Switch
+              checked={testModeEnabled}
+              onCheckedChange={setTestMode}
+            />
+          </div>
+        )}
 
         {/* Sign out */}
         <button
