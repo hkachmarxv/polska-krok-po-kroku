@@ -3,10 +3,11 @@ import { ArrowLeft, Check, Crown, Zap, Shield, Loader2 } from 'lucide-react';
 import { useSubscription, PLANS } from '@/hooks/useSubscription';
 import { useTestMode } from '@/hooks/useTestMode';
 import { BottomNav } from '@/components/BottomNav';
+import CancellationDialog from '@/components/CancellationDialog';
 
 const Pricing = () => {
   const navigate = useNavigate();
-  const { subscribed, lifetime, hasSubscription, subscriptionEnd, loading, startCheckout, openCustomerPortal } = useSubscription();
+  const { subscribed, lifetime, hasSubscription, subscriptionEnd, loading, startCheckout, openCustomerPortal, cancelSubscription, showCancellation, setShowCancellation } = useSubscription();
   const { isTestMode } = useTestMode();
   // Use real subscription state (not test-mode-overridden) for displaying pricing UI
   const reallySubscribed = isTestMode ? (hasSubscription || lifetime) : subscribed;
@@ -58,8 +59,16 @@ const Pricing = () => {
               onClick={openCustomerPortal}
               className="mt-3 text-sm font-medium text-primary hover:underline"
             >
-              Manage Subscription →
+              Manage Billing →
             </button>
+            {!lifetime && (
+              <button
+                onClick={() => setShowCancellation(true)}
+                className="mt-1 block mx-auto text-xs text-muted-foreground hover:text-destructive transition-colors"
+              >
+                Cancel subscription
+              </button>
+            )}
           </div>
         )}
 
@@ -142,6 +151,12 @@ const Pricing = () => {
             </div>
           </div>
         )}
+        <CancellationDialog
+          isOpen={showCancellation}
+          onClose={() => setShowCancellation(false)}
+          onConfirmCancel={cancelSubscription}
+          subscriptionEnd={subscriptionEnd}
+        />
       </main>
 
       <BottomNav />
