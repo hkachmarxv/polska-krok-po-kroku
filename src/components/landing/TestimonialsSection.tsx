@@ -8,8 +8,7 @@ const testimonials = [
     duration: 'Learning for 3 months',
     text: 'I tried Duolingo for Polish and gave up after a week. LearnPolski actually explains WHY words change form — game changer for understanding cases.',
     rating: 5,
-    initials: 'SM',
-    color: 'bg-primary/15 text-primary',
+    avatar: 'https://api.dicebear.com/9.x/notionists/svg?seed=Sarah&backgroundColor=b6e3f4',
   },
   {
     name: 'James K.',
@@ -17,8 +16,7 @@ const testimonials = [
     duration: 'Learning for 2 months',
     text: 'My girlfriend is Polish and I wanted to surprise her family. After 2 months with LearnPolski I could hold a basic conversation. They were so impressed!',
     rating: 5,
-    initials: 'JK',
-    color: 'bg-accent/15 text-accent',
+    avatar: 'https://api.dicebear.com/9.x/notionists/svg?seed=James&backgroundColor=c0aede',
   },
   {
     name: 'Anna T.',
@@ -26,8 +24,7 @@ const testimonials = [
     duration: 'Learning for 4 months',
     text: 'The AI grammar assistant is like having a private tutor. I can ask "why is it kotEM not kotA" and actually get a clear answer. Love it.',
     rating: 5,
-    initials: 'AT',
-    color: 'bg-success/15 text-success',
+    avatar: 'https://api.dicebear.com/9.x/notionists/svg?seed=Anna&backgroundColor=d1f4d1',
   },
 ];
 
@@ -65,9 +62,7 @@ const TestimonialsSection = () => {
               </div>
               <p className="text-sm text-foreground leading-relaxed italic">"{t.text}"</p>
               <div className="flex items-center gap-3">
-                <div className={`w-9 h-9 rounded-full ${t.color} flex items-center justify-center text-xs font-bold`}>
-                  {t.initials}
-                </div>
+                <img src={t.avatar} alt={t.name} className="w-9 h-9 rounded-full bg-muted" />
                 <div>
                   <div className="flex items-center gap-1.5">
                     <p className="font-display font-bold text-foreground text-sm">{t.name}</p>

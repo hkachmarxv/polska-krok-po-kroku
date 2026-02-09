@@ -40,7 +40,7 @@ const WhyUsSection = () => {
             {/* Header */}
             <div className="grid grid-cols-[1fr,80px,100px] md:grid-cols-[1fr,100px,120px] gap-4 px-6 py-4 border-b border-border bg-muted/50">
               <span className="text-sm font-bold text-foreground">Feature</span>
-              <span className="text-sm font-bold text-primary text-center">LearnPolski</span>
+              <span className="text-sm font-bold text-primary text-center">🇵🇱 LearnPolski</span>
               <span className="text-sm font-bold text-muted-foreground text-center">Other Apps</span>
             </div>
             {/* Rows */}
