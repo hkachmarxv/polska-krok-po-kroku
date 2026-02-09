@@ -5,9 +5,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/hooks/useAuth";
-import { SubscriptionProvider } from "@/hooks/useSubscription";
+import { SubscriptionProvider, useSubscription } from "@/hooks/useSubscription";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { TestModeIndicator } from "@/components/TestModeIndicator";
+import CheckoutCelebration from "@/components/CheckoutCelebration";
 import LandingPage from "./pages/LandingPage";
 import Dashboard from "./pages/Dashboard";
 import Flashcards from "./pages/Flashcards";
@@ -28,6 +29,17 @@ import TermsOfService from "./pages/TermsOfService";
 
 const queryClient = new QueryClient();
 
+const CelebrationOverlay = () => {
+  const { showCelebration, checkoutPlanType, dismissCelebration } = useSubscription();
+  return (
+    <CheckoutCelebration
+      isVisible={showCelebration}
+      onDismiss={dismissCelebration}
+      planType={checkoutPlanType}
+    />
+  );
+};
+
 const App = () => (
   <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
     <QueryClientProvider client={queryClient}>
@@ -37,6 +49,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <TestModeIndicator />
+            <CelebrationOverlay />
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<LandingPage />} />
