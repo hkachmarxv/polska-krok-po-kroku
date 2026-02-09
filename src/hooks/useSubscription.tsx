@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useTestMode } from '@/hooks/useTestMode';
 
 // Stripe product/price IDs
 export const PLANS = {
@@ -138,15 +139,20 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const { isTestMode } = useTestMode();
+
   const isLessonAccessible = (lessonId: number) => {
-    // Lesson 1 is always free
+    if (isTestMode) return true;
     if (lessonId === 1) return true;
     return state.subscribed;
   };
 
+  const effectiveSubscribed = isTestMode || state.subscribed;
+
   return (
     <SubscriptionContext.Provider value={{
       ...state,
+      subscribed: effectiveSubscribed,
       checkSubscription,
       startCheckout,
       openCustomerPortal,
