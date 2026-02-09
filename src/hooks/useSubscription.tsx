@@ -97,47 +97,46 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     return () => clearInterval(interval);
   }, [user, checkSubscription]);
 
-  // Check on URL param (after checkout redirect)
+  // Track checkout celebration state
+  const [celebrationShown, setCelebrationShown] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [checkoutPlanType, setCheckoutPlanType] = useState<'monthly' | 'onetime'>('monthly');
+  const [pendingCheckout, setPendingCheckout] = useState(false);
+
+  // Detect checkout=success in URL (redirected tab) or __pendingCheckoutPlan (original tab)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('checkout') === 'success') {
-      // Delay slightly to let Stripe process, then check
-      setTimeout(checkSubscription, 2000);
+      setPendingCheckout(true);
       // Clean URL param
       const url = new URL(window.location.href);
       url.searchParams.delete('checkout');
       window.history.replaceState({}, '', url.toString());
+      // Delay slightly to let Stripe process
+      setTimeout(checkSubscription, 2000);
+    }
+    if ((window as any).__pendingCheckoutPlan) {
+      setPendingCheckout(true);
+      setCheckoutPlanType((window as any).__pendingCheckoutPlan);
+      delete (window as any).__pendingCheckoutPlan;
     }
   }, [checkSubscription]);
 
-  // Track whether we've sent the subscription email for this session
-  const [celebrationShown, setCelebrationShown] = useState(false);
-  const [showCelebration, setShowCelebration] = useState(false);
-  const [checkoutPlanType, setCheckoutPlanType] = useState<'monthly' | 'onetime'>('monthly');
-
-  // Show celebration when subscription becomes active after checkout
+  // Show celebration when subscription becomes active after a checkout
   useEffect(() => {
-    if (!celebrationShown && state.subscribed && !state.loading) {
-      const params = new URLSearchParams(window.location.search);
-      const wasCheckout = params.get('checkout') === 'success' || (window as any).__pendingCheckoutPlan;
-      if (wasCheckout || (window as any).__pendingCheckoutPlan) {
-        const plan = (window as any).__pendingCheckoutPlan || 'monthly';
-        setCheckoutPlanType(plan);
-        setShowCelebration(true);
-        setCelebrationShown(true);
+    if (!celebrationShown && pendingCheckout && state.subscribed && !state.loading) {
+      setShowCelebration(true);
+      setCelebrationShown(true);
 
-        // Send subscription email (fire-and-forget)
-        if (session?.access_token) {
-          supabase.functions.invoke('send-subscription-email', {
-            headers: { Authorization: `Bearer ${session.access_token}` },
-            body: { planType: plan },
-          }).catch(e => console.error('Subscription email error:', e));
-        }
-
-        delete (window as any).__pendingCheckoutPlan;
+      // Send subscription email (fire-and-forget)
+      if (session?.access_token) {
+        supabase.functions.invoke('send-subscription-email', {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+          body: { planType: checkoutPlanType },
+        }).catch(e => console.error('Subscription email error:', e));
       }
     }
-  }, [state.subscribed, state.loading, celebrationShown, session?.access_token]);
+  }, [state.subscribed, state.loading, pendingCheckout, celebrationShown, session?.access_token, checkoutPlanType]);
 
   const startCheckout = async (plan: 'monthly' | 'onetime') => {
     if (!session?.access_token) return;
