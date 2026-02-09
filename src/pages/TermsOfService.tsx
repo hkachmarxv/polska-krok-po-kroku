@@ -60,7 +60,7 @@ const TermsOfService = () => {
 
         <h2 className="font-display text-xl font-bold text-foreground mt-8 mb-3">9. Contact</h2>
         <p className="text-foreground/90 leading-relaxed">
-          For questions about these Terms, please contact us through our website or email legal@learnpolski.com.
+          For questions about these Terms, please email us at support@learnpolski.academy.
         </p>
       </main>
     </div>

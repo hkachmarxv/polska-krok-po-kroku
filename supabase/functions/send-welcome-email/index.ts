@@ -137,6 +137,7 @@ serve(async (req: Request) => {
     <div style="text-align:center;margin-top:28px;color:#999;font-size:12px;line-height:1.6;">
       <p style="margin:0;">Powodzenia! (Good luck!) 🇵🇱</p>
       <p style="margin:4px 0 0;">The LearnPolski Team</p>
+      <p style="margin:8px 0 0;">Questions? <a href="mailto:support@learnpolski.academy" style="color:#999;text-decoration:underline;">support@learnpolski.academy</a></p>
       <p style="margin:8px 0 0;">
         <a href="https://polska-krok-po-kroku.lovable.app" style="color:#999;text-decoration:underline;">learnpolski.academy</a>
       </p>
