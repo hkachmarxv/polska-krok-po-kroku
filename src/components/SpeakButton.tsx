@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, forwardRef } from 'react';
 import { Volume2, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { VOICES, type VoicePreference } from '@/hooks/useVoicePreference';
@@ -29,7 +29,7 @@ interface SpeakButtonProps {
   voicePreference?: VoicePreference;
 }
 
-export const SpeakButton = ({ text, size = 'sm', className, speakerGender, voicePreference = 'male' }: SpeakButtonProps) => {
+export const SpeakButton = forwardRef<HTMLButtonElement, SpeakButtonProps>(({ text, size = 'sm', className, speakerGender, voicePreference = 'male' }, ref) => {
   const [loading, setLoading] = useState(false);
   const [playing, setPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -123,6 +123,7 @@ export const SpeakButton = ({ text, size = 'sm', className, speakerGender, voice
 
   return (
     <button
+      ref={ref}
       onClick={speak}
       className={cn(
         btnSize,
@@ -131,6 +132,7 @@ export const SpeakButton = ({ text, size = 'sm', className, speakerGender, voice
         className
       )}
       title="Listen"
+      aria-label={`Listen to "${text}"`}
       type="button"
       disabled={loading}
     >
@@ -141,4 +143,6 @@ export const SpeakButton = ({ text, size = 'sm', className, speakerGender, voice
       )}
     </button>
   );
-};
+});
+
+SpeakButton.displayName = 'SpeakButton';

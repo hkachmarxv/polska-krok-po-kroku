@@ -8,8 +8,12 @@ export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+        <div className="flex items-center gap-2.5">
+          <span className="text-3xl">🇵🇱</span>
+          <span className="font-display text-xl font-bold text-foreground tracking-tight">LearnPolski</span>
+        </div>
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
       </div>
     );
   }

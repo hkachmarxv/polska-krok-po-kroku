@@ -53,6 +53,7 @@ const Dashboard = () => {
               onClick={() => navigate('/settings')}
               className="p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               title="Account settings"
+              aria-label="Account settings"
             >
               <Settings className="w-4 h-4" />
             </button>

@@ -131,7 +131,7 @@ const GrammarAssistant = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col pb-16">
+    <div className="min-h-screen bg-background flex flex-col pb-20">
       {limitInfo && <AiLimitModal limitInfo={limitInfo} onDismiss={dismissLimit} />}
 
       <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-10">
@@ -234,6 +234,7 @@ const GrammarAssistant = () => {
             <button
               onClick={() => sendMessage(input)}
               disabled={!input.trim() || isLoading}
+              aria-label="Send message"
               className="bg-primary text-primary-foreground rounded-xl p-3 hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Send className="w-5 h-5" />

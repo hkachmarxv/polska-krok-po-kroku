@@ -27,6 +27,8 @@ export const BottomNav = () => {
             <button
               key={tab.id}
               onClick={() => navigate(tab.path)}
+              aria-label={tab.label}
+              aria-current={isActive ? 'page' : undefined}
               className={cn(
                 'flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors',
                 isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
