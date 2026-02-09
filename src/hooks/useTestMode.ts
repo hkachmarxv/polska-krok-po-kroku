@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useSyncExternalStore } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 
 const ADMIN_EMAILS = ['support@learnpolski.academy'];

@@ -4,6 +4,7 @@ import { ArrowLeft, ChevronRight, Lock, Crown, Check, CircleDot } from 'lucide-r
 import { getLessonById, lessons } from '@/data/a1Course';
 import { useProgress } from '@/hooks/useProgress';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useTestMode } from '@/hooks/useTestMode';
 import { Progress } from '@/components/ui/progress';
 import { LessonLearnTab } from '@/components/course/LessonLearnTab';
 import { LessonFlashcards } from '@/components/course/LessonFlashcards';
@@ -27,6 +28,7 @@ const LessonPage = () => {
   const navigate = useNavigate();
   const { progress, isStepCompleted, completeStep } = useProgress();
   const { isLessonAccessible } = useSubscription();
+  const { isTestMode } = useTestMode();
   const id = parseInt(lessonId || '1', 10);
   const lesson = getLessonById(id);
 
@@ -41,7 +43,7 @@ const LessonPage = () => {
   });
 
   const completedLessons = progress.lessonsCompleted || [];
-  const isUnlocked = id === 1 || completedLessons.includes(id - 1);
+  const isUnlocked = isTestMode || id === 1 || completedLessons.includes(id - 1);
   const isCompleted = completedLessons.includes(id);
 
   const completedStepsCount = useMemo(() => {
