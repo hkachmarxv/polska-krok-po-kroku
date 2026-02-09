@@ -1,15 +1,18 @@
 import { useState } from 'react';
 import { Loader2, ChevronRight, Lightbulb, CheckCircle2, XCircle, RotateCcw } from 'lucide-react';
 import { Lesson } from '@/data/courseTypes';
+import { DrillVocabCard, type DrillVocabulary } from '@/components/course/DrillVocabCard';
 
 interface Drill {
   sentence: string;
   translation: string;
+  translationFull?: string;
   options: string[];
   correctIndex: number;
   explanation: string;
   rule: string;
   tip: string;
+  vocabulary?: DrillVocabulary;
 }
 
 interface Props {
@@ -143,7 +146,9 @@ export const LessonGrammarDrill = ({ lesson, onComplete }: Props) => {
                 </span>
               ))}
             </p>
-            <p className="text-sm text-muted-foreground mt-2 italic">{drill.translation}</p>
+            <p className="text-sm text-muted-foreground mt-2 italic">
+              {isAnswered && drill.translationFull ? drill.translationFull : drill.translation}
+            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
@@ -188,6 +193,11 @@ export const LessonGrammarDrill = ({ lesson, onComplete }: Props) => {
                 </div>
               )}
             </div>
+          )}
+
+          {/* Vocabulary Card */}
+          {isAnswered && drill.vocabulary && (
+            <DrillVocabCard vocabulary={drill.vocabulary} />
           )}
 
           {isAnswered && (
