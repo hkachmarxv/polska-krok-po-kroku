@@ -115,7 +115,15 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) throw error;
       if (data?.url) {
+        // Open checkout in new tab and poll for subscription changes
         window.open(data.url, '_blank');
+        // Poll every 5s for up to 5 minutes to detect completed checkout
+        const pollInterval = setInterval(async () => {
+          await checkSubscription();
+        }, 5000);
+        setTimeout(() => clearInterval(pollInterval), 300_000);
+        // Store interval ID so we can clean up if component unmounts
+        (window as any).__checkoutPoll = pollInterval;
       }
     } catch (e) {
       console.error('Checkout error:', e);
