@@ -6,15 +6,15 @@ import { useTestMode } from '@/hooks/useTestMode';
 // Stripe product/price IDs
 export const PLANS = {
   monthly: {
-    priceId: 'price_1Syf3PGdKrTRUj6vpZ45MoLg',
-    productId: 'prod_TwY9ecAVv8hO5v',
+    priceId: 'price_1Syv5yGdKrTRUj6vt23aIw0j',
+    productId: 'prod_TwojITdzzvRsdr',
     name: 'Monthly',
     price: '$30/mo',
     mode: 'subscription' as const,
   },
   onetime: {
-    priceId: 'price_1Syf04GdKrTRUj6vt8De9VBj',
-    productId: 'prod_TwY6W1izbWUNBy',
+    priceId: 'price_1Syv5zGdKrTRUj6v1WzKcgSt',
+    productId: 'prod_Twojx9VkBAUSZ1',
     name: 'One-Time',
     price: '$80',
     mode: 'payment' as const,
