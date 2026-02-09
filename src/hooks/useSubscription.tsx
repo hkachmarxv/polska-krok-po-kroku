@@ -33,10 +33,13 @@ interface SubscriptionContextType extends SubscriptionState {
   checkSubscription: () => Promise<void>;
   startCheckout: (plan: 'monthly' | 'onetime') => Promise<void>;
   openCustomerPortal: () => Promise<void>;
+  cancelSubscription: () => Promise<void>;
   isLessonAccessible: (lessonId: number) => boolean;
   showCelebration: boolean;
   checkoutPlanType: 'monthly' | 'onetime';
   dismissCelebration: () => void;
+  showCancellation: boolean;
+  setShowCancellation: (v: boolean) => void;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
@@ -102,6 +105,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   const [showCelebration, setShowCelebration] = useState(false);
   const [checkoutPlanType, setCheckoutPlanType] = useState<'monthly' | 'onetime'>('monthly');
   const [pendingCheckout, setPendingCheckout] = useState(false);
+  const [showCancellation, setShowCancellation] = useState(false);
 
   // Detect checkout=success in URL (redirected tab) or __pendingCheckoutPlan (original tab)
   useEffect(() => {
@@ -184,6 +188,35 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const cancelSubscription = async () => {
+    if (!session?.access_token) return;
+
+    try {
+      // Open Stripe portal for actual cancellation
+      const { data, error } = await supabase.functions.invoke('customer-portal', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+
+      // Send cancellation email (fire-and-forget)
+      supabase.functions.invoke('send-cancellation-email', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: { subscriptionEnd: state.subscriptionEnd },
+      }).catch(e => console.error('Cancellation email error:', e));
+
+      // Start polling for subscription change
+      const pollInterval = setInterval(checkSubscription, 5000);
+      setTimeout(() => clearInterval(pollInterval), 300_000);
+    } catch (e) {
+      console.error('Cancel error:', e);
+      throw e;
+    }
+  };
+
   const { isTestMode } = useTestMode();
 
   const isLessonAccessible = (lessonId: number) => {
@@ -203,10 +236,13 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
       checkSubscription,
       startCheckout,
       openCustomerPortal,
+      cancelSubscription,
       isLessonAccessible,
       showCelebration,
       checkoutPlanType,
       dismissCelebration,
+      showCancellation,
+      setShowCancellation,
     }}>
       {children}
     </SubscriptionContext.Provider>

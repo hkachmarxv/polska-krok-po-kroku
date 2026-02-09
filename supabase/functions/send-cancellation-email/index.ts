@@ -28,13 +28,15 @@ serve(async (req) => {
     const user = userData.user;
     if (!user?.email) throw new Error("No user email");
 
-    const { planType } = await req.json();
+    const { subscriptionEnd } = await req.json();
     const displayName = user.user_metadata?.display_name || user.user_metadata?.full_name || "Learner";
     const firstName = displayName.split(" ")[0];
 
     const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-    const isLifetime = planType === "onetime";
+    const endDateFormatted = subscriptionEnd
+      ? new Date(subscriptionEnd).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+      : "the end of your billing period";
 
     const emailHtml = `
 <!DOCTYPE html>
@@ -51,13 +53,13 @@ serve(async (req) => {
           
           <!-- Header -->
           <tr>
-            <td style="background:linear-gradient(135deg,#dc2626 0%,#b91c1c 100%);padding:40px 32px;text-align:center;">
-              <div style="font-size:40px;margin-bottom:12px;">🇵🇱 👑</div>
+            <td style="background:linear-gradient(135deg,#6b7280 0%,#4b5563 100%);padding:40px 32px;text-align:center;">
+              <div style="font-size:40px;margin-bottom:12px;">🇵🇱 😢</div>
               <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;letter-spacing:-0.5px;">
-                Witamy, ${firstName}!
+                We're sorry to see you go, ${firstName}
               </h1>
               <p style="margin:8px 0 0;color:rgba(255,255,255,0.9);font-size:15px;">
-                ${isLifetime ? "You've unlocked lifetime A1 access" : "Your A1 subscription is now active"}
+                Your cancellation has been confirmed
               </p>
             </td>
           </tr>
@@ -66,44 +68,36 @@ serve(async (req) => {
           <tr>
             <td style="padding:32px;">
               <p style="margin:0 0 20px;color:#374151;font-size:15px;line-height:1.6;">
-                ${isLifetime 
-                  ? `Great choice! You now have <strong>permanent access</strong> to the full A1 Polish course. No recurring fees — it's yours forever.` 
-                  : `Your monthly subscription is active. You now have <strong>full access</strong> to all A1 Polish lessons and tools.`
-                }
+                Your A1 subscription has been cancelled. You'll still have <strong>full access until ${endDateFormatted}</strong> — so there's still time to keep learning!
               </p>
 
-              <!-- What's unlocked -->
-              <div style="background-color:#fef2f2;border-radius:12px;padding:20px;margin-bottom:24px;">
-                <p style="margin:0 0 12px;font-weight:700;color:#1f2937;font-size:14px;">Here's what's waiting for you:</p>
+              <!-- What you'll lose -->
+              <div style="background-color:#f9fafb;border-radius:12px;padding:20px;margin-bottom:24px;border-left:3px solid #9ca3af;">
+                <p style="margin:0 0 12px;font-weight:700;color:#1f2937;font-size:14px;">After your access expires:</p>
                 <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
-                  <tr><td style="padding:4px 0;color:#374151;font-size:14px;">📚 20 structured A1 lessons</td></tr>
-                  <tr><td style="padding:4px 0;color:#374151;font-size:14px;">🃏 Interactive flashcards & quizzes</td></tr>
-                  <tr><td style="padding:4px 0;color:#374151;font-size:14px;">🧩 Sentence builder & match games</td></tr>
-                  <tr><td style="padding:4px 0;color:#374151;font-size:14px;">🤖 AI Grammar Assistant & Drill</td></tr>
-                  <tr><td style="padding:4px 0;color:#374151;font-size:14px;">🔊 Text-to-speech pronunciation</td></tr>
-                  <tr><td style="padding:4px 0;color:#374151;font-size:14px;">🔥 Progress tracking & streaks</td></tr>
+                  <tr><td style="padding:4px 0;color:#6b7280;font-size:14px;">❌ Lessons 2–20 will be locked</td></tr>
+                  <tr><td style="padding:4px 0;color:#6b7280;font-size:14px;">❌ AI Grammar tools unavailable</td></tr>
+                  <tr><td style="padding:4px 0;color:#6b7280;font-size:14px;">❌ Your streak progress will pause</td></tr>
                 </table>
               </div>
 
-              <!-- CTA -->
+              <!-- Re-subscribe CTA -->
+              <div style="background-color:#fef2f2;border-radius:12px;padding:20px;margin-bottom:24px;">
+                <p style="margin:0 0 8px;color:#374151;font-size:14px;line-height:1.5;">
+                  <strong>💡 Changed your mind?</strong> You can resubscribe anytime and pick up right where you left off — your progress is always saved.
+                </p>
+              </div>
+
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center">
-                    <a href="https://polska-krok-po-kroku.lovable.app/course" 
+                    <a href="https://polska-krok-po-kroku.lovable.app/pricing" 
                        style="display:inline-block;background-color:#dc2626;color:#ffffff;font-weight:700;font-size:15px;padding:14px 36px;border-radius:12px;text-decoration:none;">
-                      Start Learning →
+                      Resubscribe →
                     </a>
                   </td>
                 </tr>
               </table>
-
-              <!-- Tip -->
-              <div style="margin-top:24px;padding:16px;background-color:#f0fdf4;border-radius:10px;border-left:3px solid #22c55e;">
-                <p style="margin:0;color:#374151;font-size:13px;line-height:1.5;">
-                  <strong>💡 Pro tip:</strong> Try to complete at least one lesson per day to build your streak. 
-                  Consistency beats intensity when learning a language!
-                </p>
-              </div>
             </td>
           </tr>
 
@@ -111,10 +105,7 @@ serve(async (req) => {
           <tr>
             <td style="padding:24px 32px;border-top:1px solid #f3f4f6;text-align:center;">
               <p style="margin:0;color:#9ca3af;font-size:12px;line-height:1.5;">
-                ${isLifetime 
-                  ? "One-time purchase — no recurring charges." 
-                  : "You can manage your subscription anytime from Settings."
-                }
+                You won't be charged again. Your access continues until ${endDateFormatted}.
               </p>
               <p style="margin:8px 0 0;color:#9ca3af;font-size:11px;">
                 Questions? Contact 
@@ -135,9 +126,7 @@ serve(async (req) => {
     const { error: emailError } = await resend.emails.send({
       from: "LearnPolski <noreply@learnpolski.academy>",
       to: [user.email],
-      subject: isLifetime 
-        ? "👑 Lifetime A1 access unlocked — welcome!" 
-        : "🎉 Your A1 subscription is active — let's learn!",
+      subject: "Your A1 subscription has been cancelled 😔",
       html: emailHtml,
     });
 
@@ -146,7 +135,7 @@ serve(async (req) => {
       throw new Error(`Email send failed: ${JSON.stringify(emailError)}`);
     }
 
-    console.log(`Subscription email sent to ${user.email} (${planType})`);
+    console.log(`Cancellation email sent to ${user.email}`);
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -154,7 +143,7 @@ serve(async (req) => {
     });
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
-    console.error("send-subscription-email error:", msg);
+    console.error("send-cancellation-email error:", msg);
     return new Response(JSON.stringify({ error: msg }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
