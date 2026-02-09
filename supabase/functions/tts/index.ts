@@ -87,7 +87,7 @@ serve(async (req) => {
     console.log(`TTS request: "${trimmedText}" voice=${voiceId || "default"} ip=${clientIp}`);
 
     const response = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId || "jB2lPb5DhAX6l1TLkKXy"}/stream?output_format=mp3_22050_32`,
+      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId || "JWUOwsYG4XgR9Od3eeon"}/stream?output_format=mp3_22050_32`,
       {
         method: "POST",
         headers: {

@@ -6,7 +6,7 @@ const STORAGE_KEY = 'polish-voice-preference';
 
 // ElevenLabs voice IDs
 export const VOICES = {
-  male: 'jB2lPb5DhAX6l1TLkKXy',
+  male: 'JWUOwsYG4XgR9Od3eeon',
   female: 'YUdpWWny7k5yb4QCeweX',
 } as const;
 
