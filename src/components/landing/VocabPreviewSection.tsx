@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { SpeakButton } from '@/components/SpeakButton';
 
@@ -40,9 +40,52 @@ const categories = [
 
 const VocabPreviewSection = () => {
   const [activeTab, setActiveTab] = useState(0);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const prefetched = useRef(false);
+
+  // Warm the TTS edge function when section scrolls into view
+  useEffect(() => {
+    if (prefetched.current) return;
+    const el = sectionRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !prefetched.current) {
+          prefetched.current = true;
+          observer.disconnect();
+          // Fire a silent prefetch for the first word to warm the edge function
+          const firstWord = categories[0].words[0].polish;
+          fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/tts`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({ text: firstWord, voiceId: 'JWUOwsYG4XgR9Od3eeon' }),
+          })
+            .then(res => res.ok ? res.blob() : null)
+            .then(blob => {
+              if (blob) {
+                // Cache it so the SpeakButton finds it instantly
+                const url = URL.createObjectURL(blob);
+                // Access the SpeakButton's module-level cache
+                (window as any).__ttsCache = (window as any).__ttsCache || new Map();
+                (window as any).__ttsCache.set(`${firstWord}:JWUOwsYG4XgR9Od3eeon`, url);
+              }
+            })
+            .catch(() => { /* silent warm-up, no error needed */ });
+        }
+      },
+      { rootMargin: '200px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <section id="preview" className="py-20 md:py-28 bg-card/50">
+    <section id="preview" ref={sectionRef} className="py-20 md:py-28 bg-card/50">
       <div className="container max-w-6xl mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
