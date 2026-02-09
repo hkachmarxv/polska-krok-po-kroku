@@ -1,89 +1,66 @@
 
 
-# Full App Review: Issues Found and Improvements
+# Test Mode Plan
 
-## Critical Bug: Step Progress Not Syncing to Cloud
+## What This Solves
 
-The `syncToCloud` function in `useProgress.ts` (line 352-369) does NOT include `lessonStepsCompleted` in the update payload. This means step completion data is only stored in localStorage and will be lost if a user switches devices or clears their browser. This needs to be fixed immediately by adding `lesson_steps_completed: progress.lessonStepsCompleted` to the sync payload.
+Right now, to fully test the app you'd need to: pay for a subscription, complete lessons sequentially, and are limited to 5 AI uses per day. This makes it nearly impossible to verify all flows, test the premium experience, or check how checkout looks.
 
-Additionally, the `user_progress` table may not have a `lesson_steps_completed` column yet -- we need to verify and add a migration if missing.
+## How It Works
 
----
+A hidden **Test Mode** toggle will be added to your Settings page, protected so only your admin email can see it. When enabled, a small indicator badge appears on screen so you always know you're in test mode.
 
-## UX Issues Found
+### What Test Mode Unlocks
 
-### 1. Practice page feels disconnected from the Course
+| Restriction | Normal | Test Mode |
+|---|---|---|
+| Lessons 2-20 | Locked (need payment) | All unlocked |
+| Lesson sequence | Must complete previous | All accessible |
+| AI Grammar tools | 5 uses/day | Unlimited |
+| Checkout flow | Real Stripe payment | Stripe test mode (same flow, fake card numbers) |
+| Subscription status | From Stripe API | Simulated as "subscribed" |
 
-The Practice tab shows category-based vocabulary (Food, Numbers, etc.) which overlaps with lesson content but uses a completely separate organization. A new user completing Lesson 1 sees "Practice" in the nav and gets confused -- "Didn't I just practice inside the lesson?"
+### For Testing Checkout Specifically
 
-**Fix:** Add a subtitle or context banner on the Practice page explaining it pulls vocabulary from ALL lessons for cross-cutting review. Something like: "Review vocabulary across all your completed lessons, organized by topic."
+When test mode is on and you tap "Subscribe" or "Get Access", the checkout still opens Stripe -- but since your Stripe account has test mode, you can use Stripe's test card numbers (e.g., `4242 4242 4242 4242`, any future date, any CVC) to go through the full flow without real charges.
 
-### 2. Review Reminders link is broken
+## Technical Details
 
-`ReviewReminders.tsx` line 39 navigates to `/lesson/${lesson.id}?tab=flashcards` -- but the lesson page no longer uses tab-based navigation. It uses `activeStep` state. The `?tab=flashcards` query param is ignored, so users land on the step list instead of going directly into flashcards.
+### 1. Admin email constant
 
-**Fix:** Update the link to navigate to `/lesson/${lesson.id}` and auto-open step 2 (Flashcards) via a query param like `?step=2`, then read that param in `LessonPage.tsx` to set `activeStep` on mount.
+A single constant defines which email(s) can access test mode. Only your account email will be listed.
 
-### 3. Flashcards "Back" button goes to root
+### 2. Settings page addition
 
-In `Flashcards.tsx` (line 64), the standalone flashcards page navigates to `/` (landing page) instead of back to Practice. It should use `navigate(-1)` or navigate to `/practice`.
+A new card in Settings (visible only to admin emails) with a toggle switch labeled "Test Mode". The state is stored in `localStorage` under a key like `learnpolski-test-mode`.
 
-### 4. WhyUs comparison table is misleading
+### 3. Modify `useSubscription` hook
 
-The comparison table says "Gamification & badges" has a red X for LearnPolski and green check for others. This frames your app negatively. Since you do have streaks, progress bars, and step completion -- that IS gamification. Either flip it to a check, or reword the row to something like "Gimmicky gamification" to make the comparison honest.
+When test mode is active:
+- `isLessonAccessible()` returns `true` for all lessons
+- `subscribed` returns `true` (so upgrade banners hide and all content unlocks)
 
-### 5. No empty state for Recent Scores on Dashboard
+### 4. Modify `CourseOverview` lesson sequencing
 
-When a user first signs up, the Dashboard shows streak, words learned, and accuracy -- all at 0. But the "Recent Scores" section just doesn't appear at all. There's no nudge to take a quiz. Adding a small motivational card here would help conversion.
+When test mode is active:
+- `isUnlocked()` returns `true` for all lessons (bypass sequential requirement)
 
-### 6. The `getStepStatus` function has dead logic
+### 5. Modify `useAiUsage` hook
 
-In `LessonPage.tsx` line 43-49, the function always returns `'current'` for non-completed steps. The `recommendedStep` variable already handles highlighting. The function's distinction is meaningless -- it could be simplified to just check `isDone`.
+When test mode is active:
+- `canUse` always returns `true`
+- `remaining` shows unlimited
 
----
+### 6. Visual indicator
 
-## Technical Improvements
+A small fixed-position badge (bottom-right or top-right, near the edge) showing "TEST MODE" in a bright color so you never accidentally confuse test with production behavior.
 
-### Files to Modify
+### Files to Create/Modify
 
-**1. `src/hooks/useProgress.ts`** -- Fix cloud sync
-- Add `lesson_steps_completed: progress.lessonStepsCompleted` to the `syncToCloud` function's update payload (line 356-366)
-- Verify/add the column via a database migration
-
-**2. `src/pages/LessonPage.tsx`** -- Fix review deep-linking + simplify logic
-- Read `?step=N` query param on mount to auto-open a specific step (for Review Reminders)
-- Simplify `getStepStatus` to just return `'done'` or `'available'`
-
-**3. `src/components/ReviewReminders.tsx`** -- Fix navigation
-- Change navigation from `/lesson/${lesson.id}?tab=flashcards` to `/lesson/${lesson.id}?step=2`
-
-**4. `src/pages/Flashcards.tsx`** -- Fix back navigation
-- Change `navigate('/')` to `navigate('/practice')` on the back button
-
-**5. `src/pages/Practice.tsx`** -- Add context banner
-- Add a brief explanation line: "Review vocabulary across all your lessons, organized by topic"
-
-**6. `src/components/landing/WhyUsSection.tsx`** -- Fix comparison honesty
-- Change "Gamification & badges" row: flip `us: true` since LearnPolski does have streaks, progress tracking, and step completion rewards
-
-**7. `src/pages/Dashboard.tsx`** -- Add empty quiz state
-- When `quizResults.length === 0`, show a small card encouraging the user to start Lesson 1's quiz
-
-### Database Migration
-
-Add `lesson_steps_completed` column to `user_progress` table if it doesn't already exist:
-```sql
-ALTER TABLE user_progress 
-ADD COLUMN IF NOT EXISTS lesson_steps_completed jsonb DEFAULT '{}';
-```
-
-### Implementation Order
-
-1. Database migration for `lesson_steps_completed` column
-2. Fix `syncToCloud` in `useProgress.ts`
-3. Fix Review Reminders deep-linking + LessonPage query param reading
-4. Fix Flashcards back button
-5. Update Practice page banner
-6. Fix WhyUs comparison
-7. Add Dashboard empty quiz state
+- **New**: `src/hooks/useTestMode.ts` — simple hook reading localStorage + checking admin email
+- **Modify**: `src/hooks/useSubscription.tsx` — override gating when test mode on
+- **Modify**: `src/hooks/useAiUsage.ts` — bypass daily limit when test mode on
+- **Modify**: `src/pages/CourseOverview.tsx` — bypass sequential lock when test mode on
+- **Modify**: `src/pages/Settings.tsx` — add test mode toggle (admin only)
+- **Modify**: `src/App.tsx` — add floating test mode indicator component
 
