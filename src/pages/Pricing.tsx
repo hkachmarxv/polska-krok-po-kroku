@@ -1,11 +1,15 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Check, Crown, Zap, Shield, Loader2 } from 'lucide-react';
 import { useSubscription, PLANS } from '@/hooks/useSubscription';
+import { useTestMode } from '@/hooks/useTestMode';
 import { BottomNav } from '@/components/BottomNav';
 
 const Pricing = () => {
   const navigate = useNavigate();
   const { subscribed, lifetime, hasSubscription, subscriptionEnd, loading, startCheckout, openCustomerPortal } = useSubscription();
+  const { isTestMode } = useTestMode();
+  // Use real subscription state (not test-mode-overridden) for displaying pricing UI
+  const reallySubscribed = isTestMode ? (hasSubscription || lifetime) : subscribed;
 
   const features = [
     'All 20 structured A1 lessons',
@@ -39,7 +43,7 @@ const Pricing = () => {
 
       <main className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
         {/* Active subscription banner */}
-        {subscribed && (
+        {reallySubscribed && (
           <div className="bg-success/10 border border-success/30 rounded-2xl p-5 text-center">
             <Crown className="w-8 h-8 text-success mx-auto mb-2" />
             <h2 className="font-display font-bold text-foreground text-lg">
@@ -60,7 +64,7 @@ const Pricing = () => {
         )}
 
         {/* Free tier info */}
-        {!subscribed && (
+        {!reallySubscribed && (
           <div className="bg-card border border-border rounded-2xl p-5 text-center">
             <p className="text-sm text-muted-foreground">
               You're on the <span className="font-bold text-foreground">Free Plan</span> — Lesson 1 is free forever.
@@ -72,7 +76,7 @@ const Pricing = () => {
         )}
 
         {/* Pricing Cards */}
-        {!subscribed && (
+        {!reallySubscribed && (
           <div className="space-y-4">
             {/* Monthly */}
             <div className="bg-card border-2 border-primary/30 rounded-2xl p-6 relative overflow-hidden">
