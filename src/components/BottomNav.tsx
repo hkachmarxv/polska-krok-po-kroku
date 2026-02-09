@@ -30,12 +30,15 @@ export const BottomNav = () => {
               aria-label={tab.label}
               aria-current={isActive ? 'page' : undefined}
               className={cn(
-                'flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors',
+                'relative flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors',
                 isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
               )}
             >
+              {isActive && (
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-primary" />
+              )}
               <tab.icon className={cn('w-5 h-5', isActive && 'text-primary')} />
-              <span className="text-[10px] font-medium">{tab.label}</span>
+              <span className={cn("text-[10px] font-medium", isActive && "font-bold")}>{tab.label}</span>
             </button>
           );
         })}

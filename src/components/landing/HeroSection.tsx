@@ -36,7 +36,7 @@ const HeroSection = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-foreground leading-[1.1] tracking-tight"
+            className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-extrabold text-foreground leading-[1.05] tracking-tight"
           >
             The fastest path to{' '}
             <span className="relative">
@@ -62,10 +62,10 @@ const HeroSection = () => {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2"
           >
-            <Button size="lg" onClick={() => navigate('/auth')} className="gap-2 text-base px-10 py-6 font-bold text-lg shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-shadow">
+            <Button size="lg" onClick={() => navigate('/auth')} className="gap-2 text-base px-12 py-7 font-bold text-lg shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] transition-all duration-200">
               Start Learning Free <ArrowRight className="w-5 h-5" />
             </Button>
-            <p className="text-sm text-muted-foreground">Lesson 1 is free — no credit card needed</p>
+            <p className="text-xs text-muted-foreground/70">Lesson 1 is free — no credit card needed</p>
           </motion.div>
 
           {/* Social proof stats */}

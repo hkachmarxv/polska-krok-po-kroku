@@ -76,7 +76,7 @@ const Dashboard = () => {
         {/* Continue Learning CTA */}
         <button
           onClick={() => navigate(completedLessons.length === lessons.length ? '/course' : `/lesson/${currentLesson}`)}
-          className="w-full bg-primary/10 border-2 border-primary/30 rounded-2xl p-5 text-left card-hover group shadow-sm"
+          className="w-full bg-primary/10 border-2 border-primary/30 rounded-2xl p-5 text-left card-hover group shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">

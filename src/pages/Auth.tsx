@@ -162,8 +162,13 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <div className="w-full max-w-sm space-y-6">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4 relative overflow-hidden">
+      {/* Decorative background orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-primary/8 blur-3xl" />
+        <div className="absolute -bottom-32 -left-32 w-80 h-80 rounded-full bg-accent/8 blur-3xl" />
+      </div>
+      <div className="w-full max-w-sm space-y-6 relative bg-card/60 backdrop-blur-sm border border-border/50 rounded-2xl p-6 shadow-lg">
         {/* Back to Home */}
         <div className="flex justify-center">
           <button

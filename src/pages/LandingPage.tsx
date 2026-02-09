@@ -13,6 +13,12 @@ const FinalCTA = lazy(() => import('@/components/landing/FinalCTA'));
 const ContactSection = lazy(() => import('@/components/landing/ContactSection'));
 const LandingFooter = lazy(() => import('@/components/landing/LandingFooter'));
 
+const SectionDivider = () => (
+  <div className="container max-w-6xl mx-auto px-4">
+    <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+  </div>
+);
+
 const LandingPage = () => {
   return (
     <div className="min-h-screen bg-background">
@@ -20,12 +26,19 @@ const LandingPage = () => {
       <HeroSection />
       <Suspense fallback={null}>
         <WhyUsSection />
+        <SectionDivider />
         <MethodSection />
+        <SectionDivider />
         <CEFRCanDoSection />
+        <SectionDivider />
         <VocabPreviewSection />
+        <SectionDivider />
         <RoadmapSection />
+        <SectionDivider />
         <PricingSection />
+        <SectionDivider />
         <TestimonialsSection />
+        <SectionDivider />
         <FinalCTA />
         <ContactSection />
         <LandingFooter />
