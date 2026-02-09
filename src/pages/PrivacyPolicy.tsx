@@ -50,7 +50,7 @@ const PrivacyPolicy = () => {
 
         <h2 className="font-display text-xl font-bold text-foreground mt-8 mb-3">7. Contact Us</h2>
         <p className="text-foreground/90 leading-relaxed">
-          If you have any questions about this Privacy Policy, please contact us through the contact form on our website or email us at privacy@learnpolski.com.
+          If you have any questions about this Privacy Policy, please email us at support@learnpolski.academy.
         </p>
       </main>
     </div>

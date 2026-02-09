@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, LogOut, User, Mail, Pencil, Check, X, Loader2, Camera, Lock, Eye, EyeOff, HelpCircle, Volume2, FlaskConical } from 'lucide-react';
+import { ArrowLeft, LogOut, User, Mail, Pencil, Check, X, Loader2, Camera, Lock, Eye, EyeOff, HelpCircle, Volume2, FlaskConical, Crown, ExternalLink } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -9,12 +9,15 @@ import { BottomNav } from '@/components/BottomNav';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useTestMode } from '@/hooks/useTestMode';
 import { Switch } from '@/components/ui/switch';
+import { useSubscription } from '@/hooks/useSubscription';
+import CancellationDialog from '@/components/CancellationDialog';
 
 const Settings = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { subscribed, lifetime, subscriptionEnd, loading: subLoading, openCustomerPortal, cancelSubscription, showCancellation, setShowCancellation } = useSubscription();
 
   const [editingName, setEditingName] = useState(false);
   const [displayName, setDisplayName] = useState(user?.user_metadata?.display_name || '');
@@ -329,6 +332,57 @@ const Settings = () => {
           <Mail className="w-4 h-4 text-muted-foreground" />
         </a>
 
+        {/* Subscription Management */}
+        {!subLoading && (
+          <div className="bg-card rounded-xl border border-border p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Crown className="w-4 h-4 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-muted-foreground">Subscription</p>
+                <p className="text-sm font-medium text-foreground">
+                  {lifetime ? 'Lifetime Access' : subscribed ? 'Monthly Plan' : 'Free Plan'}
+                </p>
+                {subscribed && !lifetime && subscriptionEnd && (
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Renews {new Date(subscriptionEnd).toLocaleDateString()}
+                  </p>
+                )}
+              </div>
+            </div>
+            {(subscribed || lifetime) && (
+              <div className="mt-3 pl-12 space-y-2">
+                <button
+                  onClick={openCustomerPortal}
+                  className="flex items-center gap-1.5 text-sm text-primary hover:underline"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  Manage Billing
+                </button>
+                {subscribed && !lifetime && (
+                  <button
+                    onClick={() => setShowCancellation(true)}
+                    className="text-sm text-muted-foreground hover:text-destructive transition-colors"
+                  >
+                    Cancel subscription
+                  </button>
+                )}
+              </div>
+            )}
+            {!subscribed && !lifetime && (
+              <div className="mt-3 pl-12">
+                <button
+                  onClick={() => navigate('/pricing')}
+                  className="text-sm text-primary hover:underline"
+                >
+                  Upgrade →
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Test Mode (admin only) */}
         {isAdmin && (
           <div className="bg-card rounded-xl border-2 border-destructive/30 p-4 flex items-center gap-3">
@@ -356,6 +410,12 @@ const Settings = () => {
         </button>
       </main>
 
+      <CancellationDialog
+        isOpen={showCancellation}
+        onClose={() => setShowCancellation(false)}
+        onConfirmCancel={cancelSubscription}
+        subscriptionEnd={subscriptionEnd}
+      />
       <BottomNav />
     </div>
   );
