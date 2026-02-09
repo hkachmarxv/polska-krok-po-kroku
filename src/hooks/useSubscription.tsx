@@ -34,6 +34,9 @@ interface SubscriptionContextType extends SubscriptionState {
   startCheckout: (plan: 'monthly' | 'onetime') => Promise<void>;
   openCustomerPortal: () => Promise<void>;
   isLessonAccessible: (lessonId: number) => boolean;
+  showCelebration: boolean;
+  checkoutPlanType: 'monthly' | 'onetime';
+  dismissCelebration: () => void;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
@@ -98,10 +101,43 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('checkout') === 'success') {
-      // Delay slightly to let Stripe process
+      // Delay slightly to let Stripe process, then check
       setTimeout(checkSubscription, 2000);
+      // Clean URL param
+      const url = new URL(window.location.href);
+      url.searchParams.delete('checkout');
+      window.history.replaceState({}, '', url.toString());
     }
   }, [checkSubscription]);
+
+  // Track whether we've sent the subscription email for this session
+  const [celebrationShown, setCelebrationShown] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [checkoutPlanType, setCheckoutPlanType] = useState<'monthly' | 'onetime'>('monthly');
+
+  // Show celebration when subscription becomes active after checkout
+  useEffect(() => {
+    if (!celebrationShown && state.subscribed && !state.loading) {
+      const params = new URLSearchParams(window.location.search);
+      const wasCheckout = params.get('checkout') === 'success' || (window as any).__pendingCheckoutPlan;
+      if (wasCheckout || (window as any).__pendingCheckoutPlan) {
+        const plan = (window as any).__pendingCheckoutPlan || 'monthly';
+        setCheckoutPlanType(plan);
+        setShowCelebration(true);
+        setCelebrationShown(true);
+
+        // Send subscription email (fire-and-forget)
+        if (session?.access_token) {
+          supabase.functions.invoke('send-subscription-email', {
+            headers: { Authorization: `Bearer ${session.access_token}` },
+            body: { planType: plan },
+          }).catch(e => console.error('Subscription email error:', e));
+        }
+
+        delete (window as any).__pendingCheckoutPlan;
+      }
+    }
+  }, [state.subscribed, state.loading, celebrationShown, session?.access_token]);
 
   const startCheckout = async (plan: 'monthly' | 'onetime') => {
     if (!session?.access_token) return;
@@ -115,6 +151,8 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) throw error;
       if (data?.url) {
+        // Track which plan was selected for celebration UI
+        (window as any).__pendingCheckoutPlan = plan;
         // Open checkout in new tab and poll for subscription changes
         window.open(data.url, '_blank');
         // Poll every 5s for up to 5 minutes to detect completed checkout
@@ -157,6 +195,8 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
 
   const effectiveSubscribed = isTestMode || state.subscribed;
 
+  const dismissCelebration = () => setShowCelebration(false);
+
   return (
     <SubscriptionContext.Provider value={{
       ...state,
@@ -165,6 +205,9 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
       startCheckout,
       openCustomerPortal,
       isLessonAccessible,
+      showCelebration,
+      checkoutPlanType,
+      dismissCelebration,
     }}>
       {children}
     </SubscriptionContext.Provider>
