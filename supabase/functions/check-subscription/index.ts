@@ -64,8 +64,13 @@ serve(async (req) => {
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-      logStep("Active subscription found", { subscriptionId: subscription.id });
+      if (subscription.current_period_end) {
+        const endDate = new Date(subscription.current_period_end * 1000);
+        if (!isNaN(endDate.getTime())) {
+          subscriptionEnd = endDate.toISOString();
+        }
+      }
+      logStep("Active subscription found", { subscriptionId: subscription.id, subscriptionEnd });
     }
 
     // Check for lifetime purchase (one-time payment)
