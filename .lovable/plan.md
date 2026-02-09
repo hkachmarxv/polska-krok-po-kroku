@@ -1,244 +1,124 @@
 
 
-# AI Boost: In-App Paid AI Upgrade (Refined)
+# Full UX and Quality Review: LearnPolski
 
-This plan implements AI Boost as a separate subscription product, with all three strategic refinements incorporated: monthly token safety caps, paid-only eligibility, and single active boost enforcement.
+## Summary of Findings
 
----
-
-## Core Architecture
-
-```text
-                       Base Tier                AI Boost (add-on)
-                    (course access)           (compute upgrade)
-                   +---------------+         +------------------+
-  Free             | 15 req/day    |         | Cannot purchase  |
-                   | 50K tokens    |         |                  |
-                   +---------------+         +------------------+
-  Monthly ($30/mo) | 100 req/day   |  --->   | Plus: +100/day   |
-                   | 300K tokens   |         | Pro:  +300/day   |
-                   +---------------+         +------------------+
-  Lifetime ($80)   | 150 req/day   |  --->   | Plus: +100/day   |
-                   | 500K tokens   |         | Pro:  +300/day   |
-                   +---------------+         +------------------+
-```
+After a thorough review of the landing page, authentication flow, dashboard, course overview, lesson pages, practice section, AI tutor, and settings, here are the issues and improvements organized by priority.
 
 ---
 
-## Step 1: Create Stripe Products
+## 1. Bug Fixes (High Priority)
 
-Two new Stripe products (monthly recurring subscriptions):
+### 1a. Console Warning: forwardRef on VocabPreviewSection and SpeakButton
+The `SpeakButton` component is being passed a ref by framer-motion (via lazy loading), but it's a plain function component. This causes React warnings in the console, which look unprofessional and could confuse debugging.
 
-| Product | Price | What it adds |
-|---|---|---|
-| AI Boost Plus | $5/month | +100 requests/day, +200K tokens/day |
-| AI Boost Pro | $10/month | +300 requests/day, +500K tokens/day |
+**Fix:** Wrap `SpeakButton` with `React.forwardRef` so refs pass through cleanly.
 
-Created via Stripe tools before any code changes.
+### 1b. Auth page: No "Back to Home" navigation
+If a user lands on `/auth`, there's no way to get back to the landing page without using the browser back button. This is a dead-end for users who want to explore the marketing site more before committing.
 
----
+**Fix:** Add a clickable logo/home link at the top of the Auth page that navigates to `/`.
 
-## Step 2: Database Migration
+### 1c. Landing page pricing buttons always go to /auth
+All three pricing tier buttons on the landing page navigate to `/auth`, regardless of plan. After sign-up, the user lands on the dashboard with no context about which plan they were interested in. This breaks the conversion funnel.
 
-**New table: `ai_boost_plans`**
-
-Stores boost plan config in DB so pricing/limits can be tuned without redeploy.
-
-| Column | Type | Description |
-|---|---|---|
-| id | uuid (PK) | Auto-generated |
-| name | text | "AI Boost Plus" or "AI Boost Pro" |
-| stripe_price_id | text | Stripe price ID |
-| stripe_product_id | text | Stripe product ID |
-| extra_daily_requests | integer | +100 or +300 |
-| extra_daily_tokens | integer | +200,000 or +500,000 |
-| monthly_token_cap | integer | 4,000,000 or 12,000,000 |
-| price_display | text | "$5/mo" or "$10/mo" |
-| active | boolean | Enable/disable plans |
-| created_at | timestamptz | Default now() |
-
-RLS: Public read (SELECT), no INSERT/UPDATE/DELETE from client.
-
-**Add to `ai_usage_daily` table:**
-
-| Column | Type | Description |
-|---|---|---|
-| monthly_tokens_used | integer (default 0) | Cumulative tokens this calendar month (for monthly cap enforcement) |
+**Fix:** Pass the intended plan as a query param (e.g., `/auth?plan=monthly`) and after authentication, redirect to `/pricing` with that plan pre-selected, or directly to checkout.
 
 ---
 
-## Step 3: Backend Changes
+## 2. UX Improvements (Medium Priority)
 
-### 3a. Update `ai-guard.ts` -- Boost Detection
+### 2a. Loading state is just a spinner
+The `ProtectedRoute` shows a bare spinner on a blank screen while auth loads. This can feel broken on slow connections.
 
-After determining the user's base tier, also check Stripe for an active AI Boost subscription:
+**Fix:** Add the LearnPolski branding (flag emoji + logo text) above the spinner for a branded loading experience.
 
-- Fetch all active subscriptions for the customer (currently only fetches 1)
-- Match subscription price IDs against `ai_boost_plans` table entries
-- If found: add the boost's `extra_daily_requests` and `extra_daily_tokens` to the user's daily budget
-- Also check the user's `monthly_tokens_used` against the boost's `monthly_token_cap` -- if exceeded, soft-block even if daily budget remains
+### 2b. Bottom navigation overlap with page content
+Pages using `BottomNav` have `pb-20` to compensate for the fixed bottom nav. However, the `safe-area-bottom` padding may not be enough on some iOS devices with home indicators.
 
-Key enforcement rules:
-- **Paid-only eligibility**: If base tier is "free", ignore any boost subscription (should not exist, but defense-in-depth)
-- **Single boost**: Only the first matching boost subscription applies (no stacking Plus + Pro)
+**Fix:** Increase bottom padding slightly and ensure the `safe-area-bottom` class also accounts for the nav height consistently.
 
-### 3b. Update `ai-usage-status` endpoint
+### 2c. Grammar Assistant input area hidden behind BottomNav on mobile
+The AI Tutor page has both a text input area at the bottom AND the BottomNav. On smaller screens, these can overlap.
 
-Return additional fields:
-- `boostPlan`: name of active boost (null if none)
-- `boostLimits`: extra requests/tokens from the boost
-- `totalLimits`: base + boost combined
-- `monthlyTokensUsed` / `monthlyTokenCap`: for transparency
+**Fix:** Adjust the Grammar Assistant layout so the input sits above the BottomNav with proper spacing (`pb-16` is set, but the input area itself needs margin consideration).
 
-### 3c. New edge function: `create-ai-boost-checkout`
+### 2d. No empty state for Practice page
+If a user hasn't completed any lessons, the Practice page shows topic cards with 0% mastery but no guidance on where to start.
 
-- Accepts `{ boostPlan: "plus" | "pro" }`
-- Authenticates user via JWT
-- Checks eligibility: must have active course subscription or lifetime access (queries Stripe)
-- If free user: returns 403 with message "Course access required"
-- If user already has an active boost subscription: returns 409 with message "You already have an active AI Boost. Manage it from Settings."
-- Otherwise: creates Stripe checkout session with the boost price ID, mode "subscription"
-- Success URL: `/settings?boost=success`
-- Cancel URL: `/settings?boost=cancelled`
-
-### 3d. Update `check-subscription` response
-
-Add `has_ai_boost: boolean` and `ai_boost_plan: string | null` to the response so the frontend subscription context knows about boost status.
+**Fix:** Add a gentle nudge at the top suggesting they complete lessons first to populate vocabulary for practice.
 
 ---
 
-## Step 4: Frontend Changes
+## 3. Conversion & Engagement (Medium Priority)
 
-### 4a. Update `useAiUsage.ts`
+### 3a. Landing page "Start Free" CTA for logged-in users
+If a user is already logged in and visits the landing page, the nav still shows "Sign In" and "Start Free" buttons instead of a "Go to Dashboard" link.
 
-- Parse boost info from `ai-usage-status` response
-- Expose: `boostPlan`, `totalLimit` (base + boost), `monthlyUsage`
-- Remove any remaining localStorage-based limit logic
+**Fix:** Check auth state in `LandingNav` and swap the CTA buttons for a "Go to Dashboard" link when the user is already authenticated.
 
-### 4b. Update `AiLimitModal.tsx` (Premium UX)
+### 3b. No social proof or trust on Auth page
+The auth page is very minimal. Adding a small trust indicator (e.g., "Join 500+ learners" or "Lesson 1 is free") would help conversion.
 
-Replace current generic copy with contextual messaging:
-
-**For free users hitting limit:**
-```
-Header: "You've used today's AI power"
-Body: "The AI Tutor is one of your most powerful tools for mastering Polish grammar."
-[Primary] Continue learning without AI
-[Secondary] Upgrade plan (links to /pricing)
-```
-
-**For paid users (no boost) hitting limit:**
-```
-Header: "You've used today's AI power"
-Body: "Want more? AI Boost gives you up to 300 additional AI explanations per day."
-[Primary] Get AI Boost -- from $5/mo
-[Secondary] Continue learning without AI
-```
-
-**For users already on a boost hitting limit:**
-```
-Header: "You've used today's AI power"
-Body: "Even with AI Boost, you've hit today's ceiling. Resets in ~X hours."
-[Primary] Continue learning without AI
-[Secondary] Contact support for custom limits
-```
-
-Key copy change: "AI explanations" not "AI uses" -- anchors value to learning.
-
-### 4c. Update `Pricing.tsx`
-
-Add an "AI Add-ons" section below the main course pricing cards:
-- Only visible to users with active course access
-- Shows AI Boost Plus ($5/mo) and AI Boost Pro ($10/mo) as cards
-- If user already has a boost: show active plan with "Manage" link to Stripe portal
-- Upgrade path: Plus user sees "Upgrade to Pro" button
-- Downgrade: handled via Stripe Customer Portal
-
-### 4d. Update `useSubscription.tsx`
-
-- Parse `has_ai_boost` and `ai_boost_plan` from `check-subscription` response
-- Expose `hasAiBoost` and `aiBoostPlan` in context
-- Add `startBoostCheckout(plan: 'plus' | 'pro')` method
-
-### 4e. Update `Settings.tsx`
-
-- Show current AI Boost status in the subscription section
-- "AI Boost Plus active" badge or "No AI Boost" with upgrade CTA
-- Detect `?boost=success` URL param for celebration toast
-
-### 4f. Update `GrammarAssistant.tsx` and `GrammarDrill.tsx`
-
-- Show usage bar: "X of Y AI explanations used today" (Y = base + boost)
-- If boost active: show small "AI Boost Plus" badge in header
+**Fix:** Add a subtle trust line below the form.
 
 ---
 
-## Step 5: Safety Controls (Invisible to Users)
+## 4. Accessibility (Lower Priority but Important)
 
-### Monthly token cap enforcement
+### 4a. Missing aria-labels on icon-only buttons
+Several icon-only buttons (ThemeToggle, Settings gear in Dashboard, SpeakButton) lack accessible labels for screen readers.
 
-In `ai-guard.ts`, after daily checks pass:
-1. Query `ai_usage_daily` for the current calendar month (SUM of `total_tokens_estimate` WHERE `usage_date` >= first of month)
-2. Compare against the boost plan's `monthly_token_cap`
-3. If exceeded: soft-block with reason "MONTHLY_CAP"
-4. UX shows same warm modal but says "monthly AI budget" instead of "daily"
+**Fix:** Ensure all icon-only buttons have `aria-label` attributes.
 
-### Single boost enforcement
+### 4b. Form inputs on Auth page lack associated labels
+The auth form uses placeholder text only with no `<label>` elements, which reduces accessibility for screen readers.
 
-- `create-ai-boost-checkout` checks for existing active boost subscription before creating a new one
-- If found: returns 409, frontend shows "Manage your current boost in Settings"
-- Upgrade Plus to Pro: user goes through Stripe Customer Portal (already implemented)
-
-### Paid-only enforcement
-
-- `create-ai-boost-checkout` verifies course access before creating checkout
-- `ai-guard.ts` ignores boost for free-tier users (defense-in-depth)
+**Fix:** Add visually-hidden `<label>` elements or `aria-label` to each input.
 
 ---
 
-## Step 6: Update Feature Copy in Pricing Page
+## 5. Polish & Consistency (Lower Priority)
 
-Change the features list from:
-- "AI Grammar Assistant (5 uses/day)"
-- "AI Grammar Drill (5 uses/day)"
+### 5a. Inconsistent header heights across pages
+Dashboard, Course, Practice, and Settings headers have slightly different padding and element sizes. This causes a visual "jump" when navigating between tabs.
 
-To:
-- "AI Grammar Assistant (generous daily limit)"
-- "AI Grammar Drill (generous daily limit)"
-- "Optional: AI Boost for power users"
+**Fix:** Standardize header height and padding across all pages that use the BottomNav.
+
+### 5b. VocabPreviewSection has 122-line file reference in error
+The `VocabPreviewSection.tsx` file is only 107 lines long based on current code, suggesting the production build includes a slightly different version. This is not a bug but worth noting for debugging.
 
 ---
 
 ## Implementation Order
 
-1. Create Stripe products (AI Boost Plus, AI Boost Pro)
-2. DB migration: `ai_boost_plans` table + seed data
-3. New edge function: `create-ai-boost-checkout`
-4. Update `ai-guard.ts` with boost detection + monthly cap
-5. Update `ai-usage-status` with boost info
-6. Update `check-subscription` with boost fields
-7. Frontend: `useSubscription` + `useAiUsage` hook updates
-8. Frontend: `AiLimitModal` premium copy
-9. Frontend: `Pricing.tsx` add-on section
-10. Frontend: `Settings.tsx` boost status
-11. Frontend: usage indicators in Grammar pages
-12. Deploy all edge functions and test end-to-end
+1. Fix `SpeakButton` forwardRef (quick, eliminates console warnings)
+2. Add "Back to Home" on Auth page (quick UX win)
+3. Branded loading state for ProtectedRoute (quick polish)
+4. Landing nav smart CTA for logged-in users (conversion improvement)
+5. Fix pricing buttons conversion funnel (pass plan param through auth)
+6. Add aria-labels to icon-only buttons (accessibility)
+7. Add auth form labels (accessibility)
+8. Practice page empty state nudge (engagement)
+9. Standardize header heights (visual consistency)
+10. Grammar Assistant mobile spacing check (mobile UX)
 
 ---
 
-## What This Does NOT Change
+## Technical Details
 
-- Base tier limits (15 / 100 / 150 requests/day) -- unchanged
-- Course access pricing ($30/mo, $80 one-time) -- unchanged
-- Server-side enforcement architecture -- unchanged, only extended
-- Abuse guardrails (input validation, burst rate, anomaly logging) -- unchanged
-- Content access model -- unchanged
+**Files to modify:**
+- `src/components/SpeakButton.tsx` -- wrap with forwardRef
+- `src/pages/Auth.tsx` -- add home link, trust line
+- `src/components/ProtectedRoute.tsx` -- branded loading
+- `src/components/landing/LandingNav.tsx` -- auth-aware CTA
+- `src/components/landing/PricingSection.tsx` -- pass plan param
+- `src/components/BottomNav.tsx` -- aria-label on nav buttons
+- `src/pages/Dashboard.tsx` -- aria-labels on icon buttons
+- `src/components/ThemeToggle.tsx` -- aria-label
+- `src/pages/Practice.tsx` -- empty state guidance
+- `src/pages/GrammarAssistant.tsx` -- mobile spacing
 
-## Future Expansion (Not Now)
-
-- One-time AI credit packs (buy 50 uses for $3) -- add when demand proves it
-- Per-feature boost separation -- unnecessary complexity now
-- Admin usage dashboard -- separate feature
-- Annual boost discount -- growth lever for later
-- Bundle "first month free" promotion -- growth lever for later
+**No database changes required. No new dependencies needed.**
 
