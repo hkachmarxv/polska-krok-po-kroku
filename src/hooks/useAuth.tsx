@@ -75,13 +75,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signInWithUsername = async (username: string, password: string) => {
-    // Look up email by username
-    const { data, error: lookupError } = await supabase.rpc('get_email_by_username', { username });
-    if (lookupError || !data) {
-      return { error: { message: 'Username not found. Please check and try again.' } };
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('username-login', {
+        body: { username, password },
+      });
+
+      if (fnError || !data?.session) {
+        return { error: { message: data?.error || 'Invalid username or password.' } };
+      }
+
+      // Set the session from the edge function response
+      const { error: setError } = await supabase.auth.setSession({
+        access_token: data.session.access_token,
+        refresh_token: data.session.refresh_token,
+      });
+
+      if (setError) {
+        return { error: { message: setError.message } };
+      }
+
+      return { error: null };
+    } catch (e: any) {
+      return { error: { message: 'Invalid username or password.' } };
     }
-    const { error } = await supabase.auth.signInWithPassword({ email: data as string, password });
-    return { error };
   };
 
   const resetPassword = async (email: string) => {

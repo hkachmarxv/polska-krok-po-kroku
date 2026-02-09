@@ -46,11 +46,26 @@ serve(async (req: Request) => {
 
     const resend = new Resend(apiKey);
 
-    const sanitizedName = name.trim().replace(/[<>"'&]/g, "");
-    const sanitizedMessage = message.trim().replace(/[<>"'&]/g, (c: string) => {
-      const map: Record<string, string> = { "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;", "&": "&amp;" };
-      return map[c] || c;
-    });
+    // Comprehensive HTML entity encoding function
+    const encodeHtml = (str: string): string => {
+      return str.replace(/[&<>"'\/`]/g, (c: string) => {
+        const map: Record<string, string> = {
+          "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;",
+          "'": "&#39;", "/": "&#x2F;", "`": "&#96;"
+        };
+        return map[c] || c;
+      });
+    };
+
+    // Strip any null bytes and control characters (except newlines)
+    const cleanInput = (str: string): string => {
+      return str.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
+    };
+
+    const sanitizedName = encodeHtml(cleanInput(name.trim()));
+    const cleanedMessage = cleanInput(message.trim());
+    // Encode HTML entities FIRST, then convert newlines to <br /> 
+    const sanitizedMessage = encodeHtml(cleanedMessage);
 
     const emailResponse = await resend.emails.send({
       from: "LearnPolski Contact <noreply@learnpolski.academy>",
