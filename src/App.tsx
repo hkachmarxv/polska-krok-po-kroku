@@ -49,8 +49,8 @@ const App = () => (
             <Toaster />
             <Sonner />
             <TestModeIndicator />
-            <CelebrationOverlay />
             <BrowserRouter>
+              <CelebrationOverlay />
               <Routes>
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/auth" element={<Auth />} />
