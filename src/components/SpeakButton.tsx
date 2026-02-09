@@ -48,9 +48,12 @@ export const SpeakButton = forwardRef<HTMLButtonElement, SpeakButtonProps>(({ te
 
     const cacheKey = `${text}:${voiceId}`;
 
-    // Check cache first
-    const cachedUrl = audioCache.get(cacheKey);
+    // Check module-level cache first, then shared prefetch cache
+    const cachedUrl = audioCache.get(cacheKey)
+      || ((window as any).__ttsCache as Map<string, string> | undefined)?.get(cacheKey);
     if (cachedUrl) {
+      // Promote to module cache if from prefetch
+      if (!audioCache.has(cacheKey)) audioCache.set(cacheKey, cachedUrl);
       const audio = new Audio(cachedUrl);
       audioRef.current = audio;
       audio.onended = () => {
