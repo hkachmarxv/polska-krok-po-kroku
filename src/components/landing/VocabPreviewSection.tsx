@@ -95,7 +95,7 @@ const VocabPreviewSection = () => {
                   <span className="font-display text-lg font-bold text-foreground">{w.polish}</span>
                   <span className="text-sm text-muted-foreground">{w.english}</span>
                 </div>
-                <p className="text-xs text-primary/70 font-medium mt-0.5">/{w.phonetic}/</p>
+                <p className="text-xs text-primary font-medium mt-0.5">/{w.phonetic}/</p>
               </div>
               <SpeakButton text={w.polish} size="sm" />
             </div>
