@@ -1,7 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, BookOpen, Loader2, PenLine } from 'lucide-react';
+import { Send, BookOpen, Loader2, PenLine } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
+import { AiLimitModal } from '@/components/AiLimitModal';
+import { useAiUsage } from '@/hooks/useAiUsage';
+import { useAuth } from '@/hooks/useAuth';
 import ReactMarkdown from 'react-markdown';
 
 type Message = { role: 'user' | 'assistant'; content: string };
@@ -16,12 +19,13 @@ const SUGGESTED_QUESTIONS = [
 
 const GrammarAssistant = () => {
   const navigate = useNavigate();
+  const { session } = useAuth();
+  const { canUse, remaining, limitInfo, handleLimitError, dismissLimit, status, refreshStatus } = useAiUsage();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -29,6 +33,12 @@ const GrammarAssistant = () => {
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || isLoading) return;
+
+    if (!canUse) {
+      // Trigger the limit modal by fetching fresh status
+      refreshStatus();
+      return;
+    }
 
     const userMsg: Message = { role: 'user', content: text.trim() };
     const allMessages = [...messages, userMsg];
@@ -45,7 +55,7 @@ const GrammarAssistant = () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
           body: JSON.stringify({ messages: allMessages }),
         }
@@ -53,6 +63,8 @@ const GrammarAssistant = () => {
 
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({ error: 'Request failed' }));
+        // Check if it's an AI limit error
+        if (handleLimitError(err)) return;
         throw new Error(err.error || `Error ${resp.status}`);
       }
 
@@ -98,6 +110,9 @@ const GrammarAssistant = () => {
           }
         }
       }
+
+      // Refresh usage status after successful call
+      refreshStatus();
     } catch (e: any) {
       setMessages(prev => [
         ...prev,
@@ -117,19 +132,28 @@ const GrammarAssistant = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col pb-16">
+      {limitInfo && <AiLimitModal limitInfo={limitInfo} onDismiss={dismissLimit} />}
+
       <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="container max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-2xl">🤖</span>
             <h1 className="font-display text-base font-bold text-foreground">AI Tutor</h1>
           </div>
-          <button
-            onClick={() => navigate('/grammar-drill')}
-            className="flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors bg-primary/10 px-2.5 py-1.5 rounded-full"
-          >
-            <PenLine className="w-3.5 h-3.5" />
-            Grammar Drills
-          </button>
+          <div className="flex items-center gap-3">
+            {status && remaining !== Infinity && (
+              <span className="text-xs text-muted-foreground">
+                {remaining} left today
+              </span>
+            )}
+            <button
+              onClick={() => navigate('/grammar-drill')}
+              className="flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors bg-primary/10 px-2.5 py-1.5 rounded-full"
+            >
+              <PenLine className="w-3.5 h-3.5" />
+              Grammar Drills
+            </button>
+          </div>
         </div>
       </header>
 

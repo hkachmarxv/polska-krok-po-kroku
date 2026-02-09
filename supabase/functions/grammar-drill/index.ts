@@ -1,10 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+import { corsHeaders, aiGuard, recordUsage, softBlockResponse } from "../_shared/ai-guard.ts";
 
 const SYSTEM_PROMPT = `You are a Polish grammar drill generator for English speakers learning Polish.
 
@@ -33,12 +28,31 @@ When given a "difficulty" parameter (easy/medium/hard), adjust complexity accord
 
 CRITICAL: Return ONLY the JSON object, no other text.`;
 
+const MAX_OUTPUT_TOKENS = 512;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Auth + rate limit check
+    let guard;
+    try {
+      guard = await aiGuard(req, "grammar_drill");
+    } catch (e: any) {
+      if (e.message === "UNAUTHORIZED") {
+        return new Response(JSON.stringify({ error: "Please sign in to use grammar drills." }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      throw e;
+    }
+
+    if (!guard.allowed) {
+      return softBlockResponse(guard);
+    }
+
     const { topic, difficulty, previousWords, lessonContext } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
@@ -51,7 +65,9 @@ serve(async (req) => {
       userPrompt += ` Avoid using these base words: ${previousWords.join(", ")}. Use a different word/verb.`;
     }
 
-    console.log("Generating drill with prompt:", userPrompt);
+    console.log(`[grammar-drill] user=${guard.userId} tier=${guard.tier} prompt="${userPrompt.slice(0, 100)}"`);
+
+    const inputTokensEstimate = Math.ceil(userPrompt.length / 4);
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -67,6 +83,7 @@ serve(async (req) => {
             { role: "system", content: SYSTEM_PROMPT },
             { role: "user", content: userPrompt },
           ],
+          max_tokens: MAX_OUTPUT_TOKENS,
         }),
       }
     );
@@ -94,22 +111,25 @@ serve(async (req) => {
 
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content;
-    
+
     if (!content) {
-      console.error("No content in AI response");
       return new Response(
         JSON.stringify({ error: "No response from AI" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Parse the JSON from the response, stripping any markdown fences
+    // Record usage
+    const outputTokensEstimate = Math.ceil(content.length / 4);
+    recordUsage(guard.userId, "grammar_drill", inputTokensEstimate + outputTokensEstimate).catch((e) =>
+      console.error("Failed to record usage:", e)
+    );
+
+    // Parse the JSON
     let cleaned = content.trim();
     if (cleaned.startsWith("```")) {
       cleaned = cleaned.replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "");
     }
-
-    console.log("AI response:", cleaned);
 
     const drill = JSON.parse(cleaned);
 

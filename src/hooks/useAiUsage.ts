@@ -1,41 +1,80 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import { useTestMode } from '@/hooks/useTestMode';
+import { supabase } from '@/integrations/supabase/client';
 
-const DAILY_LIMIT = 5;
-
-function getTodayKey(feature: string) {
-  const today = new Date().toISOString().slice(0, 10);
-  return `ai-usage-${feature}-${today}`;
+export interface AiUsageStatus {
+  tier: 'free' | 'monthly' | 'lifetime';
+  usage: { requestsUsed: number; tokensUsed: number };
+  limits: { dailyRequests: number; dailyTokens: number };
+  remaining: { requests: number; tokens: number };
+  resetsInHours: number;
 }
 
-function getUsageCount(feature: string): number {
-  try {
-    return parseInt(localStorage.getItem(getTodayKey(feature)) || '0', 10);
-  } catch {
-    return 0;
-  }
+export interface AiLimitInfo {
+  reason: 'DAILY_LIMIT' | 'TOKEN_LIMIT' | 'RATE_LIMIT';
+  tier: string;
+  resetsInHours: number;
+  retryAfterSeconds?: number;
 }
 
-function incrementUsage(feature: string): number {
-  const key = getTodayKey(feature);
-  const current = getUsageCount(feature) + 1;
-  localStorage.setItem(key, String(current));
-  return current;
-}
-
-export function useAiUsage(feature: 'grammar-assistant' | 'grammar-drill') {
+export function useAiUsage() {
+  const { session } = useAuth();
   const { isTestMode } = useTestMode();
-  const [usageCount, setUsageCount] = useState(() => getUsageCount(feature));
+  const [status, setStatus] = useState<AiUsageStatus | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [limitInfo, setLimitInfo] = useState<AiLimitInfo | null>(null);
 
-  const remaining = isTestMode ? Infinity : Math.max(0, DAILY_LIMIT - usageCount);
-  const canUse = isTestMode || usageCount < DAILY_LIMIT;
+  const fetchStatus = useCallback(async () => {
+    if (isTestMode || !session?.access_token) return;
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-usage-status', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (!error && data) {
+        setStatus(data);
+      }
+    } catch (e) {
+      console.error('Failed to fetch AI usage status:', e);
+    } finally {
+      setLoading(false);
+    }
+  }, [session?.access_token, isTestMode]);
 
-  const recordUsage = useCallback(() => {
-    if (isTestMode) return true;
-    const newCount = incrementUsage(feature);
-    setUsageCount(newCount);
-    return newCount <= DAILY_LIMIT;
-  }, [feature, isTestMode]);
+  useEffect(() => {
+    fetchStatus();
+  }, [fetchStatus]);
 
-  return { usageCount, remaining, canUse, recordUsage, limit: DAILY_LIMIT };
+  const canUse = isTestMode || (status ? status.remaining.requests > 0 && status.remaining.tokens > 0 : true);
+  const remaining = isTestMode ? Infinity : (status?.remaining.requests ?? Infinity);
+
+  /** Call this when a 429 AI_LIMIT_REACHED error is received from an edge function */
+  const handleLimitError = useCallback((errorBody: any) => {
+    if (errorBody?.error === 'AI_LIMIT_REACHED') {
+      setLimitInfo({
+        reason: errorBody.reason,
+        tier: errorBody.tier,
+        resetsInHours: errorBody.resetsInHours,
+        retryAfterSeconds: errorBody.retryAfterSeconds,
+      });
+      // Refresh status
+      fetchStatus();
+      return true;
+    }
+    return false;
+  }, [fetchStatus]);
+
+  const dismissLimit = useCallback(() => setLimitInfo(null), []);
+
+  return {
+    status,
+    loading,
+    canUse,
+    remaining,
+    limitInfo,
+    handleLimitError,
+    dismissLimit,
+    refreshStatus: fetchStatus,
+  };
 }

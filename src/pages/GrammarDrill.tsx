@@ -1,6 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Loader2, ChevronRight, Lightbulb, CheckCircle2, XCircle, RotateCcw } from 'lucide-react';
+import { AiLimitModal } from '@/components/AiLimitModal';
+import { useAiUsage } from '@/hooks/useAiUsage';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Drill {
   sentence: string;
@@ -33,7 +36,8 @@ const GrammarDrill = () => {
   const [searchParams] = useSearchParams();
   const lessonTopic = searchParams.get('topic');
   const lessonId = searchParams.get('lesson');
-  
+  const { session } = useAuth();
+  const { canUse, remaining, limitInfo, handleLimitError, dismissLimit, status, refreshStatus } = useAiUsage();
 
   const [topic, setTopic] = useState(lessonTopic || 'mixed');
   const [difficulty, setDifficulty] = useState('medium');
@@ -45,6 +49,11 @@ const GrammarDrill = () => {
   const [error, setError] = useState<string | null>(null);
 
   const fetchDrill = async () => {
+    if (!canUse) {
+      refreshStatus();
+      return;
+    }
+
     setLoading(true);
     setSelectedIndex(null);
     setError(null);
@@ -56,7 +65,7 @@ const GrammarDrill = () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
           body: JSON.stringify({
             topic: topic === 'mixed' ? undefined : topic,
@@ -68,6 +77,7 @@ const GrammarDrill = () => {
 
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({ error: 'Request failed' }));
+        if (handleLimitError(err)) return;
         throw new Error(err.error || `Error ${resp.status}`);
       }
 
@@ -78,6 +88,7 @@ const GrammarDrill = () => {
       if (data.options?.[data.correctIndex]) {
         setPreviousWords(prev => [...prev, data.options[data.correctIndex]]);
       }
+      refreshStatus();
     } catch (e: any) {
       setError(e.message || 'Failed to load drill');
     } finally {
@@ -99,6 +110,8 @@ const GrammarDrill = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {limitInfo && <AiLimitModal limitInfo={limitInfo} onDismiss={dismissLimit} />}
+
       <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="container max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
@@ -108,12 +121,17 @@ const GrammarDrill = () => {
           <h1 className="font-display text-base font-bold">
             📝 {lessonId ? `Lesson ${lessonId} Drill` : 'Grammar Drills'}
           </h1>
-          {score.total > 0 && (
-            <span className="text-sm font-bold text-primary">
-              {score.correct}/{score.total}
-            </span>
-          )}
-          {score.total === 0 && <div />}
+          <div className="flex items-center gap-2">
+            {status && remaining !== Infinity && (
+              <span className="text-xs text-muted-foreground">{remaining} left</span>
+            )}
+            {score.total > 0 && (
+              <span className="text-sm font-bold text-primary">
+                {score.correct}/{score.total}
+              </span>
+            )}
+            {score.total === 0 && !status && <div />}
+          </div>
         </div>
       </header>
 
