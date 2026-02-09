@@ -23,7 +23,7 @@ const Practice = () => {
       </header>
 
       <main className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
-        <p className="text-sm text-muted-foreground">Practice vocabulary by category from all lessons.</p>
+        <p className="text-sm text-muted-foreground">Review vocabulary across all your lessons, organized by topic. Great for cross-lesson practice!</p>
         <div className="space-y-3">
           {categories.map((cat, i) => (
             <CategoryCard

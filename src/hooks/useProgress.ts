@@ -362,6 +362,7 @@ async function syncToCloud(progress: UserProgress, userId: string) {
         lessons_completed: progress.lessonsCompleted,
         current_lesson: progress.currentLesson,
         streak_freezes: progress.streakFreezes,
+        lesson_steps_completed: progress.lessonStepsCompleted,
       } as any)
       .eq('user_id', userId);
   } catch {

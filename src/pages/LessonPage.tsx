@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useMemo, useEffect } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, ChevronRight, Lock, Crown, Check, CircleDot } from 'lucide-react';
 import { getLessonById, lessons } from '@/data/a1Course';
 import { useProgress } from '@/hooks/useProgress';
@@ -30,7 +30,15 @@ const LessonPage = () => {
   const id = parseInt(lessonId || '1', 10);
   const lesson = getLessonById(id);
 
-  const [activeStep, setActiveStep] = useState<number | null>(null);
+  const [searchParams] = useSearchParams();
+  const [activeStep, setActiveStep] = useState<number | null>(() => {
+    const stepParam = searchParams.get('step');
+    if (stepParam) {
+      const n = parseInt(stepParam, 10);
+      if (n >= 1 && n <= STEPS.length) return n;
+    }
+    return null;
+  });
 
   const completedLessons = progress.lessonsCompleted || [];
   const isUnlocked = id === 1 || completedLessons.includes(id - 1);
@@ -40,12 +48,8 @@ const LessonPage = () => {
     return STEPS.filter(s => isStepCompleted(id, s.step)).length;
   }, [id, isStepCompleted]);
 
-  const getStepStatus = (stepNum: number): 'done' | 'current' => {
-    if (isStepCompleted(id, stepNum)) return 'done';
-    // "current" = first incomplete step (recommended next)
-    const firstIncomplete = STEPS.find(s => !isStepCompleted(id, s.step))?.step;
-    if (stepNum === firstIncomplete) return 'current';
-    return 'current'; // all steps are accessible
+  const getStepStatus = (stepNum: number): 'done' | 'available' => {
+    return isStepCompleted(id, stepNum) ? 'done' : 'available';
   };
 
   const recommendedStep = STEPS.find(s => !isStepCompleted(id, s.step))?.step ?? null;

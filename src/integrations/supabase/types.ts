@@ -50,6 +50,7 @@ export type Database = {
           current_lesson: number
           id: string
           last_practice_date: string | null
+          lesson_steps_completed: Json | null
           lessons_completed: number[]
           quiz_results: Json
           streak: number
@@ -63,6 +64,7 @@ export type Database = {
           current_lesson?: number
           id?: string
           last_practice_date?: string | null
+          lesson_steps_completed?: Json | null
           lessons_completed?: number[]
           quiz_results?: Json
           streak?: number
@@ -76,6 +78,7 @@ export type Database = {
           current_lesson?: number
           id?: string
           last_practice_date?: string | null
+          lesson_steps_completed?: Json | null
           lessons_completed?: number[]
           quiz_results?: Json
           streak?: number
