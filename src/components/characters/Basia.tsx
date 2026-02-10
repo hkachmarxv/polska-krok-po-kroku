@@ -56,7 +56,7 @@ export const Basia = ({ mood = 'happy', size = 56, className = '' }: Props) => {
         <ellipse cx="24" cy="50" rx="5" ry="3" fill="hsl(30, 30%, 75%)" />
         <ellipse cx="40" cy="50" rx="5" ry="3" fill="hsl(30, 30%, 75%)" />
       </svg>
-      <span className="absolute -top-1 -right-1 text-sm">{moodEmoji[mood]}</span>
+      <span className="absolute -top-2 -right-3 text-[10px]">{moodEmoji[mood]}</span>
     </motion.div>
   );
 };

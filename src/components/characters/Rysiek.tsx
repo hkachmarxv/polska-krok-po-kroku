@@ -54,7 +54,7 @@ export const Rysiek = ({ mood = 'happy', size = 56, className = '' }: Props) => 
         <rect x="22" y="50" width="4" height="10" rx="2" fill="hsl(25, 35%, 30%)" />
         <rect x="38" y="50" width="4" height="10" rx="2" fill="hsl(25, 35%, 30%)" />
       </svg>
-      <span className="absolute -top-1 -right-1 text-sm">{moodEmoji[mood]}</span>
+      <span className="absolute -top-2 -right-3 text-[10px]">{moodEmoji[mood]}</span>
     </motion.div>
   );
 };
