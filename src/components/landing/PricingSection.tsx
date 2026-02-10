@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Check, Zap, Shield, Crown, ArrowRight, Users } from 'lucide-react';
+import { Check, Zap, Shield, Crown, ArrowRight, Users, Star, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 
@@ -76,10 +76,10 @@ const PricingSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: 0.1 }}
-              className="bg-card border border-border rounded-2xl p-5 flex flex-col flex-1"
+              className="bg-gradient-to-b from-primary/[0.04] to-card border border-primary/20 rounded-2xl p-5 flex flex-col flex-1"
             >
               <div className="flex items-center gap-2 mb-1">
-                <Zap className="w-4 h-4 text-muted-foreground" />
+                <Zap className="w-4 h-4 text-primary" />
                 <h3 className="font-display font-bold text-foreground text-base">Monthly</h3>
               </div>
               <div className="flex items-baseline gap-1 mb-1">
@@ -89,14 +89,17 @@ const PricingSection = () => {
               <p className="text-xs text-muted-foreground mb-3">$360/year if you stay subscribed</p>
               <ul className="space-y-1.5 mb-4 flex-1">
                 {features.slice(0, 4).map((f, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <li key={i} className="flex items-center gap-2 text-sm text-foreground">
                     <Check className="w-3.5 h-3.5 text-success flex-shrink-0" />
                     {f}
                   </li>
                 ))}
-                <li className="text-xs text-muted-foreground pl-5">+ AI tools, streaks & more</li>
+                <li className="flex items-center gap-2 text-xs text-primary pl-5">
+                  <Sparkles className="w-3 h-3 flex-shrink-0" />
+                  + AI tools, streaks & more
+                </li>
               </ul>
-              <Button variant="outline" className="w-full" onClick={() => navigate('/auth?plan=monthly')}>
+              <Button variant="outline" className="w-full border-primary/30 text-foreground hover:bg-primary/5" onClick={() => navigate('/auth?plan=monthly')}>
                 Subscribe Monthly
               </Button>
             </motion.div>
@@ -108,9 +111,10 @@ const PricingSection = () => {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.15 }}
-            className="md:col-span-3 bg-gradient-to-b from-primary/[0.06] to-card border-2 border-primary rounded-2xl p-8 flex flex-col relative overflow-hidden shadow-xl shadow-primary/10"
+            className="md:col-span-3 bg-gradient-to-b from-primary/[0.08] via-primary/[0.03] to-card border-2 border-primary rounded-2xl p-8 flex flex-col relative overflow-hidden shadow-xl shadow-primary/10"
           >
-            <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-bl-lg">
+            <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-bl-lg flex items-center gap-1">
+              <Star className="w-3 h-3 fill-current" />
               BEST VALUE
             </div>
 
@@ -144,7 +148,7 @@ const PricingSection = () => {
             </ul>
 
             {/* Trust callout */}
-            <div className="bg-primary/[0.06] border border-primary/20 rounded-xl px-4 py-3 flex items-center gap-3 mb-5">
+            <div className="bg-primary/[0.08] border border-primary/20 rounded-xl px-4 py-3 flex items-center gap-3 mb-5">
               <Shield className="w-5 h-5 text-primary flex-shrink-0" />
               <span className="text-sm text-foreground font-medium">One payment. No subscriptions. Yours forever.</span>
             </div>
