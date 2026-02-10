@@ -76,10 +76,10 @@ const PricingSection = () => {
             transition={{ duration: 0.4, delay: 0.1 }}
             className="bg-gradient-to-b from-primary/[0.04] to-card border-2 border-primary/40 rounded-2xl p-6 flex flex-col relative overflow-hidden shadow-xl shadow-primary/10 scale-[1.02] z-10"
           >
-            <div className="absolute -top-px left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-4 py-1 rounded-b-lg">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-4 py-1.5 rounded-b-lg z-10">
               ⭐ MOST POPULAR
             </div>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1 mt-6">
               <Zap className="w-5 h-5 text-primary" />
               <h3 className="font-display font-bold text-foreground text-lg">Monthly</h3>
             </div>
