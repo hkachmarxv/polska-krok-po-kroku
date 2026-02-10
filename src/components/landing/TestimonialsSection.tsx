@@ -8,7 +8,7 @@ const testimonials = [
     duration: 'Learning for 3 months',
     text: 'I tried Duolingo for Polish and gave up after a week. LearnPolski actually explains WHY words change form — game changer for understanding cases.',
     rating: 5,
-    avatar: 'https://api.dicebear.com/9.x/notionists/svg?seed=Sarah&backgroundColor=b6e3f4',
+    avatar: 'https://api.dicebear.com/9.x/notionists/svg?seed=Lily&backgroundColor=b6e3f4',
   },
   {
     name: 'James K.',
@@ -24,7 +24,7 @@ const testimonials = [
     duration: 'Learning for 4 months',
     text: 'The AI grammar assistant is like having a private tutor. I can ask "why is it kotEM not kotA" and actually get a clear answer. Love it.',
     rating: 5,
-    avatar: 'https://api.dicebear.com/9.x/notionists/svg?seed=Anna&backgroundColor=d1f4d1',
+    avatar: 'https://api.dicebear.com/9.x/notionists/svg?seed=Maria&backgroundColor=d1f4d1',
   },
 ];
 
