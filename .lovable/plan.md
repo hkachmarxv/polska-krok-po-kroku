@@ -1,68 +1,83 @@
 
+# Redesign: Pricing Section -- Push One-Time as the Hero
 
-# Redesign: Pricing Section — Conversion-Optimized Layout
+## Strategy
 
-## Problems
-1. **Badge inconsistency** — "MOST POPULAR" is centered top, two lines with emoji; "BEST VALUE" is top-right corner, single line. They look mismatched.
-2. **Vertical misalignment** — Monthly card has `mt-6` on the heading to clear the centered badge, pushing the plan name and price lower than the Free and One-Time cards. All three prices ($0, $30, $80) should sit at the same visual level.
-3. **Scale transform** — Monthly card uses `scale-[1.02]` which subtly throws off the grid alignment and can cause sub-pixel rendering issues.
+The goal is to psychologically steer visitors toward the $80 one-time plan. Right now all three cards look roughly equal, with Monthly actually getting the most visual weight. The redesign flips that by making the One-Time card the undeniable hero of the section.
 
-## Design Principles (CRM/Conversion Best Practice)
-- **Visual hierarchy**: The recommended plan (Monthly) should stand out via border/shadow/gradient — NOT by being misaligned.
-- **Scanability**: Plan name → price → features → CTA must start at the same vertical position across all cards so users can compare instantly.
-- **Badge consistency**: All badges use the same position (top-right corner), same size, same single-line format. Differentiated only by color.
-- **Clean card tops**: No content pushed down by badges — badges overlay the top-right corner without affecting the card's internal flow.
+## Key Design Decisions
 
-## Changes (1 file)
+### 1. Two-column layout instead of three equal columns
+- **Left column (smaller, ~40% width):** Stack the Free tier and Monthly tier vertically as compact, understated options.
+- **Right column (larger, ~60% width):** A single large, visually dominant One-Time card that towers over the left column.
 
-**File:** `src/components/landing/PricingSection.tsx`
+This immediately draws the eye to the One-Time card because it's physically bigger and takes up more space.
 
-### 1. Monthly card badge (lines 79-81)
-Move from centered to top-right corner, matching One-Time badge style:
+### 2. One-Time card gets the "hero" treatment
+- Larger card with more padding and a subtle gradient background (primary color tint)
+- A bold "RECOMMENDED" or "BEST VALUE" ribbon/badge
+- Prominent price display with a crossed-out comparison price ("~~$360~~ $80 -- Save 78%")
+- A filled, high-contrast CTA button (primary color, large size)
+- Add a "one-time payment, no recurring charges" trust line with a shield icon
+- The "Pay once -- keep forever" line gets elevated to a highlighted callout box inside the card
 
-**Before:**
-```tsx
-<div className="absolute top-0 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-4 py-1.5 rounded-b-lg z-10">
-  ⭐ MOST POPULAR
-</div>
+### 3. Monthly and Free become secondary
+- Monthly: simple bordered card, outline CTA button, no badge
+- Free: even more minimal -- almost a text block with a subtle "Start Free" link
+- Both use muted styling so they don't compete with the One-Time card
+
+### 4. Social proof anchor
+- Below the cards, add a short line: "Trusted by 500+ Polish learners" or similar (even a placeholder count) to reinforce the decision
+
+### 5. Price anchoring
+- Show the monthly cost annualized: "$30/mo = $360/year" next to the One-Time $80 to make the savings visceral
+- Add a small "That's less than 3 months of Monthly" tagline under the One-Time price
+
+## Technical Changes
+
+### File: `src/components/landing/PricingSection.tsx`
+
+**Layout restructure:**
+- Change from `grid md:grid-cols-3` to a two-column layout: `grid md:grid-cols-5 gap-6`
+- Left column (`md:col-span-2`): Free card and Monthly card stacked vertically with `space-y-4`
+- Right column (`md:col-span-3`): One-Time card spanning full height with `h-full`
+
+**One-Time card upgrades:**
+- Larger padding (`p-8`), stronger border (`border-2 border-primary`), gradient background
+- Add crossed-out annual price: `<span className="line-through text-muted-foreground text-lg">$360</span>` next to the $80
+- Change savings text from "Save $280 vs 12 months" to "Save 78% vs Monthly" -- percentages feel bigger
+- Add a highlighted trust callout: a small rounded box with shield icon saying "One payment. No subscriptions. Yours forever."
+- CTA becomes a large filled primary button: "Get Lifetime Access -- $80"
+- Add subtle animation: the card enters with a slight scale-up (`scale: [0.95, 1]`)
+
+**Monthly card simplification:**
+- Remove the gradient background and shadow -- plain `bg-card border border-border`
+- Remove "MOST POPULAR" badge entirely (we don't want to push this)
+- Keep outline CTA button
+
+**Free card:**
+- Stays minimal, no changes needed
+
+**Social proof line:**
+- Add a centered text below the grid: "Join hundreds of learners mastering Polish" with a subtle icon
+
+## Visual Hierarchy (top to bottom priority)
+
+```text
++---------------------------+--------------------------------------+
+|  Free          Monthly    |                                      |
+|  $0/forever    $30/mo     |   BEST VALUE                         |
+|                           |                                      |
+|  - Lesson 1    - All 20   |   One-Time Access                    |
+|  - Flashcards  - AI tools |   ~~$360~~  $80  (Save 78%)          |
+|  - TTS         - Streaks  |                                      |
+|                           |   [all features listed]              |
+|  [Start Free]  [Subscribe |                                      |
+|                 Monthly]  |   [Shield] One payment. Yours forever|
+|                           |                                      |
+|                           |   [ Get Lifetime Access -- $80 ]     |
++---------------------------+--------------------------------------+
+         Join hundreds of learners mastering Polish
 ```
 
-**After:**
-```tsx
-<div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-bl-lg">
-  MOST POPULAR
-</div>
-```
-
-### 2. Monthly card heading (line 82)
-Remove `mt-6` so the plan name aligns with Free and One-Time:
-
-**Before:** `className="flex items-center gap-2 mb-1 mt-6"`
-**After:** `className="flex items-center gap-2 mb-1"`
-
-### 3. Monthly card container (line 77)
-Remove `scale-[1.02]` — the border + shadow + gradient already differentiate it. Scale breaks vertical alignment:
-
-**Before:** `className="... scale-[1.02] z-10"`
-**After:** `className="... z-10"` (remove `scale-[1.02]`)
-
-### 4. One-Time card badge (line 111)
-Already correct position — just ensure padding matches Monthly badge (`px-3 py-1`). ✅ No change needed.
-
-### 5. One-Time price spacing (line 118)
-Change `mb-1` to `mb-4` on the price div (same as Free and Monthly), then remove the separate "Save $280" line's `mb-4` → `mb-3` to keep total spacing tight but aligned:
-
-Actually, the savings line adds an extra row only on the One-Time card. To keep prices aligned:
-- Keep price div with `mb-1` (as-is)
-- Keep savings line with `mb-4` (as-is) — the total visual spacing from price to feature list is comparable
-
-No change needed here — the savings text naturally fills the gap.
-
-## Summary of net changes
-| Location | Change |
-|----------|--------|
-| Monthly badge | Centered → top-right corner, remove emoji |
-| Monthly heading | Remove `mt-6` |
-| Monthly container | Remove `scale-[1.02]` |
-
-3 small edits, all in PricingSection.tsx. Result: all three cards have names, prices, and features at the same vertical level, with matching corner badges.
+This layout uses size, color, and positioning to make the One-Time card the obvious choice while keeping the other options accessible for those who prefer them.
