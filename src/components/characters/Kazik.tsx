@@ -58,7 +58,7 @@ export const Kazik = ({ mood = 'happy', size = 56, className = '' }: Props) => {
         )}
       </svg>
       {/* Mood bubble */}
-      <span className="absolute -top-1 -right-1 text-sm">{moodEmoji[mood]}</span>
+      <span className="absolute -top-2 -right-3 text-[10px]">{moodEmoji[mood]}</span>
     </motion.div>
   );
 };

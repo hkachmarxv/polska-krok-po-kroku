@@ -61,7 +61,7 @@ export const Lila = ({ mood = 'happy', size = 56, className = '' }: Props) => {
         {/* Tail */}
         <path d="M46 42 Q56 30 52 22" stroke="hsl(30, 55%, 65%)" strokeWidth="4" fill="none" strokeLinecap="round" />
       </svg>
-      <span className="absolute -top-1 -right-1 text-sm">{moodEmoji[mood]}</span>
+      <span className="absolute -top-2 -right-3 text-[10px]">{moodEmoji[mood]}</span>
     </motion.div>
   );
 };
