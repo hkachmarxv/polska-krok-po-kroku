@@ -3,6 +3,12 @@ import { categories, getWordsByCategory } from '@/data/polishWords';
 import { useProgress } from '@/hooks/useProgress';
 import { CategoryCard } from '@/components/CategoryCard';
 import { BottomNav } from '@/components/BottomNav';
+import { QuickLinksRow } from '@/components/practice/QuickLinksRow';
+import { ColorsReference } from '@/components/practice/ColorsReference';
+import { DaysMonthsReference } from '@/components/practice/DaysMonthsReference';
+import { TimeReference } from '@/components/practice/TimeReference';
+import { NumbersReference } from '@/components/practice/NumbersReference';
+import { SurvivalPhrasesReference } from '@/components/practice/SurvivalPhrasesReference';
 
 const Practice = () => {
   const navigate = useNavigate();
@@ -46,6 +52,14 @@ const Practice = () => {
             ))}
           </div>
         </div>
+
+        <QuickLinksRow />
+
+        <ColorsReference />
+        <DaysMonthsReference />
+        <TimeReference />
+        <NumbersReference />
+        <SurvivalPhrasesReference />
 
         <p className="text-sm text-muted-foreground">Review vocabulary across all your lessons, organized by topic. Great for cross-lesson practice!</p>
         
