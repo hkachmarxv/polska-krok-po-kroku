@@ -1,83 +1,102 @@
 
-# Redesign: Pricing Section -- Push One-Time as the Hero
 
-## Strategy
+# Practice Page Expansion: Interactive Reference Cards
 
-The goal is to psychologically steer visitors toward the $80 one-time plan. Right now all three cards look roughly equal, with Monthly actually getting the most visual weight. The redesign flips that by making the One-Time card the undeniable hero of the section.
+## Vision
 
-## Key Design Decisions
+Transform the Practice page from a simple drill launcher into a rich, visual learning hub. Each new section teaches a practical topic with **real sentences** (not just isolated words), audio support, and cultural context -- making the page a place learners want to browse even when they're not doing formal exercises.
 
-### 1. Two-column layout instead of three equal columns
-- **Left column (smaller, ~40% width):** Stack the Free tier and Monthly tier vertically as compact, understated options.
-- **Right column (larger, ~60% width):** A single large, visually dominant One-Time card that towers over the left column.
+## New Sections (6 total)
 
-This immediately draws the eye to the One-Time card because it's physically bigger and takes up more space.
+### 1. Colors in Context
+- 10 common colors as visual swatches (colored circles/pills with Polish name, English, and gender marker)
+- Each color includes a **practical sentence** showing how colors change with gender:
+  - "Czerwony samochod" (red car, masculine) vs "Czerwona sukienka" (red dress, feminine)
+- SpeakButton on each word and sentence
+- Collapsible card, starts expanded
+- Header: Palette emoji, "Colors / Kolory"
+- Includes a small grammar tip: "Polish adjectives change endings based on gender!"
 
-### 2. One-Time card gets the "hero" treatment
-- Larger card with more padding and a subtle gradient background (primary color tint)
-- A bold "RECOMMENDED" or "BEST VALUE" ribbon/badge
-- Prominent price display with a crossed-out comparison price ("~~$360~~ $80 -- Save 78%")
-- A filled, high-contrast CTA button (primary color, large size)
-- Add a "one-time payment, no recurring charges" trust line with a shield icon
-- The "Pay once -- keep forever" line gets elevated to a highlighted callout box inside the card
+### 2. Days and Months
+- Days of the week (poniedzialek - niedziela) in a compact grid
+- Months of the year in a scrollable row
+- Each with pronunciation and SpeakButton
+- Practical sentences: "Spotykamy sie w piatek" (We meet on Friday), "Moje urodziny sa w maju" (My birthday is in May)
+- Grammar tip: days are lowercase in Polish, months too
+- Header: Calendar emoji, "Days & Months / Dni i miesiace"
 
-### 3. Monthly and Free become secondary
-- Monthly: simple bordered card, outline CTA button, no badge
-- Free: even more minimal -- almost a text block with a subtle "Start Free" link
-- Both use muted styling so they don't compete with the One-Time card
+### 3. Telling Time
+- Visual clock-style reference showing how to say common times
+- Key phrases: "Ktora jest godzina?" (What time is it?), "Jest trzecia" (It's 3 o'clock), "O wpol do piatej" (At half past four)
+- 6-8 time expressions with audio
+- Grammar tip: Polish uses ordinal feminine forms for hours
+- Header: Clock emoji, "Telling Time / Godziny"
 
-### 4. Social proof anchor
-- Below the cards, add a short line: "Trusted by 500+ Polish learners" or similar (even a placeholder count) to reinforce the decision
+### 4. Numbers Quick Reference
+- Numbers 1-20 in a compact grid, then 30, 40, 50... 100
+- Each tappable to hear pronunciation
+- Practical sentences: "Mam dwadziescia piec lat" (I'm 25 years old), "To kosztuje dziesiec zlotych" (It costs 10 zloty)
+- Header: Hash emoji, "Numbers / Liczby"
 
-### 5. Price anchoring
-- Show the monthly cost annualized: "$30/mo = $360/year" next to the One-Time $80 to make the savings visceral
-- Add a small "That's less than 3 months of Monthly" tagline under the One-Time price
+### 5. Survival Phrases
+- 8-10 essential phrases every beginner needs, organized by situation:
+  - At a shop: "Ile to kosztuje?" (How much is this?)
+  - Asking for help: "Gdzie jest...?" (Where is...?)
+  - At a restaurant: "Poprosze rachunek" (The bill please)
+  - Emergency: "Potrzebuję pomocy" (I need help)
+- Each with phonetic guide + SpeakButton
+- Header: Lifebuoy emoji, "Survival Phrases / Zwroty na przezycie"
 
-## Technical Changes
+### 6. Quick Links Row
+- A horizontal row of compact cards linking to existing features:
+  - Alphabet & Sounds (links to /alphabet)
+  - Grammar Chat (links to /grammar)
+- Gives easy access to tools that are otherwise only in the nav
 
-### File: `src/components/landing/PricingSection.tsx`
+## Layout Order (top to bottom)
 
-**Layout restructure:**
-- Change from `grid md:grid-cols-3` to a two-column layout: `grid md:grid-cols-5 gap-6`
-- Left column (`md:col-span-2`): Free card and Monthly card stacked vertically with `space-y-4`
-- Right column (`md:col-span-3`): One-Time card spanning full height with `h-full`
+1. Grammar Drills (existing, unchanged)
+2. Quick Links Row (new)
+3. Colors in Context (new, collapsible)
+4. Days & Months (new, collapsible)
+5. Telling Time (new, collapsible)
+6. Numbers Quick Reference (new, collapsible)
+7. Survival Phrases (new, collapsible)
+8. Vocabulary category cards (existing)
 
-**One-Time card upgrades:**
-- Larger padding (`p-8`), stronger border (`border-2 border-primary`), gradient background
-- Add crossed-out annual price: `<span className="line-through text-muted-foreground text-lg">$360</span>` next to the $80
-- Change savings text from "Save $280 vs 12 months" to "Save 78% vs Monthly" -- percentages feel bigger
-- Add a highlighted trust callout: a small rounded box with shield icon saying "One payment. No subscriptions. Yours forever."
-- CTA becomes a large filled primary button: "Get Lifetime Access -- $80"
-- Add subtle animation: the card enters with a slight scale-up (`scale: [0.95, 1]`)
+## Technical Implementation
 
-**Monthly card simplification:**
-- Remove the gradient background and shadow -- plain `bg-card border border-border`
-- Remove "MOST POPULAR" badge entirely (we don't want to push this)
-- Keep outline CTA button
+### New file: `src/data/practiceExtras.ts`
+Static data exports for all new sections:
+- `polishColors`: array of `{ polish, english, hex, gender, examplePl, exampleEn }`
+- `daysOfWeek`: array of `{ polish, english, phonetic }`
+- `monthsOfYear`: array of `{ polish, english, phonetic }`
+- `timeExpressions`: array of `{ polish, english, phonetic }`
+- `numberReference`: array of `{ number, polish, phonetic }`
+- `survivalPhrases`: array of `{ polish, english, phonetic, situation }`
+- Each section includes 1-2 `practicalSentences` with `{ polish, english }` for context
 
-**Free card:**
-- Stays minimal, no changes needed
+### New component: `src/components/practice/PracticeReferenceCard.tsx`
+A reusable collapsible card component used by all sections:
+- Props: `emoji`, `titlePl`, `titleEn`, `children`, `defaultOpen`
+- Uses Radix Collapsible with a chevron toggle
+- Consistent styling across all sections
 
-**Social proof line:**
-- Add a centered text below the grid: "Join hundreds of learners mastering Polish" with a subtle icon
+### New components (one per section):
+- `src/components/practice/ColorsReference.tsx` -- color swatches with gender-aware sentences
+- `src/components/practice/DaysMonthsReference.tsx` -- grid of days + scrollable months
+- `src/components/practice/TimeReference.tsx` -- time expressions list
+- `src/components/practice/NumbersReference.tsx` -- compact number grid
+- `src/components/practice/SurvivalPhrases.tsx` -- phrase list grouped by situation
+- `src/components/practice/QuickLinksRow.tsx` -- horizontal card row
 
-## Visual Hierarchy (top to bottom priority)
+### Modified file: `src/pages/Practice.tsx`
+- Import all new components
+- Insert them between Grammar Drills and the vocabulary category section
+- No changes to existing functionality
 
-```text
-+---------------------------+--------------------------------------+
-|  Free          Monthly    |                                      |
-|  $0/forever    $30/mo     |   BEST VALUE                         |
-|                           |                                      |
-|  - Lesson 1    - All 20   |   One-Time Access                    |
-|  - Flashcards  - AI tools |   ~~$360~~  $80  (Save 78%)          |
-|  - TTS         - Streaks  |                                      |
-|                           |   [all features listed]              |
-|  [Start Free]  [Subscribe |                                      |
-|                 Monthly]  |   [Shield] One payment. Yours forever|
-|                           |                                      |
-|                           |   [ Get Lifetime Access -- $80 ]     |
-+---------------------------+--------------------------------------+
-         Join hundreds of learners mastering Polish
-```
+### Dependencies
+- No new packages needed
+- Uses existing: SpeakButton, Collapsible (Radix), useVoicePreference
+- All data is static (no API calls, no database)
 
-This layout uses size, color, and positioning to make the One-Time card the obvious choice while keeping the other options accessible for those who prefer them.
