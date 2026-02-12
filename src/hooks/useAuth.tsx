@@ -42,7 +42,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setLoading(false);
 
         if (event === 'SIGNED_IN' && currentSession) {
-          setTimeout(() => sendWelcomeEmail(currentSession), 0);
+          const createdAt = new Date(currentSession.user.created_at).getTime();
+          const now = Date.now();
+          const isNewUser = now - createdAt < 120_000; // within last 2 minutes
+          if (isNewUser) {
+            setTimeout(() => sendWelcomeEmail(currentSession), 0);
+          }
         }
       }
     );
