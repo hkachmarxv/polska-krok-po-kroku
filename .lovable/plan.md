@@ -1,67 +1,39 @@
 
 
-# Referral System — Implementation Plan
+# Referral Code — Fix for Existing Users
 
-## Overview
+## The Problem
 
-Build a referral tracking system with unique codes for you and Andre. Referred users get **10% off** any purchase automatically via Stripe, and you can track signups + conversions per referrer.
+You're right — there are two issues:
 
-## User Flow
+1. **The `?ref=` capture only runs on the Landing page and Auth page.** If you go directly to `/pricing` (or any other page), the code is never saved. So visiting `learnpolski.academy/pricing?ref=ANDRE` does nothing.
 
-```text
-1. Andre shares: learnpolski.academy/?ref=ANDRE
-2. Visitor lands → code saved in browser storage
-3. Visitor signs up (normal flow, no friction)
-4. Visitor goes to buy Monthly or Lifetime
-5. Checkout automatically applies 10% discount
-6. Database records: "this user was referred by ANDRE"
-7. You ask me anytime to check Andre's stats
-```
+2. **Existing users never get the referral recorded in the database** — the `recordReferral` function only fires for brand-new accounts (created within the last 2 minutes). But the **discount at checkout should still work** for existing users, because `startCheckout` reads `referral_code` from localStorage regardless. The issue is just that the code was never captured in the first place if you didn't land on `/` or `/auth`.
 
-## What Gets Built
+## The Fix
 
-### Database (2 new tables)
+### 1. Move `?ref=` capture to a global level (App.tsx or a shared hook)
+Instead of duplicating the capture logic on individual pages, run it once at the app level so it works on **every** route — landing, auth, pricing, dashboard, anywhere.
 
-**`referral_codes`** — stores each referrer's code
-- `code` (e.g. "POLSKI", "ANDRE") — unique, uppercase
-- `referrer_name` — display name
-- `stripe_coupon_id` — links to the Stripe 10% coupon
-- `active` — can disable codes later
-- Public read access so the app can validate codes; no client-side writes
+### 2. Add a "Have a referral code?" input on the Pricing page
+For existing users who don't have a `?ref=` link, add a small collapsible input field on the Pricing page where they can manually type a code (e.g. `ANDRE`). When they enter it, it gets saved to localStorage and applied at checkout — same mechanism, just manual entry.
 
-**`referrals`** — tracks each referred user
-- Links a user to the code they used
-- `converted` flag set to true when they purchase
-- Unique constraint on user ID (can't be referred twice)
+### 3. Record referrals for existing users too (optional)
+Currently, only new sign-ups get a row in the `referrals` table. We could also record existing users who use a referral code at checkout time (inside the edge function), so you get full tracking regardless of account age.
 
-**Seed data:** Two codes inserted automatically — `POLSKI` (yours) and `ANDRE`
+## Changes Summary
 
-### Stripe
+| File | Change |
+|------|--------|
+| `src/pages/LandingPage.tsx` | Remove the `?ref=` capture code (moved to global) |
+| `src/pages/Auth.tsx` | Remove the `?ref=` capture code (moved to global) |
+| `src/App.tsx` | Add a global `useEffect` to capture `?ref=` from URL on any page |
+| `src/pages/Pricing.tsx` | Add a small "Have a referral code?" collapsible input below the free-plan banner |
+| `supabase/functions/create-checkout/index.ts` | Also insert a `referrals` row for existing users who use a code (if they don't already have one) |
 
-Create a single reusable **10% off coupon** ("REFERRAL10", applies once per customer). Its ID gets stored in both referral code rows.
+## Technical Details
 
-### Code Changes (5 files)
-
-| File | What Changes |
-|------|-------------|
-| `src/pages/LandingPage.tsx` | On mount, capture `?ref=` from URL into localStorage |
-| `src/pages/Auth.tsx` | Same capture (in case Andre shares a direct `/auth?ref=ANDRE` link) |
-| `src/hooks/useAuth.tsx` | On new sign-up, look up the stored code and record a referral row |
-| `src/hooks/useSubscription.tsx` | Pass stored referral code to the checkout function |
-| `supabase/functions/create-checkout/index.ts` | Validate code, apply Stripe coupon, mark conversion on success |
-
-### What Stays The Same
-- No changes to the sign-up form (no "enter code" field — it's all URL-based)
-- No changes to pricing display (discount shows in Stripe checkout)
-- No changes to existing subscription logic
-- No admin UI needed yet — I can query stats for you anytime
-
-### Edge Cases Handled
-- User visits with `?ref=ANDRE`, doesn't sign up for days → code persists in localStorage
-- Invalid or deactivated code → ignored silently, no discount
-- Existing user visits with `?ref=` → referral only recorded for new accounts
-- Same user can't be referred twice (database constraint)
-
-### Tracking (No UI Needed)
-You can ask me anytime to run a query showing each code's signups and conversions. When volume grows, we can add a simple admin dashboard.
+- The global capture hook checks `window.location.search` for `ref` param, saves to `localStorage`, and cleans the URL — runs once on app mount regardless of route.
+- The Pricing page input validates the code against the `referral_codes` table before saving it, showing a green checkmark or "Invalid code" feedback.
+- The edge function will upsert into `referrals` when a valid code is used at checkout, covering both new and existing users.
 
