@@ -156,7 +156,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         headers: { Authorization: `Bearer ${session.access_token}` },
-        body: { priceId: planConfig.priceId, mode: planConfig.mode },
+        body: { priceId: planConfig.priceId, mode: planConfig.mode, referralCode: localStorage.getItem('referral_code') || undefined },
       });
 
       if (error) throw error;

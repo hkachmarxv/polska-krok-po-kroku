@@ -21,6 +21,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const welcomeEmailSent = useRef(false);
 
+  const recordReferral = async (userSession: Session) => {
+    const code = localStorage.getItem('referral_code');
+    if (!code) return;
+    try {
+      // Look up the referral code
+      const { data: codeRow } = await supabase
+        .from('referral_codes')
+        .select('id')
+        .ilike('code', code)
+        .eq('active', true)
+        .maybeSingle();
+      if (!codeRow) return;
+      // Insert referral row
+      await supabase.from('referrals').insert({
+        referral_code_id: codeRow.id,
+        referred_user_id: userSession.user.id,
+      });
+      localStorage.removeItem('referral_code');
+    } catch (e) {
+      console.error('Referral recording error:', e);
+    }
+  };
+
   const sendWelcomeEmail = async (userSession: Session) => {
     if (welcomeEmailSent.current) return;
     welcomeEmailSent.current = true;
@@ -47,6 +70,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const isNewUser = now - createdAt < 120_000; // within last 2 minutes
           if (isNewUser) {
             setTimeout(() => sendWelcomeEmail(currentSession), 0);
+            // Record referral if code exists in localStorage
+            setTimeout(() => recordReferral(currentSession), 0);
           }
         }
       }

@@ -22,10 +22,15 @@ serve(async (req) => {
     Deno.env.get("SUPABASE_ANON_KEY") ?? ""
   );
 
+  const supabaseAdmin = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+  );
+
   try {
     logStep("Function started");
 
-    const { priceId, mode } = await req.json();
+    const { priceId, mode, referralCode } = await req.json();
     if (!priceId) throw new Error("priceId is required");
 
     const authHeader = req.headers.get("Authorization")!;
@@ -43,16 +48,47 @@ serve(async (req) => {
       customerId = customers.data[0].id;
     }
 
+    // Look up referral code for discount
+    let discounts: any[] | undefined;
+    if (referralCode) {
+      const { data: codeRow } = await supabaseAdmin
+        .from("referral_codes")
+        .select("id, stripe_coupon_id")
+        .ilike("code", referralCode)
+        .eq("active", true)
+        .maybeSingle();
+
+      if (codeRow?.stripe_coupon_id) {
+        discounts = [{ coupon: codeRow.stripe_coupon_id }];
+        logStep("Referral coupon applied", { code: referralCode, coupon: codeRow.stripe_coupon_id });
+
+        // Mark conversion (fire-and-forget)
+        supabaseAdmin
+          .from("referrals")
+          .update({ converted: true, converted_at: new Date().toISOString() })
+          .eq("referred_user_id", user.id)
+          .then(({ error }) => {
+            if (error) console.error("Referral conversion update error:", error);
+          });
+      }
+    }
+
     const origin = req.headers.get("origin") || "https://polska-krok-po-kroku.lovable.app";
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams: any = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: mode === "subscription" ? "subscription" : "payment",
       success_url: `${origin}/dashboard?checkout=success`,
       cancel_url: `${origin}/course?checkout=cancelled`,
-    });
+    };
+
+    if (discounts) {
+      sessionParams.discounts = discounts;
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     logStep("Checkout session created", { sessionId: session.id, url: session.url });
 
