@@ -146,6 +146,74 @@ export type Database = {
         }
         Relationships: []
       }
+      referral_codes: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          id: string
+          referrer_email: string | null
+          referrer_name: string
+          stripe_coupon_id: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          id?: string
+          referrer_email?: string | null
+          referrer_name: string
+          stripe_coupon_id: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          id?: string
+          referrer_email?: string | null
+          referrer_name?: string
+          stripe_coupon_id?: string
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          converted: boolean
+          converted_at: string | null
+          created_at: string
+          id: string
+          referral_code_id: string
+          referred_user_id: string
+          stripe_session_id: string | null
+        }
+        Insert: {
+          converted?: boolean
+          converted_at?: string | null
+          created_at?: string
+          id?: string
+          referral_code_id: string
+          referred_user_id: string
+          stripe_session_id?: string | null
+        }
+        Update: {
+          converted?: boolean
+          converted_at?: string | null
+          created_at?: string
+          id?: string
+          referral_code_id?: string
+          referred_user_id?: string
+          stripe_session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_referral_code_id_fkey"
+            columns: ["referral_code_id"]
+            isOneToOne: false
+            referencedRelation: "referral_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_progress: {
         Row: {
           a1_checkpoint_passed: boolean
