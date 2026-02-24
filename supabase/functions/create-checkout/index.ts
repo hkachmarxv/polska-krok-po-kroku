@@ -62,13 +62,21 @@ serve(async (req) => {
         discounts = [{ coupon: codeRow.stripe_coupon_id }];
         logStep("Referral coupon applied", { code: referralCode, coupon: codeRow.stripe_coupon_id });
 
-        // Mark conversion (fire-and-forget)
+        // Upsert referral row for any user (new or existing) & mark conversion
         supabaseAdmin
           .from("referrals")
-          .update({ converted: true, converted_at: new Date().toISOString() })
-          .eq("referred_user_id", user.id)
+          .upsert(
+            {
+              referred_user_id: user.id,
+              referral_code_id: codeRow.id,
+              converted: true,
+              converted_at: new Date().toISOString(),
+            },
+            { onConflict: "referred_user_id" }
+          )
           .then(({ error }) => {
-            if (error) console.error("Referral conversion update error:", error);
+            if (error) console.error("Referral upsert error:", error);
+            else logStep("Referral upsert success", { userId: user.id });
           });
       }
     }

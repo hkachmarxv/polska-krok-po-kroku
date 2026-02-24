@@ -1,16 +1,41 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check, Crown, Zap, Shield, Loader2 } from 'lucide-react';
+import { ArrowLeft, Check, Crown, Zap, Shield, Loader2, Tag, CheckCircle2, XCircle } from 'lucide-react';
 import { useSubscription, PLANS } from '@/hooks/useSubscription';
 import { useTestMode } from '@/hooks/useTestMode';
 import { BottomNav } from '@/components/BottomNav';
 import CancellationDialog from '@/components/CancellationDialog';
 import { AiBoostSection } from '@/components/AiBoostSection';
+import { supabase } from '@/integrations/supabase/client';
 
 const Pricing = () => {
   const navigate = useNavigate();
   const { subscribed, lifetime, hasSubscription, subscriptionEnd, loading, startCheckout, openCustomerPortal, cancelSubscription, showCancellation, setShowCancellation } = useSubscription();
   const { isTestMode } = useTestMode();
   const reallySubscribed = isTestMode ? (hasSubscription || lifetime) : subscribed;
+
+  const [refInput, setRefInput] = useState('');
+  const [refStatus, setRefStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
+  const [showRefInput, setShowRefInput] = useState(false);
+  const existingCode = typeof window !== 'undefined' ? localStorage.getItem('referral_code') : null;
+
+  const validateCode = async (code: string) => {
+    const trimmed = code.trim().toUpperCase();
+    if (!trimmed) return;
+    setRefStatus('checking');
+    const { data } = await supabase
+      .from('referral_codes')
+      .select('id')
+      .ilike('code', trimmed)
+      .eq('active', true)
+      .maybeSingle();
+    if (data) {
+      localStorage.setItem('referral_code', trimmed);
+      setRefStatus('valid');
+    } else {
+      setRefStatus('invalid');
+    }
+  };
 
   const features = [
     'All 20 structured A1 lessons',
@@ -80,6 +105,59 @@ const Pricing = () => {
             </p>
             <p className="text-sm text-muted-foreground mt-1">
               Upgrade to unlock all 20 A1 lessons and AI tools!
+            </p>
+          </div>
+        )}
+
+        {/* Referral code input for existing users */}
+        {!reallySubscribed && !existingCode && (
+          <div className="bg-card border border-border rounded-2xl p-4">
+            {!showRefInput ? (
+              <button
+                onClick={() => setShowRefInput(true)}
+                className="flex items-center gap-2 text-sm text-primary font-medium hover:underline mx-auto"
+              >
+                <Tag className="w-4 h-4" />
+                Have a referral code?
+              </button>
+            ) : (
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Enter referral code</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={refInput}
+                    onChange={e => { setRefInput(e.target.value.toUpperCase()); setRefStatus('idle'); }}
+                    placeholder="e.g. ANDRE"
+                    className="flex-1 h-10 rounded-xl border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  />
+                  <button
+                    onClick={() => validateCode(refInput)}
+                    disabled={!refInput.trim() || refStatus === 'checking'}
+                    className="bg-primary text-primary-foreground px-4 rounded-xl text-sm font-bold disabled:opacity-50"
+                  >
+                    {refStatus === 'checking' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
+                  </button>
+                </div>
+                {refStatus === 'valid' && (
+                  <p className="flex items-center gap-1 text-sm text-success">
+                    <CheckCircle2 className="w-4 h-4" /> Code applied — 10% off at checkout!
+                  </p>
+                )}
+                {refStatus === 'invalid' && (
+                  <p className="flex items-center gap-1 text-sm text-destructive">
+                    <XCircle className="w-4 h-4" /> Invalid or expired code
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {!reallySubscribed && existingCode && (
+          <div className="bg-success/10 border border-success/30 rounded-2xl p-3 text-center">
+            <p className="flex items-center justify-center gap-2 text-sm text-success font-medium">
+              <Tag className="w-4 h-4" /> Referral code <span className="font-bold">{existingCode}</span> applied — 10% off!
             </p>
           </div>
         )}

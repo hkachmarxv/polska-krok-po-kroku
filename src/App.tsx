@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -42,42 +42,64 @@ const CelebrationOverlay = () => {
   );
 };
 
+// Global hook to capture ?ref= on any route
+const useReferralCapture = () => {
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) {
+      localStorage.setItem('referral_code', ref.toUpperCase());
+      const url = new URL(window.location.href);
+      url.searchParams.delete('ref');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, []);
+};
+
+const AppInner = () => {
+  useReferralCapture();
+  return (
+    <>
+      <Toaster />
+      <Sonner />
+      <TestModeIndicator />
+      <BrowserRouter>
+        <CelebrationOverlay />
+        <main>
+          <Suspense fallback={<div className="min-h-screen bg-background" />}>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/pricing" element={<ProtectedRoute><Pricing /></ProtectedRoute>} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/course" element={<ProtectedRoute><CourseOverview /></ProtectedRoute>} />
+              <Route path="/lesson/:lessonId" element={<ProtectedRoute><LessonPage /></ProtectedRoute>} />
+              <Route path="/a1-checkpoint" element={<ProtectedRoute><A1Checkpoint /></ProtectedRoute>} />
+              <Route path="/practice" element={<ProtectedRoute><Practice /></ProtectedRoute>} />
+              <Route path="/alphabet" element={<ProtectedRoute><Alphabet /></ProtectedRoute>} />
+              <Route path="/flashcards/:categoryId" element={<ProtectedRoute><Flashcards /></ProtectedRoute>} />
+              <Route path="/quiz/:categoryId" element={<ProtectedRoute><Quiz /></ProtectedRoute>} />
+              <Route path="/grammar" element={<ProtectedRoute><GrammarAssistant /></ProtectedRoute>} />
+              <Route path="/grammar-drill" element={<ProtectedRoute><GrammarDrill /></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </main>
+      </BrowserRouter>
+    </>
+  );
+};
+
 const App = () => (
   <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <SubscriptionProvider>
           <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <TestModeIndicator />
-            <BrowserRouter>
-              <CelebrationOverlay />
-              <main>
-              <Suspense fallback={<div className="min-h-screen bg-background" />}>
-                <Routes>
-                  <Route path="/" element={<LandingPage />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/privacy" element={<PrivacyPolicy />} />
-                  <Route path="/terms" element={<TermsOfService />} />
-                  <Route path="/pricing" element={<ProtectedRoute><Pricing /></ProtectedRoute>} />
-                  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                  <Route path="/course" element={<ProtectedRoute><CourseOverview /></ProtectedRoute>} />
-                  <Route path="/lesson/:lessonId" element={<ProtectedRoute><LessonPage /></ProtectedRoute>} />
-                  <Route path="/a1-checkpoint" element={<ProtectedRoute><A1Checkpoint /></ProtectedRoute>} />
-                  <Route path="/practice" element={<ProtectedRoute><Practice /></ProtectedRoute>} />
-                  
-                  <Route path="/alphabet" element={<ProtectedRoute><Alphabet /></ProtectedRoute>} />
-                  <Route path="/flashcards/:categoryId" element={<ProtectedRoute><Flashcards /></ProtectedRoute>} />
-                  <Route path="/quiz/:categoryId" element={<ProtectedRoute><Quiz /></ProtectedRoute>} />
-                  <Route path="/grammar" element={<ProtectedRoute><GrammarAssistant /></ProtectedRoute>} />
-                  <Route path="/grammar-drill" element={<ProtectedRoute><GrammarDrill /></ProtectedRoute>} />
-                  <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-              </main>
-            </BrowserRouter>
+            <AppInner />
           </TooltipProvider>
         </SubscriptionProvider>
       </AuthProvider>
